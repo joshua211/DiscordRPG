@@ -7,7 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\DiscordRPG.Common\DiscordRPG.Common.csproj"/>
+        <ProjectReference Include="..\DiscordRPG.Core\DiscordRPG.Core.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Hangfire.Core" Version="1.8.0-beta4"/>
+        <PackageReference Include="MediatR" Version="9.0.0"/>
     </ItemGroup>
 
 </Project>
