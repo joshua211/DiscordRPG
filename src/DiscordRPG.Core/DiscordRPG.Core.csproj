@@ -10,4 +10,8 @@
         <ProjectReference Include="..\DiscordRPG.Common\DiscordRPG.Common.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <Folder Include="Interfaces"/>
+    </ItemGroup>
+
 </Project>
