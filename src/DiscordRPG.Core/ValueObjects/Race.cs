@@ -1,7 +1,10 @@
-﻿namespace DiscordRPG.Core.ValueObjects;
+﻿using MongoDB.Bson.Serialization.Attributes;
+
+namespace DiscordRPG.Core.ValueObjects;
 
 public class Race : IAttributeModifier
 {
+    [BsonConstructor]
     public Race(string raceName)
     {
         RaceName = raceName;

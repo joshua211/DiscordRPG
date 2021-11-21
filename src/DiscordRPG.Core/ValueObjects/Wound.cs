@@ -1,7 +1,10 @@
-﻿namespace DiscordRPG.Core.ValueObjects;
+﻿using MongoDB.Bson.Serialization.Attributes;
+
+namespace DiscordRPG.Core.ValueObjects;
 
 public class Wound
 {
+    [BsonConstructor]
     public Wound(string description, int damageValue)
     {
         Description = description;

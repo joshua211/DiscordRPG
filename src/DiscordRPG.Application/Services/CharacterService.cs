@@ -1,4 +1,5 @@
 ﻿using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Application.Queries;
 using DiscordRPG.Common;
 using DiscordRPG.Core.Commands;
 using MediatR;
@@ -14,11 +15,12 @@ public class CharacterService : ICharacterService
         this.mediator = mediator;
     }
 
-    public async Task<Result<Character>> CreateCharacterAsync(ulong userId, string name, Class characterClass,
+    public async Task<Result<Character>> CreateCharacterAsync(ulong userId, ulong guildId, string name,
+        Class characterClass,
         Race race,
         CancellationToken cancellationToken = default)
     {
-        var character = new Character(userId, name, characterClass, race, new Level(1, 0, 100),
+        var character = new Character(userId, guildId, name, characterClass, race, new Level(1, 0, 100),
             new EquipmentInfo(null, null, null, null, null, null, null), new List<Item>(), new List<Wound>(), 0);
 
         await mediator.Publish(new CreateCharacterCommand(character), cancellationToken);
@@ -31,8 +33,17 @@ public class CharacterService : ICharacterService
         throw new NotImplementedException();
     }
 
-    public Task<Result<Character>> GetCharacterAsync(ulong userId, CancellationToken token = default)
+    public async Task<Result<Character>> GetCharacterAsync(ulong userId, ulong guildId,
+        CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        var query = new GetCharacterByUserIdQuery(userId, guildId);
+        var character = await mediator.Send(query, token);
+
+        if (character == null)
+        {
+            return Result<Character>.Failure("No character found");
+        }
+
+        return Result<Character>.Success(character);
     }
 }

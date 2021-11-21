@@ -36,7 +36,9 @@ public class GetCharacter : CommandBase
 
     public override async Task HandleAsync(SocketSlashCommand command)
     {
-        var result = await characterService.GetCharacterAsync(command.User.Id);
+        var guildUser = command.User as SocketGuildUser;
+        var result = await characterService.GetCharacterAsync(guildUser.Id, guildUser.Guild.Id);
+
         if (!result.WasSuccessful)
         {
             await command.RespondAsync("You have to first create a character by using /create-character");

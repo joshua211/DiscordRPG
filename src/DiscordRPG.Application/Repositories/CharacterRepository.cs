@@ -15,9 +15,10 @@ public class CharacterRepository : ICharacterRepository
             .GetCollection<Character>(databaseSettings.CollectionName);
     }
 
-    public async Task<Character> GetCharacterAsync(ulong userId, CancellationToken token = default)
+    public async Task<Character> GetGuildCharacterAsync(ulong userId, ulong guildId, CancellationToken token = default)
     {
-        var result = await characters.FindAsync(c => c.UserId == userId, cancellationToken: token);
+        var result =
+            await characters.FindAsync(c => c.UserId == userId && c.GuildId == guildId, cancellationToken: token);
         return await result.FirstOrDefaultAsync(token);
     }
 

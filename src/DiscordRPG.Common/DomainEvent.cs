@@ -1,6 +1,8 @@
-﻿namespace DiscordRPG.Common;
+﻿using MediatR;
 
-public abstract class DomainEvent
+namespace DiscordRPG.Common;
+
+public abstract class DomainEvent : INotification
 {
     public DomainEvent()
     {

@@ -104,9 +104,11 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
     private async Task HandleSubmit(SocketMessageComponent component, CreateCharacterDialog dialog)
     {
         //TODO validate
+        var guildUser = component.User as SocketGuildUser;
         var @class = new Class(dialog.Class);
         var race = new Race(dialog.Race);
-        var result = await characterService.CreateCharacterAsync(component.User.Id, dialog.Name, @class, race);
+        var result =
+            await characterService.CreateCharacterAsync(guildUser.Id, guildUser.Guild.Id, dialog.Name, @class, race);
         if (!result.WasSuccessful)
         {
             await component.RespondAsync("Something went wrong! " + result.ErrorMessage);

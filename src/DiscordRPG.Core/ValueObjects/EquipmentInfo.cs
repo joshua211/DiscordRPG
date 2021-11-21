@@ -1,9 +1,12 @@
-﻿namespace DiscordRPG.Core.ValueObjects;
+﻿using MongoDB.Bson.Serialization.Attributes;
+
+namespace DiscordRPG.Core.ValueObjects;
 
 public class EquipmentInfo
 {
     private readonly Dictionary<string, Equipment?> equipment;
 
+    [BsonConstructor]
     public EquipmentInfo(Weapon weapon, Equipment headArmor, Equipment bodyArmor, Equipment legArmor, Equipment amulet,
         Equipment ring1, Equipment ring2)
     {
@@ -89,15 +92,15 @@ public class EquipmentInfo
 
     public int GetTotalAttribute(CharacterAttribute attr) => attr switch
     {
-        CharacterAttribute.Strength => equipment.Values.Sum(e => e.Strength),
-        CharacterAttribute.Agility => equipment.Values.Sum(e => e.Agility),
-        CharacterAttribute.Intelligence => equipment.Values.Sum(e => e.Intelligence),
-        CharacterAttribute.Vitality => equipment.Values.Sum(e => e.Vitality),
-        CharacterAttribute.Luck => equipment.Values.Sum(e => e.Luck),
+        CharacterAttribute.Strength => equipment.Values.Where(e => e != null).Sum(e => e.Strength),
+        CharacterAttribute.Agility => equipment.Values.Where(e => e != null).Sum(e => e.Agility),
+        CharacterAttribute.Intelligence => equipment.Values.Where(e => e != null).Sum(e => e.Intelligence),
+        CharacterAttribute.Vitality => equipment.Values.Where(e => e != null).Sum(e => e.Vitality),
+        CharacterAttribute.Luck => equipment.Values.Where(e => e != null).Sum(e => e.Luck),
         _ => 0
     };
 
-    public int GetTotalArmor() => equipment.Values.Sum(e => e.Armor);
+    public int GetTotalArmor() => equipment.Values.Where(e => e != null).Sum(e => e.Armor);
 
-    public int GetTotalMagicArmor() => equipment.Values.Sum(e => e.MagicArmor);
+    public int GetTotalMagicArmor() => equipment.Values.Where(e => e != null).Sum(e => e.MagicArmor);
 }

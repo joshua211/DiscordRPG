@@ -1,7 +1,10 @@
-﻿namespace DiscordRPG.Core.ValueObjects;
+﻿using MongoDB.Bson.Serialization.Attributes;
+
+namespace DiscordRPG.Core.ValueObjects;
 
 public class Level
 {
+    [BsonConstructor]
     public Level(uint currentLevel, int currentExp, int needExp)
     {
         CurrentLevel = currentLevel;

@@ -1,7 +1,10 @@
-﻿namespace DiscordRPG.Core.ValueObjects;
+﻿using MongoDB.Bson.Serialization.Attributes;
+
+namespace DiscordRPG.Core.ValueObjects;
 
 public class Weapon : Equipment
 {
+    [BsonConstructor]
     public Weapon(string name, string description, Rarity rarity, int armor, int magicArmor, int strength, int vitality,
         int agility, int intelligence, int luck, int worth, CharacterAttribute damageAttribute, DamageType damageType,
         int damageValue) : base(name, description, rarity, armor, magicArmor, strength, vitality, agility, intelligence,

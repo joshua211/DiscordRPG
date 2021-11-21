@@ -1,4 +1,6 @@
-﻿namespace DiscordRPG.Common;
+﻿using MongoDB.Bson.Serialization.Attributes;
+
+namespace DiscordRPG.Common;
 
 public abstract class Entity
 {
@@ -7,5 +9,5 @@ public abstract class Entity
         ID = Guid.NewGuid().ToString();
     }
 
-    public string ID { get; set; }
+    [BsonId] public string ID { get; set; }
 }

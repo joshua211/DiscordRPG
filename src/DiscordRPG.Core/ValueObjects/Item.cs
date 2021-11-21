@@ -1,7 +1,10 @@
-﻿namespace DiscordRPG.Core.ValueObjects;
+﻿using MongoDB.Bson.Serialization.Attributes;
+
+namespace DiscordRPG.Core.ValueObjects;
 
 public class Item
 {
+    [BsonConstructor]
     public Item(string name, string description, Rarity rarity, int worth)
     {
         Name = name;

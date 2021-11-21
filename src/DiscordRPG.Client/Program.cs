@@ -59,7 +59,7 @@ public class Program
             sp.GetRequiredService<IOptions<CharacterDatabaseSettings>>().Value);
 
         services.AddSingleton<DiscordSocketClient>();
-        services.AddMediatR(typeof(Core.Core));
+        services.AddMediatR(typeof(Core.Core).Assembly, typeof(Application.Application).Assembly);
         services.AddApplication();
         CommandHandler.AddCommands(services);
 

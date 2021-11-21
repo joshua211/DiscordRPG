@@ -1,4 +1,6 @@
-﻿namespace DiscordRPG.Core.ValueObjects;
+﻿using MongoDB.Bson.Serialization.Attributes;
+
+namespace DiscordRPG.Core.ValueObjects;
 
 public class Equipment : Item
 {
@@ -10,6 +12,7 @@ public class Equipment : Item
     public const string Ring1 = "Ring1";
     public const string Ring2 = "Ring2";
 
+    [BsonConstructor]
     public Equipment(string name, string description, Rarity rarity, int armor, int magicArmor, int strength,
         int vitality, int agility, int intelligence, int luck, int worth) : base(name, description, rarity, worth)
     {

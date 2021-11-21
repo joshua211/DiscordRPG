@@ -2,10 +2,12 @@
 
 public class Character : Entity
 {
-    public Character(ulong userId, string characterName, Class characterClass, Race characterRace, Level level,
+    public Character(ulong userId, ulong guildId, string characterName, Class characterClass, Race characterRace,
+        Level level,
         EquipmentInfo equipment, List<Item> inventory, List<Wound> wounds, int money)
     {
         UserId = userId;
+        GuildId = guildId;
         CharacterName = characterName;
         CharacterClass = characterClass;
         CharacterRace = characterRace;
@@ -17,6 +19,7 @@ public class Character : Entity
     }
 
     public ulong UserId { get; private set; }
+    public ulong GuildId { get; private set; }
     public string CharacterName { get; private set; }
     public Class CharacterClass { get; private set; }
     public Race CharacterRace { get; private set; }
@@ -93,6 +96,9 @@ public class Character : Entity
         get
         {
             var weapon = Equipment.Weapon;
+            if (weapon == null)
+                return new Damage(DamageType.Physical, 1);
+
             var dmgFromAttributes = weapon.DamageAttribute switch
             {
                 CharacterAttribute.Strength => Stength + (int) (Vitality * 0.7) + (int) (Agility * 0.7) +
