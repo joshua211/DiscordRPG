@@ -7,9 +7,9 @@ namespace DiscordRPG.Application.Services;
 
 public class CharacterService : ICharacterService
 {
-    private readonly Mediator mediator;
+    private readonly IMediator mediator;
 
-    public CharacterService(Mediator mediator)
+    public CharacterService(IMediator mediator)
     {
         this.mediator = mediator;
     }
