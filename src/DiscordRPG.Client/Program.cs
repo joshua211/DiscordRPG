@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using DiscordRPG.Application;
 using DiscordRPG.Application.Settings;
+using DiscordRPG.Client.Handlers;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +16,6 @@ namespace DiscordRPG.Client;
 public class Program
 {
     public static IConfigurationRoot Config { get; private set; }
-    public static CommandHandler CommandHandler { get; private set; }
 
     public static void Main(string[] args)
     {
@@ -40,8 +40,10 @@ public class Program
         await client.LoginAsync(TokenType.Bot, token);
         await client.StartAsync();
 
-        CommandHandler = new CommandHandler(client, new CommandService(), serviceProvider);
-        await CommandHandler.InstallAsync();
+        foreach (var handler in serviceProvider.GetServices<IHandler>())
+        {
+            await handler.InstallAsync();
+        }
 
         await Task.Delay(-1);
     }
@@ -64,8 +66,13 @@ public class Program
 
         services.AddSingleton<DiscordSocketClient>();
         services.AddMediatR(typeof(Core.Core).Assembly, typeof(Application.Application).Assembly);
+        services.AddSingleton<IHandler, ApplicationCommandHandler>();
+        services.AddSingleton<IHandler, MessageCommandHandler>();
+        services.AddSingleton<IHandler, ServerHandler>();
+        services.AddSingleton<ApplicationCommandHandler, ApplicationCommandHandler>();
+        services.AddSingleton<CommandService>(new CommandService());
         services.AddApplication();
-        CommandHandler.AddCommands(services);
+        ApplicationCommandHandler.AddCommands(services);
 
         return services.BuildServiceProvider();
     }
