@@ -1,4 +1,5 @@
-﻿using DiscordRPG.Core.Repositories;
+﻿using DiscordRPG.Core.Events;
+using DiscordRPG.Core.Repositories;
 using MediatR;
 
 namespace DiscordRPG.Core.Commands;
@@ -24,6 +25,7 @@ public class DeleteGuildCommandHandler : CommandHandler<DeleteGuildCommand>
         }
 
         await guildRepository.DeleteGuildAsync(request.Id, cancellationToken);
+        await mediator.Publish(new GuildDeleted(guild), cancellationToken: cancellationToken);
 
         return ExecutionResult.Success();
     }
