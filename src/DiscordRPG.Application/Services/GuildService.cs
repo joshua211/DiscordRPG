@@ -44,7 +44,7 @@ public class GuildService : ApplicationService, IGuildService
         using var ctx = TransactionBegin();
         try
         {
-            var guild = new Guild(guildId, guildName, guildHallId, dungeonHallId);
+            var guild = new Guild(guildId, guildName, guildHallId, dungeonHallId, new List<ulong>());
             var cmd = new CreateGuildCommand(guild);
 
             var result = await PublishAsync(ctx, cmd, token);

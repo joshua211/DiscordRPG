@@ -9,8 +9,11 @@ namespace DiscordRPG.Application.Services;
 
 public class CharacterService : ApplicationService, ICharacterService
 {
-    public CharacterService(ILogger logger, IMediator mediator) : base(mediator, logger)
+    private readonly IGuildService guildService;
+
+    public CharacterService(ILogger logger, IMediator mediator, IGuildService guildService) : base(mediator, logger)
     {
+        this.guildService = guildService;
     }
 
     public async Task<Result<Character>> CreateCharacterAsync(ulong userId, ulong guildId, string name,

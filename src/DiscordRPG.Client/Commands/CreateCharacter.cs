@@ -11,11 +11,14 @@ namespace DiscordRPG.Client.Commands;
 public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
 {
     private readonly ICharacterService characterService;
+    private readonly IGuildService guildService;
 
-    public CreateCharacter(DiscordSocketClient client, ICharacterService characterService, ILogger logger) : base(
+    public CreateCharacter(DiscordSocketClient client, ICharacterService characterService, ILogger logger,
+        IGuildService guildService) : base(
         client, logger)
     {
         this.characterService = characterService;
+        this.guildService = guildService;
     }
 
     public override string CommandName => "create-character";
@@ -40,6 +43,20 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
 
     protected override async Task Handle(SocketSlashCommand command, CreateCharacterDialog dialog)
     {
+        var user = command.User as SocketGuildUser;
+        var result = await guildService.GetGuildAsync(user.Guild.Id);
+        if (!result.WasSuccessful)
+        {
+            await command.RespondAsync("No guild was set up for this server!");
+            return;
+        }
+
+        if (result.Value.Characters.Contains(user.Id))
+        {
+            await command.RespondAsync("You can only create one character on each server!");
+            return;
+        }
+
         var name = command.Data.Options.First().Value as string;
         dialog.Name = name;
 
