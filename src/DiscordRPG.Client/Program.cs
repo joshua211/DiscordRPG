@@ -4,10 +4,16 @@ using Discord.WebSocket;
 using DiscordRPG.Application;
 using DiscordRPG.Application.Settings;
 using DiscordRPG.Client.Handlers;
+using Hangfire;
+using Hangfire.Mongo;
+using Hangfire.Mongo.Migration.Strategies;
+using Hangfire.Mongo.Migration.Strategies.Backup;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 using Serilog;
 using Serilog.Events;
 
@@ -21,6 +27,7 @@ public class Program
     {
         Serilog.Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            .MinimumLevel.Override("Hangfire", LogEventLevel.Warning)
             .MinimumLevel.Debug()
             .Enrich.FromLogContext()
             .WriteTo.Console()
@@ -31,12 +38,13 @@ public class Program
 
     public async Task MainAsync()
     {
-        var serviceProvider = ConfigureServices();
+        var host = new HostBuilder().ConfigureServices(collection => ConfigureServices(collection)).Build();
+        var serviceProvider = host.Services;
+
         var client = serviceProvider.GetService<DiscordSocketClient>();
         client.Log += LogClientMessage;
 
         var token = Config.GetSection("Bot")["Token"];
-
         await client.LoginAsync(TokenType.Bot, token);
         await client.StartAsync();
 
@@ -45,25 +53,29 @@ public class Program
             await handler.InstallAsync();
         }
 
-        await Task.Delay(-1);
+        await host.RunAsync();
     }
 
-    private IServiceProvider ConfigureServices()
+    private IServiceProvider ConfigureServices(IServiceCollection services)
     {
-        var services = new ServiceCollection();
         Config = new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory).AddJsonFile("appsettings.json", false)
             .Build();
+        //Common
         services.AddSingleton(Config);
         services.AddSingleton<ILogger>(Log.Logger);
 
+        //Database Settings
         services.Configure<CharacterDatabaseSettings>(Config.GetSection(nameof(CharacterDatabaseSettings)));
         services.AddSingleton<ICharacterDatabaseSettings>(sp =>
             sp.GetRequiredService<IOptions<CharacterDatabaseSettings>>().Value);
-
         services.Configure<GuildDatabaseSettings>(Config.GetSection(nameof(GuildDatabaseSettings)));
         services.AddSingleton<IGuildDatabaseSettings>(sp =>
             sp.GetRequiredService<IOptions<GuildDatabaseSettings>>().Value);
+        services.Configure<ActivityDatabaseSettings>(Config.GetSection(nameof(ActivityDatabaseSettings)));
+        services.AddSingleton<IActivityDatabaseSettings>(sp =>
+            sp.GetRequiredService<IOptions<ActivityDatabaseSettings>>().Value);
 
+        //Services
         services.AddSingleton<DiscordSocketClient>();
         services.AddMediatR(typeof(Core.Core).Assembly, typeof(Application.Application).Assembly);
         services.AddSingleton<ApplicationCommandHandler>();
@@ -73,6 +85,21 @@ public class Program
         services.AddSingleton(new CommandService());
         services.AddApplication();
         ApplicationCommandHandler.AddCommands(services);
+
+        //Hangfire
+        services.AddHangfire(config => { config.UseSerilogLogProvider(); });
+        JobStorage.Current = new MongoStorage(
+            MongoClientSettings.FromConnectionString(Config.GetSection("Hangfire")["ConnectionString"]), "Hangfire",
+            new MongoStorageOptions()
+            {
+                MigrationOptions = new MongoMigrationOptions
+                {
+                    MigrationStrategy = new MigrateMongoMigrationStrategy(),
+                    BackupStrategy = new CollectionMongoBackupStrategy(),
+                },
+                CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection
+            });
+        services.AddHangfireServer();
 
         return services.BuildServiceProvider();
     }

@@ -13,8 +13,10 @@ public static class Application
         return collection
             .AddTransient<ICharacterService, CharacterService>()
             .AddTransient<IGuildService, GuildService>()
+            .AddTransient<IActivityService, ActivityService>()
             .AddTransient<ICharacterRepository, CharacterRepository>()
             .AddTransient<IGuildRepository, GuildRepository>()
+            .AddTransient<IActivityRepository, ActivityRepository>()
             .AddTransient<IGuildMessenger, GuildMessenger>();
     }
 }
