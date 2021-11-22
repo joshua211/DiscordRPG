@@ -48,12 +48,14 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
         if (!result.WasSuccessful)
         {
             await command.RespondAsync("No guild was set up for this server!");
+            EndDialog(user.Id);
             return;
         }
 
         if (result.Value.Characters.Contains(user.Id))
         {
             await command.RespondAsync("You can only create one character on each server!");
+            EndDialog(user.Id);
             return;
         }
 
@@ -129,6 +131,8 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
         if (!result.WasSuccessful)
         {
             await component.RespondAsync("Something went wrong! " + result.ErrorMessage);
+            EndDialog(component.User.Id);
+
             return;
         }
 
@@ -137,5 +141,6 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
             properties.Components = null;
             properties.Content = $"Welcome, {dialog.Name}!";
         });
+        EndDialog(component.User.Id);
     }
 }

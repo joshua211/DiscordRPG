@@ -33,6 +33,11 @@ public abstract class DialogCommandBase<T> : CommandBase where T : Dialog, new()
         await HandleButton(component, id, dialog);
     }
 
+    protected void EndDialog(ulong id)
+    {
+        dialogs[id] = null;
+    }
+
     protected abstract Task HandleSelection(SocketMessageComponent component, string id, T dialog);
 
     protected abstract Task HandleButton(SocketMessageComponent component, string id, T dialog);
