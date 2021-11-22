@@ -3,11 +3,11 @@ using MediatR;
 
 namespace DiscordRPG.Core.Commands;
 
-public class CreateGuildHandler : CommandHandler<CreateGuildCommand>
+public class CreateGuildCommandHandler : CommandHandler<CreateGuildCommand>
 {
     private readonly IGuildRepository repository;
 
-    public CreateGuildHandler(IMediator mediator, IGuildRepository repository) : base(mediator)
+    public CreateGuildCommandHandler(IMediator mediator, IGuildRepository repository) : base(mediator)
     {
         this.repository = repository;
     }

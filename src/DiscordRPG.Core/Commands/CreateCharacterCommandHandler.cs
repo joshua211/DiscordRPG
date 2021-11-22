@@ -4,13 +4,13 @@ using MediatR;
 
 namespace DiscordRPG.Core.Commands;
 
-public class CreateCharacterHandler : CommandHandler<CreateCharacterCommand>
+public class CreateCharacterCommandHandler : CommandHandler<CreateCharacterCommand>
 {
     private readonly ICharacterRepository characterRepository;
     private readonly IGuildRepository guildRepository;
 
 
-    public CreateCharacterHandler(ICharacterRepository characterRepository, IMediator mediator,
+    public CreateCharacterCommandHandler(ICharacterRepository characterRepository, IMediator mediator,
         IGuildRepository guildRepository) : base(mediator)
     {
         this.characterRepository = characterRepository;

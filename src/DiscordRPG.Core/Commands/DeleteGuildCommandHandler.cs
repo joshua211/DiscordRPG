@@ -3,11 +3,11 @@ using MediatR;
 
 namespace DiscordRPG.Core.Commands;
 
-public class DeleteGuildHandler : CommandHandler<DeleteGuildCommand>
+public class DeleteGuildCommandHandler : CommandHandler<DeleteGuildCommand>
 {
     private readonly IGuildRepository guildRepository;
 
-    public DeleteGuildHandler(IMediator mediator, IGuildRepository guildRepository) : base(mediator)
+    public DeleteGuildCommandHandler(IMediator mediator, IGuildRepository guildRepository) : base(mediator)
     {
         this.guildRepository = guildRepository;
     }
