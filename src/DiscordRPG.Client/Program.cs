@@ -58,6 +58,10 @@ public class Program
         services.AddSingleton<ICharacterDatabaseSettings>(sp =>
             sp.GetRequiredService<IOptions<CharacterDatabaseSettings>>().Value);
 
+        services.Configure<GuildDatabaseSettings>(Config.GetSection(nameof(GuildDatabaseSettings)));
+        services.AddSingleton<IGuildDatabaseSettings>(sp =>
+            sp.GetRequiredService<IOptions<GuildDatabaseSettings>>().Value);
+
         services.AddSingleton<DiscordSocketClient>();
         services.AddMediatR(typeof(Core.Core).Assembly, typeof(Application.Application).Assembly);
         services.AddApplication();

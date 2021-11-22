@@ -12,6 +12,8 @@ public static class Application
     {
         return collection
             .AddTransient<ICharacterService, CharacterService>()
-            .AddTransient<ICharacterRepository, CharacterRepository>();
+            .AddTransient<IGuildService, GuildService>()
+            .AddTransient<ICharacterRepository, CharacterRepository>()
+            .AddTransient<IGuildRepository, GuildRepository>();
     }
 }
