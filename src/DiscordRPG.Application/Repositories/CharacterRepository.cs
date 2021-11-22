@@ -26,4 +26,9 @@ public class CharacterRepository : ICharacterRepository
     {
         await characters.InsertOneAsync(character, cancellationToken: token);
     }
+
+    public async Task DeleteCharacterAsync(ulong charId, CancellationToken cancellationToken)
+    {
+        await characters.DeleteOneAsync(c => c.UserId == charId, cancellationToken: cancellationToken);
+    }
 }
