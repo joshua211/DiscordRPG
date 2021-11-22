@@ -14,6 +14,7 @@ public static class Application
             .AddTransient<ICharacterService, CharacterService>()
             .AddTransient<IGuildService, GuildService>()
             .AddTransient<ICharacterRepository, CharacterRepository>()
-            .AddTransient<IGuildRepository, GuildRepository>();
+            .AddTransient<IGuildRepository, GuildRepository>()
+            .AddTransient<IGuildMessenger, GuildMessenger>();
     }
 }

@@ -27,6 +27,11 @@ public class GuildRepository : IGuildRepository
         await guilds.InsertOneAsync(guild, null, cancellationToken);
     }
 
+    public async Task UpdateGuildAsync(Guild guild, CancellationToken cancellationToken)
+    {
+        await guilds.ReplaceOneAsync(g => g.ServerId == guild.ServerId, guild, cancellationToken: cancellationToken);
+    }
+
     public async Task DeleteGuildAsync(ulong guildId, CancellationToken cancellationToken)
     {
         await guilds.DeleteOneAsync(g => g.ServerId == guildId, cancellationToken);

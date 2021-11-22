@@ -22,6 +22,7 @@ public class ServerHandler : IHandler
 
     public Task InstallAsync()
     {
+        logger.Information("Installing ServerHandler");
         client.JoinedGuild += SetupServer;
         client.LeftGuild += CleanServer;
 

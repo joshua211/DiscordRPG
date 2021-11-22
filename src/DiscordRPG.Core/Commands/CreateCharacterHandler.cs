@@ -7,11 +7,14 @@ namespace DiscordRPG.Core.Commands;
 public class CreateCharacterHandler : CommandHandler<CreateCharacterCommand>
 {
     private readonly ICharacterRepository characterRepository;
+    private readonly IGuildRepository guildRepository;
 
 
-    public CreateCharacterHandler(ICharacterRepository characterRepository, IMediator mediator) : base(mediator)
+    public CreateCharacterHandler(ICharacterRepository characterRepository, IMediator mediator,
+        IGuildRepository guildRepository) : base(mediator)
     {
         this.characterRepository = characterRepository;
+        this.guildRepository = guildRepository;
     }
 
     public override async Task<ExecutionResult> Handle(CreateCharacterCommand command,
@@ -20,6 +23,10 @@ public class CreateCharacterHandler : CommandHandler<CreateCharacterCommand>
         try
         {
             await characterRepository.SaveCharacterAsync(command.Character, cancellationToken);
+
+            var guild = await guildRepository.GetGuildAsync(command.Character.GuildId, cancellationToken);
+            guild.Characters.Add(command.Character.UserId);
+            await guildRepository.UpdateGuildAsync(guild, cancellationToken);
 
             await mediator.Publish(new CharacterCreated(command.Character), cancellationToken);
 

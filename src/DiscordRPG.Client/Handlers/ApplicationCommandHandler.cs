@@ -25,6 +25,7 @@ public class ApplicationCommandHandler : IHandler
 
     public Task InstallAsync()
     {
+        logger.Information("Installing ApplicationCommandHandler");
         client.SlashCommandExecuted += HandleSlashCommandAsync;
         LoadSlashCommands();
 
