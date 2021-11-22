@@ -8,4 +8,6 @@ public interface IGuildService
 
     Task<Result<Guild>> CreateGuildAsync(ulong guildId, string guildName, ulong guildHallId, ulong dungeonHallId,
         CancellationToken token = default);
+
+    Task<Result> DeleteGuildAsync(ulong id, CancellationToken cancellationToken = default);
 }

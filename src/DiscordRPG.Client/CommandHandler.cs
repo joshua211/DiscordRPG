@@ -81,6 +81,7 @@ public class CommandHandler
     {
         try
         {
+            await guildService.DeleteGuildAsync(socketGuild.Id);
             logger.Information("Setting up channels for Guild {Id}", socketGuild.Id);
             var category = await socketGuild.CreateCategoryChannelAsync("--RPG--");
 

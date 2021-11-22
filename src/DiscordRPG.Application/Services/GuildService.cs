@@ -62,4 +62,24 @@ public class GuildService : ApplicationService, IGuildService
             return Result<Guild>.Failure(e.Message);
         }
     }
+
+    public async Task<Result> DeleteGuildAsync(ulong id, CancellationToken cancellationToken = default)
+    {
+        using var ctx = TransactionBegin();
+        try
+        {
+            var cmd = new DeleteGuildCommand(id);
+            var result = await PublishAsync(ctx, cmd, cancellationToken);
+
+            if (!result.WasSuccessful)
+                return Result.Failure("Failed to delete guild: " + result.ErrorMessage);
+
+            return Result.Success();
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result.Failure(e.Message);
+        }
+    }
 }
