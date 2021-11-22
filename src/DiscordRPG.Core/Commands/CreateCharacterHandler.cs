@@ -14,10 +14,20 @@ public class CreateCharacterHandler : CommandHandler<CreateCharacterCommand>
         this.characterRepository = characterRepository;
     }
 
-    public override async Task Handle(CreateCharacterCommand command, CancellationToken cancellationToken)
+    public override async Task<ExecutionResult> Handle(CreateCharacterCommand command,
+        CancellationToken cancellationToken)
     {
-        await characterRepository.SaveCharacterAsync(command.Character, cancellationToken);
+        try
+        {
+            await characterRepository.SaveCharacterAsync(command.Character, cancellationToken);
 
-        await mediator.Publish(new CharacterCreated(command.Character), cancellationToken);
+            await mediator.Publish(new CharacterCreated(command.Character), cancellationToken);
+
+            return ExecutionResult.Success();
+        }
+        catch (Exception e)
+        {
+            return ExecutionResult.Failure(e.Message);
+        }
     }
 }

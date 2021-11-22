@@ -2,7 +2,7 @@
 
 namespace DiscordRPG.Common;
 
-public abstract class CommandHandler<T> : INotificationHandler<T> where T : INotification
+public abstract class CommandHandler<T> : IRequestHandler<T, ExecutionResult> where T : IRequest<ExecutionResult>
 {
     protected readonly IMediator mediator;
 
@@ -11,5 +11,5 @@ public abstract class CommandHandler<T> : INotificationHandler<T> where T : INot
         this.mediator = mediator;
     }
 
-    public abstract Task Handle(T command, CancellationToken cancellationToken);
+    public abstract Task<ExecutionResult> Handle(T request, CancellationToken cancellationToken);
 }

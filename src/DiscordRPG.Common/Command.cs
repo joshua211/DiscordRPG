@@ -2,6 +2,6 @@
 
 namespace DiscordRPG.Common;
 
-public abstract class Command : INotification
+public abstract class Command : IRequest<ExecutionResult>
 {
 }
