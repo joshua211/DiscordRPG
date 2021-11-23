@@ -2,7 +2,7 @@
 using DiscordRPG.Core.Repositories;
 using MediatR;
 
-namespace DiscordRPG.Core.Commands;
+namespace DiscordRPG.Core.Commands.Characters;
 
 public class CreateCharacterCommandHandler : CommandHandler<CreateCharacterCommand>
 {

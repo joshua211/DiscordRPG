@@ -1,7 +1,7 @@
 ﻿using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Queries;
 using DiscordRPG.Common;
-using DiscordRPG.Core.Commands;
+using DiscordRPG.Core.Commands.Characters;
 using MediatR;
 using Serilog;
 

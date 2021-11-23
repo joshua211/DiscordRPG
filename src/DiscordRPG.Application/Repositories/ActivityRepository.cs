@@ -27,4 +27,9 @@ public class ActivityRepository : IActivityRepository
     {
         await activities.InsertOneAsync(activity, cancellationToken: cancellationToken);
     }
+
+    public async Task DeleteActivityAsync(string id, CancellationToken cancellationToken)
+    {
+        await activities.DeleteOneAsync(a => a.ID == id, cancellationToken: cancellationToken);
+    }
 }

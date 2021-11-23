@@ -1,7 +1,7 @@
 ﻿using DiscordRPG.Core.Repositories;
 using MediatR;
 
-namespace DiscordRPG.Core.Commands;
+namespace DiscordRPG.Core.Commands.Activities;
 
 public class CreateActivityCommandHandler : CommandHandler<CreateActivityCommand>
 {

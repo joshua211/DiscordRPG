@@ -1,4 +1,4 @@
-﻿namespace DiscordRPG.Core.Commands;
+﻿namespace DiscordRPG.Core.Commands.Guilds;
 
 public class DeleteGuildCommand : Command
 {

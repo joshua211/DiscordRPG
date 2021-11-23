@@ -1,7 +1,7 @@
 ﻿using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Queries;
 using DiscordRPG.Common;
-using DiscordRPG.Core.Commands;
+using DiscordRPG.Core.Commands.Activities;
 using Hangfire;
 using MediatR;
 using Serilog;
@@ -44,7 +44,6 @@ public class ActivityService : ApplicationService, IActivityService
 
     public async Task ExecuteActivityAsync(string activityId)
     {
-        logger.Information("Executing activity!");
         var activity = await mediator.Send(new GetActivityQuery(activityId));
         if (activity is null)
             return;
@@ -55,5 +54,7 @@ public class ActivityService : ApplicationService, IActivityService
                 logger.Information("Executed activity!");
                 break;
         }
+
+        await mediator.Send(new DeleteActivityCommand(activityId));
     }
 }

@@ -1,6 +1,6 @@
 ﻿using DiscordRPG.Core.Entities;
 
-namespace DiscordRPG.Core.Commands;
+namespace DiscordRPG.Core.Commands.Guilds;
 
 public class CreateGuildCommand : Command
 {
