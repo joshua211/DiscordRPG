@@ -1,15 +1,18 @@
 ﻿using DiscordRPG.Application.Settings;
 using DiscordRPG.Core.Repositories;
 using MongoDB.Driver;
+using Serilog;
 
 namespace DiscordRPG.Application.Repositories;
 
 public class ActivityRepository : IActivityRepository
 {
     private readonly IMongoCollection<Activity> activities;
+    private readonly ILogger logger;
 
-    public ActivityRepository(IActivityDatabaseSettings databaseSettings)
+    public ActivityRepository(IActivityDatabaseSettings databaseSettings, ILogger logger)
     {
+        this.logger = logger;
         var client = new MongoClient(databaseSettings.ConnectionString);
         activities = client.GetDatabase(databaseSettings.DatabaseName)
             .GetCollection<Activity>(databaseSettings.CollectionName);
@@ -18,18 +21,25 @@ public class ActivityRepository : IActivityRepository
 
     public async Task<Activity> GetActivityAsync(string id, CancellationToken token)
     {
+        logger.Verbose("Getting Activity {ID} ", id);
         var result = await activities.FindAsync(a => a.ID == id, cancellationToken: token);
 
-        return await result.FirstOrDefaultAsync(token);
+        var activity = await result.FirstOrDefaultAsync(token);
+
+        logger.Verbose("Found activity: {@Activity}", activity);
+        return activity;
     }
 
     public async Task SaveActivityAsync(Activity activity, CancellationToken cancellationToken)
     {
+        logger.Verbose("Saving activity {@Activity}", activity);
         await activities.InsertOneAsync(activity, cancellationToken: cancellationToken);
     }
 
     public async Task DeleteActivityAsync(string id, CancellationToken cancellationToken)
     {
-        await activities.DeleteOneAsync(a => a.ID == id, cancellationToken: cancellationToken);
+        logger.Verbose("Deleting activity with id {Id}", id);
+        var result = await activities.DeleteOneAsync(a => a.ID == id, cancellationToken: cancellationToken);
+        logger.Verbose("Deleted {Count} activities", result.DeletedCount);
     }
 }

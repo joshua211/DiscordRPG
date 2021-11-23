@@ -7,17 +7,19 @@ namespace DiscordRPG.Client.Handlers;
 public class ServerHandler : IHandler
 {
     private readonly ApplicationCommandHandler applicationCommandHandler;
+    private readonly ICharacterService characterService;
     private readonly DiscordSocketClient client;
     private readonly IGuildService guildService;
     private readonly ILogger logger;
 
     public ServerHandler(DiscordSocketClient client, IGuildService guildService, ILogger logger,
-        ApplicationCommandHandler applicationCommandHandler)
+        ApplicationCommandHandler applicationCommandHandler, ICharacterService characterService)
     {
         this.client = client;
         this.guildService = guildService;
         this.logger = logger;
         this.applicationCommandHandler = applicationCommandHandler;
+        this.characterService = characterService;
     }
 
     public Task InstallAsync()
@@ -29,13 +31,22 @@ public class ServerHandler : IHandler
         return Task.CompletedTask;
     }
 
-    private async Task CleanServer(SocketGuild socketGuild)
+    public async Task CleanServer(SocketGuild socketGuild)
     {
         try
         {
-            await guildService.DeleteGuildAsync(socketGuild.Id);
+            var result = await guildService.GetGuildAsync(socketGuild.Id);
+            if (!result.WasSuccessful)
+            {
+                return;
+            }
 
-            //TODO delete characters
+            await socketGuild.GetChannel(result.Value.GuildHallId).DeleteAsync();
+            await socketGuild.GetChannel(result.Value.DungeonHallId).DeleteAsync();
+            var cat = socketGuild.CategoryChannels.FirstOrDefault(c => c.Name == "--RPG--");
+            await cat?.DeleteAsync();
+
+            await guildService.DeleteGuildAsync(socketGuild.Id);
         }
         catch (Exception e)
         {
@@ -43,7 +54,7 @@ public class ServerHandler : IHandler
         }
     }
 
-    private async Task SetupServer(SocketGuild socketGuild)
+    public async Task SetupServer(SocketGuild socketGuild)
     {
         try
         {

@@ -1,23 +1,40 @@
 ﻿using Discord.Commands;
 using DiscordRPG.Application.Interfaces.Services;
-using DiscordRPG.Core.Enums;
+using DiscordRPG.Client.Handlers;
 
 namespace DiscordRPG.Client.Modules;
 
+[Group("rpg")]
+[RequireOwner]
 public class SettingsModule : ModuleBase<SocketCommandContext>
 {
-    private readonly IActivityService activityService;
+    private readonly IGuildService guildService;
+    private readonly ServerHandler serverHandler;
 
-    public SettingsModule(IActivityService activityService)
+    public SettingsModule(ServerHandler serverHandler, IGuildService guildService)
     {
-        this.activityService = activityService;
+        this.serverHandler = serverHandler;
+        this.guildService = guildService;
     }
 
-    [Command("testActivity")]
-    public async Task TestActivity()
+    [Command("delete")]
+    public async Task DeleteGuildAsync()
     {
-        await activityService.QueueActivityAsync(Context.User.Id, DateTime.Now, TimeSpan.FromSeconds(10),
-            ActivityType.Unknown);
-        await ReplyAsync("Queued activity");
+        await serverHandler.CleanServer(Context.Guild);
+        await ReplyAsync("Cleanup complete");
+    }
+
+    [Command("create")]
+    public async Task CreateGuildAsync()
+    {
+        await serverHandler.SetupServer(Context.Guild);
+        await ReplyAsync("Created guild");
+    }
+
+    [Command("installcommands")]
+    public async Task InstallCommands()
+    {
+        await serverHandler.InstallGuildCommands(Context.Guild);
+        await ReplyAsync("Installed commands");
     }
 }

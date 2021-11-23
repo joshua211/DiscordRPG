@@ -19,6 +19,9 @@ public class DeleteGuildCommandHandler : CommandHandler<DeleteGuildCommand>
     public override async Task<ExecutionResult> Handle(DeleteGuildCommand request, CancellationToken cancellationToken)
     {
         var guild = await guildRepository.GetGuildAsync(request.Id, cancellationToken);
+        if (guild is null)
+            return ExecutionResult.Success();
+
         foreach (var charId in guild.Characters)
         {
             await characterRepository.DeleteCharacterAsync(charId, cancellationToken);

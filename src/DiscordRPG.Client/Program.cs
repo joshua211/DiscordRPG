@@ -79,9 +79,10 @@ public class Program
         services.AddSingleton<DiscordSocketClient>();
         services.AddMediatR(typeof(Core.Core).Assembly, typeof(Application.Application).Assembly);
         services.AddSingleton<ApplicationCommandHandler>();
+        services.AddSingleton<ServerHandler>();
         services.AddSingleton<IHandler>(x => x.GetRequiredService<ApplicationCommandHandler>());
+        services.AddSingleton<IHandler>(x => x.GetRequiredService<ServerHandler>());
         services.AddSingleton<IHandler, MessageCommandHandler>();
-        services.AddSingleton<IHandler, ServerHandler>();
         services.AddSingleton(new CommandService());
         services.AddApplication();
         ApplicationCommandHandler.AddCommands(services);
