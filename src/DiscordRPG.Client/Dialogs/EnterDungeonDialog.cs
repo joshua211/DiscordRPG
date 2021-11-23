@@ -11,4 +11,5 @@ public class EnterDungeonDialog : Dialog
     }
 
     public ulong DungeonId { get; set; }
+    public string CharId { get; set; }
 }

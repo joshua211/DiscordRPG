@@ -4,4 +4,5 @@ public enum ActivityType
 {
     Unknown,
     Dungeon,
+    SearchDungeon,
 }

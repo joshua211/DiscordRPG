@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Dialogs;
+using DiscordRPG.Core.ValueObjects;
 using Serilog;
 using ActivityType = DiscordRPG.Core.Enums.ActivityType;
 
@@ -12,11 +13,14 @@ namespace DiscordRPG.Client.Commands;
 public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
 {
     private readonly IActivityService activityService;
+    private readonly ICharacterService characterService;
 
-    public EnterDungeon(DiscordSocketClient client, ILogger logger, IActivityService activityService) : base(client,
+    public EnterDungeon(DiscordSocketClient client, ILogger logger, IActivityService activityService,
+        ICharacterService characterService) : base(client,
         logger)
     {
         this.activityService = activityService;
+        this.characterService = characterService;
     }
 
     public override string CommandName => "enter";
@@ -39,7 +43,16 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
 
     protected override async Task Handle(SocketSlashCommand command, EnterDungeonDialog dialog)
     {
+        var user = command.User as SocketGuildUser;
+        var result = await characterService.GetCharacterAsync(user.Id, user.Guild.Id);
+        if (!result.WasSuccessful)
+        {
+            EndDialog(dialog.UserId);
+            await command.RespondAsync("Please create a character first!");
+        }
+
         dialog.DungeonId = command.Channel.Id;
+        dialog.CharId = result.Value.ID;
 
         var component = new ComponentBuilder()
             .WithButton("Enter Dungeon", CommandName + ".enter")
@@ -78,8 +91,8 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
     private async Task HandleEnterDungeon(SocketMessageComponent component, EnterDungeonDialog dialog)
     {
         //get dungeon
-        await activityService.QueueActivityAsync(dialog.UserId, DateTime.Now, TimeSpan.FromSeconds(15),
-            ActivityType.Dungeon,
+        await activityService.QueueActivityAsync(dialog.CharId, TimeSpan.FromSeconds(15),
+            ActivityType.Dungeon, new ActivityData(),
             CancellationToken.None);
 
         await component.UpdateAsync(properties =>

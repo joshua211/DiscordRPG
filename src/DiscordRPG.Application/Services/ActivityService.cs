@@ -14,13 +14,13 @@ public class ActivityService : ApplicationService, IActivityService
     {
     }
 
-    public async Task<Result> QueueActivityAsync(ulong userId, DateTime start, TimeSpan duration, ActivityType type,
+    public async Task<Result> QueueActivityAsync(string charId, TimeSpan duration, ActivityType type, ActivityData data,
         CancellationToken cancellationToken = default)
     {
         using var ctx = TransactionBegin();
         try
         {
-            var activity = new Activity(userId, start, duration, ActivityType.Unknown);
+            var activity = new Activity(charId, DateTime.Now, duration, type, data);
             var jobId = BackgroundJob.Schedule<ActivityService>(x => ExecuteActivityAsync(activity.ID), duration);
             activity.JobId = jobId;
 
@@ -42,6 +42,28 @@ public class ActivityService : ApplicationService, IActivityService
         }
     }
 
+    public async Task<Result<Activity>> GetCharacterActivityAsync(string charId, CancellationToken token)
+    {
+        using var ctx = TransactionBegin();
+        try
+        {
+            var query = new GetCharacterActivityQuery(charId);
+            var activity = await ProcessAsync(ctx, query, token);
+
+            if (activity is null)
+            {
+                return Result<Activity>.Failure("No activity found");
+            }
+
+            return Result<Activity>.Success(activity);
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result<Activity>.Failure(e.Message);
+        }
+    }
+
     public async Task ExecuteActivityAsync(string activityId)
     {
         var activity = await mediator.Send(new GetActivityQuery(activityId));
@@ -52,6 +74,12 @@ public class ActivityService : ApplicationService, IActivityService
         {
             case ActivityType.Unknown:
                 logger.Information("Executed activity!");
+                break;
+            case ActivityType.SearchDungeon:
+                logger.Information("Searched dungeon for player level {Level}", activity.Data.PlayerLevel);
+                break;
+            default:
+                logger.Warning("Activity is not handled, {Name}", activity.Type);
                 break;
         }
 

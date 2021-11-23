@@ -1,6 +1,5 @@
 ﻿using Discord.Commands;
 using DiscordRPG.Application.Interfaces.Services;
-using DiscordRPG.Core.Enums;
 
 namespace DiscordRPG.Client.Modules;
 
@@ -15,15 +14,6 @@ public class TestModule : ModuleBase<SocketCommandContext>
         public ActivityModule(IActivityService activityService)
         {
             this.activityService = activityService;
-        }
-
-        [Command]
-        public async Task TestActivityAsync()
-        {
-            await activityService.QueueActivityAsync(Context.User.Id, DateTime.Now, TimeSpan.FromSeconds(5),
-                ActivityType.Unknown);
-
-            await ReplyAsync("Testing activity, check logs");
         }
     }
 }

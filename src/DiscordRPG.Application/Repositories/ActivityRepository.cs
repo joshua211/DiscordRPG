@@ -1,4 +1,5 @@
-﻿using DiscordRPG.Application.Settings;
+﻿using System.Linq.Expressions;
+using DiscordRPG.Application.Settings;
 using DiscordRPG.Core.Repositories;
 using MongoDB.Driver;
 using Serilog;
@@ -41,5 +42,13 @@ public class ActivityRepository : IActivityRepository
         logger.Verbose("Deleting activity with id {Id}", id);
         var result = await activities.DeleteOneAsync(a => a.ID == id, cancellationToken: cancellationToken);
         logger.Verbose("Deleted {Count} activities", result.DeletedCount);
+    }
+
+    public async Task<IEnumerable<Activity>> FindAsync(Expression<Func<Activity, bool>> predicate,
+        CancellationToken cancellationToken)
+    {
+        var result = await activities.FindAsync(predicate, cancellationToken: cancellationToken);
+
+        return await result.ToListAsync(cancellationToken);
     }
 }

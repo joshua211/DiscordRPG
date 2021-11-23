@@ -2,17 +2,19 @@
 
 public class Activity : Entity
 {
-    public Activity(ulong userId, DateTime startTime, TimeSpan duration, ActivityType type)
+    public Activity(string charId, DateTime startTime, TimeSpan duration, ActivityType type, ActivityData data)
     {
-        UserId = userId;
+        CharId = charId;
         StartTime = startTime;
         Duration = duration;
         Type = type;
+        Data = data;
     }
 
-    public ulong UserId { get; private set; }
+    public string CharId { get; private set; }
     public DateTime StartTime { get; private set; }
     public TimeSpan Duration { get; private set; }
     public ActivityType Type { get; set; }
     public string JobId { get; set; }
+    public ActivityData Data { get; private set; }
 }
