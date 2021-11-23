@@ -2,5 +2,6 @@
 
 public enum ActivityType
 {
-    Unknown
+    Unknown,
+    Dungeon,
 }

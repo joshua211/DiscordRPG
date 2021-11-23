@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Client.Commands.Base;
 using Serilog;
 
 namespace DiscordRPG.Client.Commands;

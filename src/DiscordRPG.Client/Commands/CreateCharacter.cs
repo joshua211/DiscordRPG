@@ -2,6 +2,7 @@
 using Discord.Net;
 using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Core.ValueObjects;
 using Serilog;

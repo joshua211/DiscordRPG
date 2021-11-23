@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using Discord.WebSocket;
-using DiscordRPG.Client.Commands;
+using DiscordRPG.Client.Commands.Base;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 

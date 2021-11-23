@@ -1,6 +1,6 @@
 ﻿using Discord.WebSocket;
 
-namespace DiscordRPG.Client.Commands;
+namespace DiscordRPG.Client.Commands.Base;
 
 public interface IGuildCommand
 {

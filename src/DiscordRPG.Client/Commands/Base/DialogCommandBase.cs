@@ -2,7 +2,7 @@
 using DiscordRPG.Client.Dialogs;
 using Serilog;
 
-namespace DiscordRPG.Client.Commands;
+namespace DiscordRPG.Client.Commands.Base;
 
 public abstract class DialogCommandBase<T> : CommandBase where T : Dialog, new()
 {
@@ -36,6 +36,13 @@ public abstract class DialogCommandBase<T> : CommandBase where T : Dialog, new()
     protected void EndDialog(ulong id)
     {
         dialogs[id] = null;
+        logger.Debug("Ended dialog {Id}", id);
+    }
+
+    protected Task ComponentIdNotHandled(string id)
+    {
+        logger.Warning("Command does not handle the component id {Id}", id);
+        return Task.CompletedTask;
     }
 
     protected abstract Task HandleSelection(SocketMessageComponent component, string id, T dialog);

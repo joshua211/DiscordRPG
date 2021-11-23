@@ -1,7 +1,7 @@
 ﻿using Discord.WebSocket;
 using Serilog;
 
-namespace DiscordRPG.Client.Commands;
+namespace DiscordRPG.Client.Commands.Base;
 
 public abstract class CommandBase : IGuildCommand
 {
