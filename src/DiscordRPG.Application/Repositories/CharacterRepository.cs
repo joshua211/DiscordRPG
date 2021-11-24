@@ -10,12 +10,12 @@ public class CharacterRepository : ICharacterRepository
     private readonly IMongoCollection<Character> characters;
     private readonly ILogger logger;
 
-    public CharacterRepository(ICharacterDatabaseSettings databaseSettings, ILogger logger)
+    public CharacterRepository(IDatabaseSettings databaseSettings, ILogger logger)
     {
         this.logger = logger;
         var client = new MongoClient(databaseSettings.ConnectionString);
         characters = client.GetDatabase(databaseSettings.DatabaseName)
-            .GetCollection<Character>(databaseSettings.CollectionName);
+            .GetCollection<Character>(databaseSettings.CharacterCollectionName);
     }
 
     public async Task<Character> GetGuildCharacterAsync(ulong userId, ulong guildId, CancellationToken token = default)

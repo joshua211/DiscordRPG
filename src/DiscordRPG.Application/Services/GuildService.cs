@@ -44,8 +44,7 @@ public class GuildService : ApplicationService, IGuildService
         using var ctx = TransactionBegin();
         try
         {
-            var guild = new Guild(guildId, guildName, guildHallId, dungeonHallId, new List<ulong>(),
-                new List<Dungeon>());
+            var guild = new Guild(guildId, guildName, guildHallId, dungeonHallId, new List<ulong>());
             var cmd = new CreateGuildCommand(guild);
 
             var result = await PublishAsync(ctx, cmd, token);
@@ -84,43 +83,6 @@ public class GuildService : ApplicationService, IGuildService
         {
             TransactionError(ctx, e);
             return Result.Failure(e.Message);
-        }
-    }
-
-    public async Task<Result<Dungeon>> AddDungeonToGuildAsync(ulong guildId, ulong threadId, uint charLevel,
-        CancellationToken token = default)
-    {
-        using var ctx = TransactionBegin();
-        try
-        {
-            var guildResult = await GetGuildAsync(guildId, token);
-            if (!guildResult.WasSuccessful)
-            {
-                TransactionWarning(ctx, "No guild found to add the dungeon");
-
-                return Result<Dungeon>.Failure("No guild found");
-            }
-
-
-            //TODO generate dungeon
-            var dungeon = new Dungeon(threadId, charLevel, Rarity.Common, "SOme new name");
-            var cmd = new AddDungeonCommand(dungeon, guildResult.Value);
-
-            var result = await PublishAsync(ctx, cmd, token);
-            if (!result.WasSuccessful)
-            {
-                TransactionWarning(ctx, "Failed to create Dungeon with channelId: {ChannelId}, for guild: {GuildId}",
-                    true, threadId, guildId);
-
-                return Result<Dungeon>.Failure("Failed to create dungeon");
-            }
-
-            return Result<Dungeon>.Success(dungeon);
-        }
-        catch (Exception e)
-        {
-            TransactionError(ctx, e);
-            return Result<Dungeon>.Failure(e.Message);
         }
     }
 }

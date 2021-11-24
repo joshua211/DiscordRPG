@@ -15,9 +15,11 @@ public static class Application
             .AddTransient<ICharacterService, CharacterService>()
             .AddTransient<IGuildService, GuildService>()
             .AddTransient<IActivityService, ActivityService>()
+            .AddTransient<IDungeonService, DungeonService>()
             .AddTransient<ICharacterRepository, CharacterRepository>()
             .AddTransient<IGuildRepository, GuildRepository>()
             .AddTransient<IActivityRepository, ActivityRepository>()
+            .AddTransient<IDungeonRepository, DungeonRepository>()
             .AddTransient<IChannelManager, ChannelManager>();
     }
 }

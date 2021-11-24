@@ -10,22 +10,24 @@ namespace DiscordRPG.Application.Worker;
 public class ActivityWorker
 {
     private readonly IChannelManager channelManager;
-    private readonly IGuildService guildService;
+    private readonly IDungeonService dungeonService;
     private readonly ILogger logger;
     private readonly IMediator mediator;
 
-    public ActivityWorker(IMediator mediator, IChannelManager channelManager, IGuildService guildService,
+    public ActivityWorker(IMediator mediator, IChannelManager channelManager, IDungeonService dungeonService,
         ILogger logger)
     {
         this.mediator = mediator;
         this.channelManager = channelManager;
-        this.guildService = guildService;
+        this.dungeonService = dungeonService;
         this.logger = logger;
     }
 
     public async Task ExecuteActivityAsync(string activityId)
     {
+        var wasSuccess = true;
         logger.Debug("Executing activity with id {Id}", activityId);
+
         var activity = await mediator.Send(new GetActivityQuery(activityId));
         if (activity is null)
         {
@@ -45,6 +47,7 @@ public class ActivityWorker
                 }
                 catch (Exception e)
                 {
+                    wasSuccess = false;
                     logger.Error(e, "Failed to execute SearchDungeon");
                 }
 
@@ -55,7 +58,8 @@ public class ActivityWorker
         }
 
         await mediator.Send(new DeleteActivityCommand(activityId));
-        logger.Information("Successfully executed and removed Activity {Name} after {Duration}", activity.Type,
+        var word = wasSuccess ? "Successfully" : "Unsuccessfully";
+        logger.Information("{Word} executed and removed Activity {Name} after {Duration}", word, activity.Type,
             activity.Duration);
     }
 
@@ -63,16 +67,16 @@ public class ActivityWorker
     {
         var threadId = await channelManager.CreateDungeonThreadAsync(activity.Data.GuildId, "Dungeon");
 
-        var addDungeonResult = await guildService.AddDungeonToGuildAsync(activity.Data.GuildId, threadId,
+        var createDungeonResult = await dungeonService.CreateDungeonAsync(activity.Data.GuildId, threadId,
             activity.Data.PlayerLevel, CancellationToken.None);
 
-        if (!addDungeonResult.WasSuccessful)
+        if (!createDungeonResult.WasSuccessful)
         {
             logger.Warning("Failed to add dungeon from activity {Id}, deleting thread", activity.ID);
             await channelManager.DeleteDungeonThreadAsync(threadId);
         }
 
-        await channelManager.UpdateDungeonThreadNameAsync(threadId, addDungeonResult.Value.Name);
-        logger.Debug("Created Dungeon {Name} with Thread {Channel}", addDungeonResult.Value.Name, threadId);
+        await channelManager.UpdateDungeonThreadNameAsync(threadId, createDungeonResult.Value.Name);
+        logger.Debug("Created Dungeon {Name} with Thread {Channel}", createDungeonResult.Value.Name, threadId);
     }
 }

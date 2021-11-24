@@ -11,12 +11,12 @@ public class ActivityRepository : IActivityRepository
     private readonly IMongoCollection<Activity> activities;
     private readonly ILogger logger;
 
-    public ActivityRepository(IActivityDatabaseSettings databaseSettings, ILogger logger)
+    public ActivityRepository(IDatabaseSettings databaseSettings, ILogger logger)
     {
         this.logger = logger;
         var client = new MongoClient(databaseSettings.ConnectionString);
         activities = client.GetDatabase(databaseSettings.DatabaseName)
-            .GetCollection<Activity>(databaseSettings.CollectionName);
+            .GetCollection<Activity>(databaseSettings.ActivityCollectionName);
     }
 
 

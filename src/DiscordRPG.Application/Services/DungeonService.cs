@@ -1,0 +1,55 @@
+﻿using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Common;
+using DiscordRPG.Core.Commands.Dungeons;
+using MediatR;
+using Serilog;
+
+namespace DiscordRPG.Application.Services;
+
+public class DungeonService : ApplicationService, IDungeonService
+{
+    private readonly IGuildService guildService;
+
+    public DungeonService(IMediator mediator, ILogger logger, IGuildService guildService) : base(mediator, logger)
+    {
+        this.guildService = guildService;
+    }
+
+    public async Task<Result<Dungeon>> CreateDungeonAsync(ulong guildId, ulong threadId, uint charLevel,
+        CancellationToken token = default)
+    {
+        using var ctx = TransactionBegin();
+        try
+        {
+            var guildResult = await guildService.GetGuildAsync(guildId, token);
+            if (!guildResult.WasSuccessful)
+            {
+                TransactionWarning(ctx, "No guild found to add the dungeon");
+
+                return Result<Dungeon>.Failure("No guild found");
+            }
+
+
+            //TODO generate dungeon
+            var dungeon = new Dungeon(guildId, threadId, charLevel, Rarity.Common, "Some new name");
+            var cmd = new CreateDungeonCommand(dungeon);
+
+            var result = await PublishAsync(ctx, cmd, token);
+            if (!result.WasSuccessful)
+            {
+                TransactionError(ctx,
+                    "Failed to create Dungeon with channelId: {ChannelId}, for guild: {GuildId} because: {Reason}",
+                    threadId, guildId, result.ErrorMessage);
+
+                return Result<Dungeon>.Failure("Failed to create dungeon");
+            }
+
+            return Result<Dungeon>.Success(dungeon);
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result<Dungeon>.Failure(e.Message);
+        }
+    }
+}

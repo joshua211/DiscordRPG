@@ -10,7 +10,4 @@ public interface IGuildService
         CancellationToken token = default);
 
     Task<Result> DeleteGuildAsync(ulong id, CancellationToken cancellationToken = default);
-
-    Task<Result<Dungeon>> AddDungeonToGuildAsync(ulong guildId, ulong threadId, uint charLevel,
-        CancellationToken token = default);
 }

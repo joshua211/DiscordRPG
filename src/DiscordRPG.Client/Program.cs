@@ -65,15 +65,9 @@ public class Program
         services.AddSingleton<ILogger>(Log.Logger);
 
         //Database Settings
-        services.Configure<CharacterDatabaseSettings>(Config.GetSection(nameof(CharacterDatabaseSettings)));
-        services.AddSingleton<ICharacterDatabaseSettings>(sp =>
-            sp.GetRequiredService<IOptions<CharacterDatabaseSettings>>().Value);
-        services.Configure<GuildDatabaseSettings>(Config.GetSection(nameof(GuildDatabaseSettings)));
-        services.AddSingleton<IGuildDatabaseSettings>(sp =>
-            sp.GetRequiredService<IOptions<GuildDatabaseSettings>>().Value);
-        services.Configure<ActivityDatabaseSettings>(Config.GetSection(nameof(ActivityDatabaseSettings)));
-        services.AddSingleton<IActivityDatabaseSettings>(sp =>
-            sp.GetRequiredService<IOptions<ActivityDatabaseSettings>>().Value);
+        services.Configure<DatabaseSettings>(Config.GetSection(nameof(DatabaseSettings)));
+        services.AddSingleton<IDatabaseSettings>(sp =>
+            sp.GetRequiredService<IOptions<DatabaseSettings>>().Value);
 
         //Services
         var client = new DiscordSocketClient(new DiscordSocketConfig()

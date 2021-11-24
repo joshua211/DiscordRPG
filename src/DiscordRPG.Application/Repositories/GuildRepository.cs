@@ -10,12 +10,12 @@ public class GuildRepository : IGuildRepository
     private readonly IMongoCollection<Guild> guilds;
     private readonly ILogger logger;
 
-    public GuildRepository(IGuildDatabaseSettings databaseSettings, ILogger logger)
+    public GuildRepository(IDatabaseSettings databaseSettings, ILogger logger)
     {
         this.logger = logger;
         var client = new MongoClient(databaseSettings.ConnectionString);
         guilds = client.GetDatabase(databaseSettings.DatabaseName)
-            .GetCollection<Guild>(databaseSettings.CollectionName);
+            .GetCollection<Guild>(databaseSettings.GuildCollectionName);
     }
 
     public async Task<Guild> GetGuildAsync(ulong guildId, CancellationToken token)
