@@ -42,10 +42,10 @@ public abstract class ApplicationService
         logger.Debug("{ID} " + content, context.Id, properties);
     }
 
-    protected void TransactionError(TransactionContext context, string content, Exception e,
-        params object[] properties)
+    protected void TransactionError(TransactionContext context, string content, params object[] properties)
     {
-        logger.Error(e, "{ID} " + content, context.Id, properties);
+        context.HasFailed = true;
+        logger.Error("{ID} " + content, context.Id, properties);
     }
 
     protected void TransactionError(TransactionContext context, Exception e)

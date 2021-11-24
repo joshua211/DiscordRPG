@@ -54,8 +54,7 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
         }
 
         var character = result.Value;
-        dialog.CharId = character.ID;
-        dialog.Level = character.Level.CurrentLevel;
+        dialog.Character = character;
 
         var activityResult = await activityService.GetCharacterActivityAsync(character.ID, CancellationToken.None);
         if (activityResult.WasSuccessful)
@@ -104,10 +103,11 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
     private async Task HandleSearchDungeon(SocketMessageComponent component, SearchDungeonDialog dialog)
     {
         //TODO proper duration
-        var result = await activityService.QueueActivityAsync(dialog.CharId, TimeSpan.FromSeconds(120),
+        var result = await activityService.QueueActivityAsync(dialog.Character.ID, TimeSpan.FromSeconds(10),
             ActivityType.SearchDungeon, new ActivityData
             {
-                PlayerLevel = dialog.Level
+                PlayerLevel = dialog.Character.Level.CurrentLevel,
+                GuildId = dialog.Character.GuildId
             });
 
         if (!result.WasSuccessful)

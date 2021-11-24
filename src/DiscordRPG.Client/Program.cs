@@ -76,7 +76,12 @@ public class Program
             sp.GetRequiredService<IOptions<ActivityDatabaseSettings>>().Value);
 
         //Services
-        services.AddSingleton<DiscordSocketClient>();
+        var client = new DiscordSocketClient(new DiscordSocketConfig()
+        {
+            GatewayIntents = GatewayIntents.All,
+            LogLevel = LogSeverity.Verbose,
+        });
+        services.AddSingleton<DiscordSocketClient>(client);
         services.AddMediatR(typeof(Core.Core).Assembly, typeof(Application.Application).Assembly);
         services.AddSingleton<ApplicationCommandHandler>();
         services.AddSingleton<ServerHandler>();

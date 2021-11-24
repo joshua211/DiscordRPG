@@ -1,4 +1,6 @@
-﻿namespace DiscordRPG.Client.Dialogs;
+﻿using DiscordRPG.Core.Entities;
+
+namespace DiscordRPG.Client.Dialogs;
 
 public class SearchDungeonDialog : Dialog
 {
@@ -10,6 +12,5 @@ public class SearchDungeonDialog : Dialog
     {
     }
 
-    public uint Level { get; set; }
-    public string CharId { get; set; }
+    public Character Character { get; set; }
 }

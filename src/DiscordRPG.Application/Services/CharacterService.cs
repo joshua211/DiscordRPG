@@ -27,7 +27,12 @@ public class CharacterService : ApplicationService, ICharacterService
             var character = new Character(userId, guildId, name, characterClass, race, new Level(1, 0, 100),
                 new EquipmentInfo(null, null, null, null, null, null, null), new List<Item>(), new List<Wound>(), 0);
 
-            await PublishAsync(ctx, new CreateCharacterCommand(character), cancellationToken);
+            var result = await PublishAsync(ctx, new CreateCharacterCommand(character), cancellationToken);
+            if (!result.WasSuccessful)
+            {
+                TransactionError(ctx, "Failed to create character: {Reason}", result.ErrorMessage);
+                return Result<Character>.Failure("Failed to create character");
+            }
 
             return Result<Character>.Success(character);
         }
@@ -54,6 +59,7 @@ public class CharacterService : ApplicationService, ICharacterService
 
             if (character == null)
             {
+                TransactionWarning(ctx, "No character with Id {Id} found", userId);
                 return Result<Character>.Failure("No character found");
             }
 

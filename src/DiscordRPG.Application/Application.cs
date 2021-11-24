@@ -1,4 +1,5 @@
-﻿using DiscordRPG.Application.Interfaces.Services;
+﻿using DiscordRPG.Application.Interfaces;
+using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Repositories;
 using DiscordRPG.Application.Services;
 using DiscordRPG.Core.Repositories;
@@ -17,6 +18,6 @@ public static class Application
             .AddTransient<ICharacterRepository, CharacterRepository>()
             .AddTransient<IGuildRepository, GuildRepository>()
             .AddTransient<IActivityRepository, ActivityRepository>()
-            .AddTransient<IGuildMessenger, GuildMessenger>();
+            .AddTransient<IChannelManager, ChannelManager>();
     }
 }

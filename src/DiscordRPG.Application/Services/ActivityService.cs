@@ -1,5 +1,7 @@
-﻿using DiscordRPG.Application.Interfaces.Services;
+﻿using DiscordRPG.Application.Interfaces;
+using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Queries;
+using DiscordRPG.Application.Worker;
 using DiscordRPG.Common;
 using DiscordRPG.Core.Commands.Activities;
 using Hangfire;
@@ -10,8 +12,14 @@ namespace DiscordRPG.Application.Services;
 
 public class ActivityService : ApplicationService, IActivityService
 {
-    public ActivityService(IMediator mediator, ILogger logger) : base(mediator, logger)
+    private readonly IChannelManager channelManager;
+    private readonly IGuildService guildService;
+
+    public ActivityService(IMediator mediator, ILogger logger, IGuildService guildService,
+        IChannelManager channelManager) : base(mediator, logger)
     {
+        this.guildService = guildService;
+        this.channelManager = channelManager;
     }
 
     public async Task<Result> QueueActivityAsync(string charId, TimeSpan duration, ActivityType type, ActivityData data,
@@ -21,14 +29,14 @@ public class ActivityService : ApplicationService, IActivityService
         try
         {
             var activity = new Activity(charId, DateTime.Now, duration, type, data);
-            var jobId = BackgroundJob.Schedule<ActivityService>(x => ExecuteActivityAsync(activity.ID), duration);
+            var jobId = BackgroundJob.Schedule<ActivityWorker>(x => x.ExecuteActivityAsync(activity.ID), duration);
             activity.JobId = jobId;
 
             var result = await PublishAsync(ctx, new CreateActivityCommand(activity), cancellationToken);
             if (!result.WasSuccessful)
             {
                 BackgroundJob.Delete(jobId);
-                TransactionWarning(ctx, "Failed to create Activity: {@Activity}", activity);
+                TransactionError(ctx, "Failed to create Activity: {@Activity}", activity);
 
                 return Result.Failure("Failed to create Activity");
             }
@@ -62,27 +70,5 @@ public class ActivityService : ApplicationService, IActivityService
             TransactionError(ctx, e);
             return Result<Activity>.Failure(e.Message);
         }
-    }
-
-    public async Task ExecuteActivityAsync(string activityId)
-    {
-        var activity = await mediator.Send(new GetActivityQuery(activityId));
-        if (activity is null)
-            return;
-
-        switch (activity.Type)
-        {
-            case ActivityType.Unknown:
-                logger.Information("Executed activity!");
-                break;
-            case ActivityType.SearchDungeon:
-                logger.Information("Searched dungeon for player level {Level}", activity.Data.PlayerLevel);
-                break;
-            default:
-                logger.Warning("Activity is not handled, {Name}", activity.Type);
-                break;
-        }
-
-        await mediator.Send(new DeleteActivityCommand(activityId));
     }
 }
