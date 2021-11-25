@@ -73,4 +73,28 @@ public class ActivityService : ApplicationService, IActivityService
             return Result<Activity>.Failure(e.Message);
         }
     }
+
+    public async Task<Result<Activity>> GetActivityAsync(string activityId, TransactionContext parentContext = null,
+        CancellationToken token = default)
+    {
+        using var ctx = TransactionBegin(parentContext);
+        try
+        {
+            var query = new GetActivityQuery(activityId);
+            var result = await ProcessAsync(ctx, query, token);
+
+            if (result is null)
+            {
+                TransactionWarning(ctx, "No Activity found with id {Id}", activityId);
+                return Result<Activity>.Failure("No activity found");
+            }
+
+            return Result<Activity>.Success(result);
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result<Activity>.Failure(e.Message);
+        }
+    }
 }

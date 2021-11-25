@@ -1,11 +1,12 @@
-﻿using DiscordRPG.Application.Settings;
-using DiscordRPG.Core.Repositories;
+﻿using System.Linq.Expressions;
+using DiscordRPG.Application.Settings;
+using DiscordRPG.Common;
 using MongoDB.Driver;
 using Serilog;
 
 namespace DiscordRPG.Application.Repositories;
 
-public class DungeonRepository : IDungeonRepository
+public class DungeonRepository : IRepository<Dungeon>
 {
     private readonly IMongoCollection<Dungeon> dungeons;
     private readonly ILogger logger;
@@ -18,8 +19,40 @@ public class DungeonRepository : IDungeonRepository
             .GetCollection<Dungeon>(databaseSettings.DungeonCollectionName);
     }
 
-    public async Task SaveDungeonAsync(Dungeon dungeon, CancellationToken cancellationToken)
+    public async Task SaveAsync(Dungeon entity, CancellationToken cancellationToken)
     {
-        await dungeons.InsertOneAsync(dungeon, null, cancellationToken);
+        logger.Verbose("Saving dungeon {@Dungeon}", entity);
+        await dungeons.InsertOneAsync(entity, null, cancellationToken);
+    }
+
+    public async Task DeleteAsync(string id, CancellationToken cancellationToken)
+    {
+        logger.Verbose("Deleting dungeon with id {Id}", id);
+        await dungeons.DeleteOneAsync(d => d.ID == id, cancellationToken);
+    }
+
+    public async Task<Dungeon> GetAsync(string id, CancellationToken cancellationToken)
+    {
+        logger.Verbose("Getting dungeon with id {Id}", id);
+        var cursor = await dungeons.FindAsync(d => d.ID == id, cancellationToken: cancellationToken);
+
+        return await cursor.FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<Dungeon>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        logger.Verbose("Getting all dungeons");
+        var cursor = await dungeons.FindAsync(d => true, cancellationToken: cancellationToken);
+
+        return await cursor.ToListAsync(cancellationToken: cancellationToken);
+    }
+
+    public async Task<IEnumerable<Dungeon>> FindAsync(Expression<Func<Dungeon, bool>> expression,
+        CancellationToken cancellationToken)
+    {
+        logger.Verbose("Finding dungeons with expression {@Expression}", expression);
+        var cursor = await dungeons.FindAsync(expression, cancellationToken: cancellationToken);
+
+        return await cursor.ToListAsync(cancellationToken: cancellationToken);
     }
 }

@@ -9,14 +9,13 @@ using Serilog;
 namespace DiscordRPG.Client.Commands;
 
 [RequireChannelName(ServerHandler.GuildHallName)]
+[RequireCharacter]
 public class GetCharacter : CommandBase
 {
-    private readonly ICharacterService characterService;
-
-    public GetCharacter(DiscordSocketClient client, ILogger logger, ICharacterService characterService) : base(client,
-        logger)
+    public GetCharacter(DiscordSocketClient client, ILogger logger, IActivityService activityService,
+        ICharacterService characterService) : base(client,
+        logger, activityService, characterService)
     {
-        this.characterService = characterService;
     }
 
     public override string CommandName => "character";

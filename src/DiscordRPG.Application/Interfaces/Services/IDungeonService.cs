@@ -8,4 +8,7 @@ public interface IDungeonService
     Task<Result<Dungeon>> CreateDungeonAsync(ulong guildId, ulong threadId, uint charLevel,
         TransactionContext parentContext = null,
         CancellationToken token = default);
+
+    Task<Result<Dungeon>> GetDungeonAsync(ulong channelId, TransactionContext parentContext = null,
+        CancellationToken token = default);
 }

@@ -1,14 +1,14 @@
-﻿using DiscordRPG.Core.Events;
-using DiscordRPG.Core.Repositories;
+﻿using DiscordRPG.Core.Entities;
+using DiscordRPG.Core.Events;
 using MediatR;
 
 namespace DiscordRPG.Core.Commands.Dungeons;
 
 public class CreateDungeonCommandHandler : CommandHandler<CreateDungeonCommand>
 {
-    private readonly IDungeonRepository dungeonRepository;
+    private readonly IRepository<Dungeon> dungeonRepository;
 
-    public CreateDungeonCommandHandler(IMediator mediator, IDungeonRepository dungeonRepository) : base(mediator)
+    public CreateDungeonCommandHandler(IMediator mediator, IRepository<Dungeon> dungeonRepository) : base(mediator)
     {
         this.dungeonRepository = dungeonRepository;
     }
@@ -18,7 +18,7 @@ public class CreateDungeonCommandHandler : CommandHandler<CreateDungeonCommand>
     {
         try
         {
-            await dungeonRepository.SaveDungeonAsync(request.Dungeon, cancellationToken);
+            await dungeonRepository.SaveAsync(request.Dungeon, cancellationToken);
 
             await PublishAsync(new DungeonCreated(request.Dungeon), cancellationToken);
 

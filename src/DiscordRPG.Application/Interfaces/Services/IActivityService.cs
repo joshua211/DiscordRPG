@@ -11,4 +11,7 @@ public interface IActivityService
 
     Task<Result<Activity>> GetCharacterActivityAsync(string charId, TransactionContext parentContext = null,
         CancellationToken token = default);
+
+    Task<Result<Activity>> GetActivityAsync(string activityId, TransactionContext parentContext = null,
+        CancellationToken token = default);
 }

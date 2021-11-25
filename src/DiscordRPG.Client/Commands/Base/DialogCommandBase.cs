@@ -1,4 +1,5 @@
 ﻿using Discord.WebSocket;
+using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Dialogs;
 using Serilog;
 
@@ -8,7 +9,8 @@ public abstract class DialogCommandBase<T> : CommandBase where T : Dialog, new()
 {
     private readonly Dictionary<ulong, T> dialogs;
 
-    protected DialogCommandBase(DiscordSocketClient client, ILogger logger) : base(client, logger)
+    protected DialogCommandBase(DiscordSocketClient client, ILogger logger, IActivityService activityService,
+        ICharacterService characterService) : base(client, logger, activityService, characterService)
     {
         dialogs = new Dictionary<ulong, T>();
     }

@@ -1,4 +1,6 @@
-﻿namespace DiscordRPG.Client.Dialogs;
+﻿using DiscordRPG.Core.Entities;
+
+namespace DiscordRPG.Client.Dialogs;
 
 public class EnterDungeonDialog : Dialog
 {
@@ -10,6 +12,6 @@ public class EnterDungeonDialog : Dialog
     {
     }
 
-    public ulong DungeonId { get; set; }
+    public Dungeon Dungeon { get; set; }
     public string CharId { get; set; }
 }

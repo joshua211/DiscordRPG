@@ -13,17 +13,14 @@ using ActivityType = DiscordRPG.Core.Enums.ActivityType;
 namespace DiscordRPG.Client.Commands;
 
 [RequireChannelName(ServerHandler.DungeonHallName)]
+[RequireCharacter]
+[RequireNoCurrentActivity]
 public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
 {
-    private readonly IActivityService activityService;
-    private readonly ICharacterService characterService;
-
     public SearchDungeon(DiscordSocketClient client, ILogger logger, IActivityService activityService,
         ICharacterService characterService) : base(client,
-        logger)
+        logger, activityService, characterService)
     {
-        this.activityService = activityService;
-        this.characterService = characterService;
     }
 
     public override string CommandName => "search";
@@ -58,17 +55,6 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
 
         var character = result.Value;
         dialog.Character = character;
-
-        var activityResult = await activityService.GetCharacterActivityAsync(character.ID);
-        if (activityResult.WasSuccessful)
-        {
-            var timeLeft = ((activityResult.Value.StartTime + activityResult.Value.Duration) - DateTime.UtcNow);
-            await command.RespondAsync($"You're already on an adventure, try again in {timeLeft.Minutes} minutes!");
-            EndDialog(dialog.UserId);
-
-            return;
-        }
-
 
         var component = new ComponentBuilder()
             .WithButton("Search", CommandName + ".accept")

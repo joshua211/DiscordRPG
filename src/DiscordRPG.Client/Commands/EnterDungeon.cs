@@ -2,6 +2,7 @@
 using Discord.Net;
 using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Core.ValueObjects;
@@ -10,17 +11,17 @@ using ActivityType = DiscordRPG.Core.Enums.ActivityType;
 
 namespace DiscordRPG.Client.Commands;
 
+//TODO require dungeon
+[RequireCharacter]
 public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
 {
-    private readonly IActivityService activityService;
-    private readonly ICharacterService characterService;
+    private readonly IDungeonService dungeonService;
 
     public EnterDungeon(DiscordSocketClient client, ILogger logger, IActivityService activityService,
-        ICharacterService characterService) : base(client,
-        logger)
+        ICharacterService characterService, IDungeonService dungeonService) : base(client,
+        logger, activityService, characterService)
     {
-        this.activityService = activityService;
-        this.characterService = characterService;
+        this.dungeonService = dungeonService;
     }
 
     public override string CommandName => "enter";
@@ -44,22 +45,33 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
     protected override async Task Handle(SocketSlashCommand command, EnterDungeonDialog dialog)
     {
         var user = command.User as SocketGuildUser;
-        var result = await characterService.GetCharacterAsync(user.Id, user.Guild.Id);
-        if (!result.WasSuccessful)
+        var charResult = await characterService.GetCharacterAsync(user.Id, user.Guild.Id);
+        if (!charResult.WasSuccessful)
         {
             EndDialog(dialog.UserId);
             await command.RespondAsync("Please create a character first!");
         }
 
-        dialog.DungeonId = command.Channel.Id;
-        dialog.CharId = result.Value.ID;
+        //TODO check if this is a dungeon
+        var dungeonResult = await dungeonService.GetDungeonAsync(command.Channel.Id);
+        if (!dungeonResult.WasSuccessful)
+        {
+            await command.RespondAsync("This command can only be used in a dungeon!");
+            EndDialog(dialog.UserId);
+
+            return;
+        }
+
+        dialog.CharId = charResult.Value.ID;
+        dialog.Dungeon = dungeonResult.Value;
 
         var component = new ComponentBuilder()
             .WithButton("Enter Dungeon", CommandName + ".enter")
             .WithButton("Cancel", CommandName + ".cancel", ButtonStyle.Secondary)
             .Build();
 
-        var text = "Some flavour text and summary about the dungeon";
+        var text =
+            $"Do you want to enter the level {dungeonResult.Value.DungeonLevel} Dungeon {dungeonResult.Value.Name}?";
 
         await command.RespondAsync(text, component: component);
     }
@@ -79,7 +91,7 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
 
     private async Task HandleCancelDungeon(SocketMessageComponent component, EnterDungeonDialog dialog)
     {
-        EndDialog(dialog.DungeonId);
+        EndDialog(dialog.UserId);
 
         await component.UpdateAsync(properties =>
         {
@@ -90,16 +102,24 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
 
     private async Task HandleEnterDungeon(SocketMessageComponent component, EnterDungeonDialog dialog)
     {
-        //get dungeon
-        await activityService.QueueActivityAsync(dialog.CharId, TimeSpan.FromSeconds(15),
-            ActivityType.Dungeon, new ActivityData());
+        //TODO set proper duration
+        var duration = TimeSpan.FromSeconds(15);
+        var result = await activityService.QueueActivityAsync(dialog.CharId, duration,
+            ActivityType.Dungeon, new ActivityData
+            {
+                DungeonId = dialog.Dungeon.DungeonChannelId,
+            });
 
         await component.UpdateAsync(properties =>
         {
             properties.Components = null;
-            properties.Content = "Some more text about the dungeon";
+            if (result.WasSuccessful)
+                properties.Content =
+                    $"You have entered {dialog.Dungeon.Name}! Come back in {duration.Minutes} minutes.";
+            else
+                properties.Content = $"Something went wrong, please try again in a few minutes!";
         });
 
-        EndDialog(dialog.DungeonId);
+        EndDialog(dialog.UserId);
     }
 }

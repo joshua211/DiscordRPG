@@ -1,4 +1,5 @@
 ﻿using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Application.Queries;
 using DiscordRPG.Common;
 using DiscordRPG.Core.Commands.Dungeons;
 using MediatR;
@@ -46,6 +47,29 @@ public class DungeonService : ApplicationService, IDungeonService
             }
 
             return Result<Dungeon>.Success(dungeon);
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result<Dungeon>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Result<Dungeon>> GetDungeonAsync(ulong channelId, TransactionContext parentContext = null,
+        CancellationToken token = default)
+    {
+        using var ctx = TransactionBegin(parentContext);
+        try
+        {
+            var query = new GetDungeonByChannelIdQuery(channelId);
+            var result = await ProcessAsync(ctx, query, token);
+            if (result is null)
+            {
+                TransactionWarning(ctx, "No dungeon with channelId {Id} found", channelId);
+                return Result<Dungeon>.Failure("No dungeon found");
+            }
+
+            return Result<Dungeon>.Success(result);
         }
         catch (Exception e)
         {

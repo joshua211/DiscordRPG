@@ -14,14 +14,12 @@ namespace DiscordRPG.Client.Commands;
 [RequireChannelName(ServerHandler.GuildHallName)]
 public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
 {
-    private readonly ICharacterService characterService;
     private readonly IGuildService guildService;
 
-    public CreateCharacter(DiscordSocketClient client, ICharacterService characterService, ILogger logger,
-        IGuildService guildService) : base(
-        client, logger)
+    public CreateCharacter(DiscordSocketClient client, ILogger logger, IActivityService activityService,
+        ICharacterService characterService, IGuildService guildService) : base(
+        client, logger, activityService, characterService)
     {
-        this.characterService = characterService;
         this.guildService = guildService;
     }
 
