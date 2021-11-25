@@ -4,7 +4,7 @@ namespace DiscordRPG.Common;
 
 public abstract class CommandHandler<T> : IRequestHandler<T, ExecutionResult> where T : IRequest<ExecutionResult>
 {
-    protected readonly IMediator mediator;
+    private readonly IMediator mediator;
 
     protected CommandHandler(IMediator mediator)
     {
@@ -12,4 +12,9 @@ public abstract class CommandHandler<T> : IRequestHandler<T, ExecutionResult> wh
     }
 
     public abstract Task<ExecutionResult> Handle(T request, CancellationToken cancellationToken);
+
+    public async Task PublishAsync(DomainEvent domainEvent, CancellationToken cancellationToken = default)
+    {
+        await mediator.Publish(domainEvent, cancellationToken);
+    }
 }

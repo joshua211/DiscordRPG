@@ -1,4 +1,5 @@
-﻿using DiscordRPG.Core.Repositories;
+﻿using DiscordRPG.Core.Events;
+using DiscordRPG.Core.Repositories;
 using MediatR;
 
 namespace DiscordRPG.Core.Commands.Dungeons;
@@ -18,6 +19,8 @@ public class CreateDungeonCommandHandler : CommandHandler<CreateDungeonCommand>
         try
         {
             await dungeonRepository.SaveDungeonAsync(request.Dungeon, cancellationToken);
+
+            await PublishAsync(new DungeonCreated(request.Dungeon), cancellationToken);
 
             return ExecutionResult.Success();
         }

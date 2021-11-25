@@ -19,7 +19,7 @@ public class CreateGuildCommandHandler : CommandHandler<CreateGuildCommand>
         {
             await repository.SaveGuildAsync(request.Guild, cancellationToken);
 
-            await mediator.Publish(new GuildCreated(request.Guild), cancellationToken);
+            await PublishAsync(new GuildCreated(request.Guild), cancellationToken);
 
             return ExecutionResult.Success();
         }

@@ -1,4 +1,5 @@
-﻿using DiscordRPG.Core.Repositories;
+﻿using DiscordRPG.Core.Events;
+using DiscordRPG.Core.Repositories;
 using MediatR;
 
 namespace DiscordRPG.Core.Commands.Activities;
@@ -15,8 +16,17 @@ public class CreateActivityCommandHandler : CommandHandler<CreateActivityCommand
     public override async Task<ExecutionResult> Handle(CreateActivityCommand request,
         CancellationToken cancellationToken)
     {
-        await activityRepository.SaveActivityAsync(request.Activity, cancellationToken);
+        try
+        {
+            await activityRepository.SaveActivityAsync(request.Activity, cancellationToken);
 
-        return ExecutionResult.Success();
+            await PublishAsync(new ActivityCreated(request.Activity), cancellationToken);
+
+            return ExecutionResult.Success();
+        }
+        catch (Exception e)
+        {
+            return ExecutionResult.Failure(e.Message);
+        }
     }
 }

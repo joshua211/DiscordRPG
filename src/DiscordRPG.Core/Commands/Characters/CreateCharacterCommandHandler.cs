@@ -28,7 +28,7 @@ public class CreateCharacterCommandHandler : CommandHandler<CreateCharacterComma
             guild.Characters.Add(command.Character.UserId);
             await guildRepository.UpdateGuildAsync(guild, cancellationToken);
 
-            await mediator.Publish(new CharacterCreated(command.Character), cancellationToken);
+            await PublishAsync(new CharacterCreated(command.Character), cancellationToken);
 
             return ExecutionResult.Success();
         }

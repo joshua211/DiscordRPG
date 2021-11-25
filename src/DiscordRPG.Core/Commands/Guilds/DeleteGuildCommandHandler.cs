@@ -18,18 +18,25 @@ public class DeleteGuildCommandHandler : CommandHandler<DeleteGuildCommand>
 
     public override async Task<ExecutionResult> Handle(DeleteGuildCommand request, CancellationToken cancellationToken)
     {
-        var guild = await guildRepository.GetGuildAsync(request.Id, cancellationToken);
-        if (guild is null)
-            return ExecutionResult.Success();
-
-        foreach (var charId in guild.Characters)
+        try
         {
-            await characterRepository.DeleteCharacterAsync(charId, cancellationToken);
+            var guild = await guildRepository.GetGuildAsync(request.Id, cancellationToken);
+            if (guild is null)
+                return ExecutionResult.Success();
+
+            foreach (var charId in guild.Characters)
+            {
+                await characterRepository.DeleteCharacterAsync(charId, cancellationToken);
+            }
+
+            await guildRepository.DeleteGuildAsync(request.Id, cancellationToken);
+            await PublishAsync(new GuildDeleted(guild), cancellationToken: cancellationToken);
+
+            return ExecutionResult.Success();
         }
-
-        await guildRepository.DeleteGuildAsync(request.Id, cancellationToken);
-        await mediator.Publish(new GuildDeleted(guild), cancellationToken: cancellationToken);
-
-        return ExecutionResult.Success();
+        catch (Exception e)
+        {
+            return ExecutionResult.Failure(e.Message);
+        }
     }
 }
