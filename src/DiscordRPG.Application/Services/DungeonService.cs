@@ -16,12 +16,13 @@ public class DungeonService : ApplicationService, IDungeonService
     }
 
     public async Task<Result<Dungeon>> CreateDungeonAsync(ulong guildId, ulong threadId, uint charLevel,
+        TransactionContext parentContext = null,
         CancellationToken token = default)
     {
-        using var ctx = TransactionBegin();
+        using var ctx = TransactionBegin(parentContext);
         try
         {
-            var guildResult = await guildService.GetGuildAsync(guildId, token);
+            var guildResult = await guildService.GetGuildAsync(guildId, ctx, token);
             if (!guildResult.WasSuccessful)
             {
                 TransactionWarning(ctx, "No guild found to add the dungeon");

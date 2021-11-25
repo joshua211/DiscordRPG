@@ -18,10 +18,10 @@ public class CharacterService : ApplicationService, ICharacterService
 
     public async Task<Result<Character>> CreateCharacterAsync(ulong userId, ulong guildId, string name,
         Class characterClass,
-        Race race,
+        Race race, TransactionContext parentContext = null,
         CancellationToken cancellationToken = default)
     {
-        using var ctx = TransactionBegin();
+        using var ctx = TransactionBegin(parentContext);
         try
         {
             var character = new Character(userId, guildId, name, characterClass, race, new Level(1, 0, 100),
@@ -43,15 +43,17 @@ public class CharacterService : ApplicationService, ICharacterService
         }
     }
 
-    public Task<Result> DeleteCharacterAsync(ulong userId, CancellationToken cancellationToken = default)
+    public Task<Result> DeleteCharacterAsync(ulong userId, TransactionContext parentContext = null,
+        CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
 
     public async Task<Result<Character>> GetCharacterAsync(ulong userId, ulong guildId,
+        TransactionContext parentContext = null,
         CancellationToken token = default)
     {
-        using var ctx = TransactionBegin();
+        using var ctx = TransactionBegin(parentContext);
         try
         {
             var query = new GetCharacterByUserIdQuery(userId, guildId);

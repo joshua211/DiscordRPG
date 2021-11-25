@@ -56,7 +56,7 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
         var character = result.Value;
         dialog.Character = character;
 
-        var activityResult = await activityService.GetCharacterActivityAsync(character.ID, CancellationToken.None);
+        var activityResult = await activityService.GetCharacterActivityAsync(character.ID);
         if (activityResult.WasSuccessful)
         {
             var timeLeft = ((activityResult.Value.StartTime + activityResult.Value.Duration) - DateTime.UtcNow);

@@ -92,8 +92,7 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
     {
         //get dungeon
         await activityService.QueueActivityAsync(dialog.CharId, TimeSpan.FromSeconds(15),
-            ActivityType.Dungeon, new ActivityData(),
-            CancellationToken.None);
+            ActivityType.Dungeon, new ActivityData());
 
         await component.UpdateAsync(properties =>
         {

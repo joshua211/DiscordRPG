@@ -13,9 +13,10 @@ public class GuildService : ApplicationService, IGuildService
     {
     }
 
-    public async Task<Result<Guild>> GetGuildAsync(ulong guildId, CancellationToken cancellationToken = default)
+    public async Task<Result<Guild>> GetGuildAsync(ulong guildId, TransactionContext parentContext = null,
+        CancellationToken cancellationToken = default)
     {
-        using var ctx = TransactionBegin();
+        using var ctx = TransactionBegin(parentContext);
         try
         {
             var query = new GetGuildQuery(guildId);
@@ -38,10 +39,10 @@ public class GuildService : ApplicationService, IGuildService
     }
 
     public async Task<Result<Guild>> CreateGuildAsync(ulong guildId, string guildName, ulong guildHallId,
-        ulong dungeonHallId,
+        ulong dungeonHallId, TransactionContext parentContext = null,
         CancellationToken token = default)
     {
-        using var ctx = TransactionBegin();
+        using var ctx = TransactionBegin(parentContext);
         try
         {
             var guild = new Guild(guildId, guildName, guildHallId, dungeonHallId, new List<ulong>());
@@ -63,9 +64,10 @@ public class GuildService : ApplicationService, IGuildService
         }
     }
 
-    public async Task<Result> DeleteGuildAsync(ulong id, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteGuildAsync(ulong id, TransactionContext parentContext = null,
+        CancellationToken cancellationToken = default)
     {
-        using var ctx = TransactionBegin();
+        using var ctx = TransactionBegin(parentContext);
         try
         {
             var cmd = new DeleteGuildCommand(id);

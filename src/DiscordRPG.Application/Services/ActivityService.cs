@@ -23,9 +23,10 @@ public class ActivityService : ApplicationService, IActivityService
     }
 
     public async Task<Result> QueueActivityAsync(string charId, TimeSpan duration, ActivityType type, ActivityData data,
+        TransactionContext parentContext = null,
         CancellationToken cancellationToken = default)
     {
-        using var ctx = TransactionBegin();
+        using var ctx = TransactionBegin(parentContext);
         try
         {
             var activity = new Activity(charId, DateTime.Now, duration, type, data);
@@ -50,9 +51,10 @@ public class ActivityService : ApplicationService, IActivityService
         }
     }
 
-    public async Task<Result<Activity>> GetCharacterActivityAsync(string charId, CancellationToken token)
+    public async Task<Result<Activity>> GetCharacterActivityAsync(string charId,
+        TransactionContext parentContext = null, CancellationToken token = default)
     {
-        using var ctx = TransactionBegin();
+        using var ctx = TransactionBegin(parentContext);
         try
         {
             var query = new GetCharacterActivityQuery(charId);

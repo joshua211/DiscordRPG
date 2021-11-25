@@ -68,7 +68,7 @@ public class ActivityWorker
         var threadId = await channelManager.CreateDungeonThreadAsync(activity.Data.GuildId, "Dungeon");
 
         var createDungeonResult = await dungeonService.CreateDungeonAsync(activity.Data.GuildId, threadId,
-            activity.Data.PlayerLevel, CancellationToken.None);
+            activity.Data.PlayerLevel);
 
         if (!createDungeonResult.WasSuccessful)
         {
