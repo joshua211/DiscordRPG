@@ -2,13 +2,16 @@
 using Discord.Net;
 using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Dialogs;
+using DiscordRPG.Client.Handlers;
 using DiscordRPG.Core.ValueObjects;
 using Serilog;
 
 namespace DiscordRPG.Client.Commands;
 
+[RequireChannelName(ServerHandler.GuildHallName)]
 public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
 {
     private readonly ICharacterService characterService;

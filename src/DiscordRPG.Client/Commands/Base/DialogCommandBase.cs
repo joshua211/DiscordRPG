@@ -15,6 +15,9 @@ public abstract class DialogCommandBase<T> : CommandBase where T : Dialog, new()
 
     public override async Task HandleAsync(SocketSlashCommand command)
     {
+        if (!await ShouldExecuteAsync(command))
+            return;
+
         var dialog = (T) Activator.CreateInstance(typeof(T), command.User.Id)!;
         dialogs[dialog.UserId] = dialog;
         logger.Debug("Initiated new dialog: {@Dialog}", dialog);

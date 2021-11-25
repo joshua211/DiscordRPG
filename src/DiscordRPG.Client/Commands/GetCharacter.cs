@@ -1,11 +1,14 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Client.Commands.Base;
+using DiscordRPG.Client.Handlers;
 using Serilog;
 
 namespace DiscordRPG.Client.Commands;
 
+[RequireChannelName(ServerHandler.GuildHallName)]
 public class GetCharacter : CommandBase
 {
     private readonly ICharacterService characterService;
@@ -37,6 +40,9 @@ public class GetCharacter : CommandBase
 
     public override async Task HandleAsync(SocketSlashCommand command)
     {
+        if (!await ShouldExecuteAsync(command))
+            return;
+
         var guildUser = command.User as SocketGuildUser;
         var result = await characterService.GetCharacterAsync(guildUser.Id, guildUser.Guild.Id);
 

@@ -1,4 +1,5 @@
 ﻿using Discord.WebSocket;
+using DiscordRPG.Client.Commands.Attributes;
 using Serilog;
 
 namespace DiscordRPG.Client.Commands.Base;
@@ -22,6 +23,20 @@ public abstract class CommandBase : IGuildCommand
     public abstract Task InstallAsync(SocketGuild guild);
 
     public abstract Task HandleAsync(SocketSlashCommand command);
+
+    public async Task<bool> ShouldExecuteAsync(SocketSlashCommand command)
+    {
+        var requireName =
+            (RequireChannelNameAttribute) Attribute.GetCustomAttribute(GetType(), typeof(RequireChannelNameAttribute));
+        if (requireName == null)
+            return true;
+
+        if (command.Channel.Name == requireName.ChannelName)
+            return true;
+
+        await command.RespondAsync($"This command can only be used in the {requireName.ChannelName} channel!");
+        return false;
+    }
 
     protected virtual Task HandleSelection(SocketMessageComponent component, string id)
     {

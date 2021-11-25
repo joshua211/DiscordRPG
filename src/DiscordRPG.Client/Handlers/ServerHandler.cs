@@ -6,6 +6,10 @@ namespace DiscordRPG.Client.Handlers;
 
 public class ServerHandler : IHandler
 {
+    public const string GuildHallName = "guild-hall";
+    public const string DungeonHallName = "dungeon-hall";
+    public const string CategoryName = "--RPG--";
+
     private readonly ApplicationCommandHandler applicationCommandHandler;
     private readonly ICharacterService characterService;
     private readonly DiscordSocketClient client;
@@ -43,7 +47,7 @@ public class ServerHandler : IHandler
 
             await socketGuild.GetChannel(result.Value.GuildHallId).DeleteAsync();
             await socketGuild.GetChannel(result.Value.DungeonHallId).DeleteAsync();
-            var cat = socketGuild.CategoryChannels.FirstOrDefault(c => c.Name == "--RPG--");
+            var cat = socketGuild.CategoryChannels.FirstOrDefault(c => c.Name == CategoryName);
             await cat?.DeleteAsync();
 
             await guildService.DeleteGuildAsync(socketGuild.Id);
@@ -64,13 +68,13 @@ public class ServerHandler : IHandler
             logger.Information("Setting up channels for Guild {Id}", socketGuild.Id);
             await guildService.DeleteGuildAsync(socketGuild.Id);
 
-            var category = await socketGuild.CreateCategoryChannelAsync("--RPG--");
+            var category = await socketGuild.CreateCategoryChannelAsync(CategoryName);
 
             var guildHall =
-                await socketGuild.CreateTextChannelAsync("Guild Hall",
+                await socketGuild.CreateTextChannelAsync(GuildHallName,
                     properties => properties.CategoryId = category.Id);
             var dungeonHall =
-                await socketGuild.CreateTextChannelAsync("Dungeon Hall",
+                await socketGuild.CreateTextChannelAsync(DungeonHallName,
                     properties => properties.CategoryId = category.Id);
 
             var result =
