@@ -7,7 +7,7 @@ public class GetGuildByServerIdQueryHandler : QueryHandler<GetGuildByServerIdQue
 {
     private readonly IRepository<Guild> guildRepository;
 
-    public GetGuildByServerIdQueryHandler(IRepository<Guild> guildRepository)
+    public GetGuildByServerIdQueryHandler(IRepository<Guild> guildRepository, ILogger logger) : base(logger)
     {
         this.guildRepository = guildRepository;
     }
@@ -15,6 +15,7 @@ public class GetGuildByServerIdQueryHandler : QueryHandler<GetGuildByServerIdQue
     public override async Task<Guild> Handle(GetGuildByServerIdQuery request,
         CancellationToken cancellationToken = default)
     {
+        logger.Here().Debug("Handling Query {Query}", nameof(request));
         return (await guildRepository.FindAsync(g => g.ServerId == request.GuildId, cancellationToken))
             .FirstOrDefault();
     }

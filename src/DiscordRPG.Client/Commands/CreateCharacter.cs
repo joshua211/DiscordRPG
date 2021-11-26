@@ -6,6 +6,7 @@ using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Client.Handlers;
+using DiscordRPG.Common.Extensions;
 using DiscordRPG.Core.ValueObjects;
 using Serilog;
 
@@ -37,7 +38,7 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
         }
         catch (ApplicationCommandException e)
         {
-            logger.Error(e, "Failed to install command {Name}", CommandName);
+            logger.Here().Error(e, "Failed to install command {Name}", CommandName);
         }
     }
 

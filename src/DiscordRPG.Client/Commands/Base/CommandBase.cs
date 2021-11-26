@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Commands.Attributes;
+using DiscordRPG.Common.Extensions;
 using DiscordRPG.Core.Entities;
 using Serilog;
 
@@ -20,7 +21,7 @@ public abstract class CommandBase : IGuildCommand
         ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService)
     {
         this.client = client;
-        this.logger = logger;
+        this.logger = logger.WithContext(GetType());
         this.activityService = activityService;
         this.characterService = characterService;
         this.dungeonService = dungeonService;

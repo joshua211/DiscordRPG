@@ -1,6 +1,8 @@
-﻿using DiscordRPG.Core.Entities;
+﻿using DiscordRPG.Common.Extensions;
+using DiscordRPG.Core.Entities;
 using DiscordRPG.Core.Events;
 using MediatR;
+using Serilog;
 
 namespace DiscordRPG.Core.Commands.Guilds;
 
@@ -10,7 +12,7 @@ public class DeleteGuildCommandHandler : CommandHandler<DeleteGuildCommand>
     private readonly IRepository<Guild> guildRepository;
 
     public DeleteGuildCommandHandler(IMediator mediator, IRepository<Guild> guildRepository,
-        IRepository<Character> characterRepository) : base(mediator)
+        IRepository<Character> characterRepository, ILogger logger) : base(mediator, logger)
     {
         this.guildRepository = guildRepository;
         this.characterRepository = characterRepository;
@@ -20,6 +22,8 @@ public class DeleteGuildCommandHandler : CommandHandler<DeleteGuildCommand>
     {
         try
         {
+            logger.Here().Debug("Handling {Name}", nameof(request));
+
             var guild = (await guildRepository.FindAsync(g => g.ServerId == request.Id, cancellationToken))
                 .FirstOrDefault();
             if (guild is null)
@@ -37,6 +41,7 @@ public class DeleteGuildCommandHandler : CommandHandler<DeleteGuildCommand>
         }
         catch (Exception e)
         {
+            logger.Debug(e, "Handle failed");
             return ExecutionResult.Failure(e.Message);
         }
     }

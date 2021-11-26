@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Discord.Commands;
 using Discord.WebSocket;
+using DiscordRPG.Common.Extensions;
 using Serilog;
 
 namespace DiscordRPG.Client.Handlers;
@@ -18,12 +19,12 @@ public class MessageCommandHandler : IHandler
         this.client = client;
         this.commandService = commandService;
         this.provider = provider;
-        this.logger = logger;
+        this.logger = logger.WithContext(GetType());
     }
 
     public async Task InstallAsync()
     {
-        logger.Information("Installing MessageCommandHandler");
+        logger.Here().Information("Installing MessageCommandHandler");
         client.MessageReceived += HandleCommandAsync;
 
         await commandService.AddModulesAsync(Assembly.GetEntryAssembly(), provider);

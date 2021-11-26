@@ -5,6 +5,7 @@ using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Dialogs;
+using DiscordRPG.Common.Extensions;
 using DiscordRPG.Core.ValueObjects;
 using Serilog;
 using ActivityType = DiscordRPG.Core.Enums.ActivityType;
@@ -37,7 +38,7 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
         }
         catch (ApplicationCommandException e)
         {
-            logger.Error(e, "Failed to install command {Name}", CommandName);
+            logger.Here().Error(e, "Failed to install command {Name}", CommandName);
         }
     }
 

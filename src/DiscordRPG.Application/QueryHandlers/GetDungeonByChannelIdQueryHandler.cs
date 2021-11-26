@@ -7,7 +7,7 @@ public class GetDungeonByChannelIdQueryHandler : QueryHandler<GetDungeonByChanne
 {
     private readonly IRepository<Dungeon> repository;
 
-    public GetDungeonByChannelIdQueryHandler(IRepository<Dungeon> repository)
+    public GetDungeonByChannelIdQueryHandler(IRepository<Dungeon> repository, ILogger logger) : base(logger)
     {
         this.repository = repository;
     }
@@ -15,6 +15,7 @@ public class GetDungeonByChannelIdQueryHandler : QueryHandler<GetDungeonByChanne
     public override async Task<Dungeon> Handle(GetDungeonByChannelIdQuery request,
         CancellationToken cancellationToken = default)
     {
+        logger.Here().Debug("Handling Query {Query}", nameof(request));
         return (await repository.FindAsync(d => d.DungeonChannelId == request.ChannelId, cancellationToken))
             .FirstOrDefault()!;
     }

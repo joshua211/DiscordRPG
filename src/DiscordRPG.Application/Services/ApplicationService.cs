@@ -1,7 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using DiscordRPG.Common;
 using MediatR;
-using Serilog;
 
 namespace DiscordRPG.Application.Services;
 
@@ -13,7 +12,7 @@ public abstract class ApplicationService
     protected ApplicationService(IMediator mediator, ILogger logger)
     {
         this.mediator = mediator;
-        this.logger = logger;
+        this.logger = logger.WithContext(GetType());
     }
 
     protected TransactionContext TransactionBegin(TransactionContext parentContext = null,
@@ -40,7 +39,8 @@ public abstract class ApplicationService
 
     protected void TransactionDebug(TransactionContext context, string content, params object[] properties)
     {
-        logger.Debug("{ID} " + content, context.Id, properties);
+        var template = $"{context.Id} {content}";
+        logger.Debug(template, context.Id, properties);
     }
 
     protected void TransactionError(TransactionContext context, string content, params object[] properties)

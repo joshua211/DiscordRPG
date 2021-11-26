@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using DiscordRPG.Application;
 using DiscordRPG.Application.Settings;
 using DiscordRPG.Client.Handlers;
+using DiscordRPG.Common.Extensions;
 using Hangfire;
 using Hangfire.Mongo;
 using Hangfire.Mongo.Migration.Strategies;
@@ -28,9 +29,11 @@ public class Program
         Serilog.Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
             .MinimumLevel.Override("Hangfire", LogEventLevel.Warning)
-            .MinimumLevel.Verbose()
+            .MinimumLevel.Debug()
             .Enrich.FromLogContext()
-            .WriteTo.Console()
+            .WriteTo.Console(
+                outputTemplate:
+                "[{Timestamp:dd.MM HH:mm:ss} {Level}][{SourceContext:l}.{Method}] {Message}{NewLine}{Exception}")
             .CreateLogger();
 
         new Program().MainAsync().GetAwaiter().GetResult();
@@ -73,7 +76,7 @@ public class Program
         var client = new DiscordSocketClient(new DiscordSocketConfig()
         {
             GatewayIntents = GatewayIntents.All,
-            LogLevel = LogSeverity.Verbose,
+            LogLevel = LogSeverity.Info,
         });
         services.AddSingleton<DiscordSocketClient>(client);
         services.AddMediatR(typeof(Core.Core).Assembly, typeof(Application.Application).Assembly);
@@ -109,22 +112,22 @@ public class Program
         switch (msg.Severity)
         {
             case LogSeverity.Info:
-                Log.Information(msg.Message);
+                Log.Logger.WithContext(msg.Source).Information(msg.Exception, msg.Message);
                 break;
             case LogSeverity.Debug:
-                Log.Debug(msg.Message);
+                Log.Logger.WithContext(msg.Source).Debug(msg.Exception, msg.Message);
                 break;
             case LogSeverity.Verbose:
-                Log.Verbose(msg.Message);
+                Log.Logger.WithContext(msg.Source).Verbose(msg.Exception, msg.Message);
                 break;
             case LogSeverity.Critical:
-                Log.Fatal(msg.Message);
+                Log.Logger.WithContext(msg.Source).Fatal(msg.Exception, msg.Message);
                 break;
             case LogSeverity.Warning:
-                Log.Warning(msg.Message);
+                Log.Logger.WithContext(msg.Source).Warning(msg.Exception, msg.Message);
                 break;
             case LogSeverity.Error:
-                Log.Error(msg.Message);
+                Log.Error(msg.Exception, msg.Message);
                 break;
         }
 

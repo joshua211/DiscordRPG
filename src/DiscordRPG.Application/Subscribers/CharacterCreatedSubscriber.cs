@@ -2,7 +2,6 @@
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Common;
 using DiscordRPG.Core.Events;
-using Serilog;
 
 namespace DiscordRPG.Application.Subscribers;
 
@@ -14,7 +13,7 @@ public class CharacterCreatedSubscriber : EventSubscriber<CharacterCreated>
 
     public CharacterCreatedSubscriber(ILogger logger, IChannelManager channelManager, IGuildService guildService)
     {
-        this.logger = logger;
+        this.logger = logger.WithContext(GetType());
         this.channelManager = channelManager;
         this.guildService = guildService;
     }
@@ -25,7 +24,7 @@ public class CharacterCreatedSubscriber : EventSubscriber<CharacterCreated>
             await guildService.GetGuildAsync(domainEvent.Character.GuildId, cancellationToken: cancellationToken);
         if (!guildResult.WasSuccessful)
         {
-            logger.Warning("No guild found to complete the event {Name}", domainEvent.GetType().Name);
+            logger.Here().Warning("No guild found to complete the event {Name}", domainEvent.GetType().Name);
             return;
         }
 

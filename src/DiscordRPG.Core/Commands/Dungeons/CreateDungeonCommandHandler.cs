@@ -1,6 +1,8 @@
-﻿using DiscordRPG.Core.Entities;
+﻿using DiscordRPG.Common.Extensions;
+using DiscordRPG.Core.Entities;
 using DiscordRPG.Core.Events;
 using MediatR;
+using Serilog;
 
 namespace DiscordRPG.Core.Commands.Dungeons;
 
@@ -8,7 +10,8 @@ public class CreateDungeonCommandHandler : CommandHandler<CreateDungeonCommand>
 {
     private readonly IRepository<Dungeon> dungeonRepository;
 
-    public CreateDungeonCommandHandler(IMediator mediator, IRepository<Dungeon> dungeonRepository) : base(mediator)
+    public CreateDungeonCommandHandler(IMediator mediator, IRepository<Dungeon> dungeonRepository, ILogger logger) :
+        base(mediator, logger)
     {
         this.dungeonRepository = dungeonRepository;
     }
@@ -18,6 +21,8 @@ public class CreateDungeonCommandHandler : CommandHandler<CreateDungeonCommand>
     {
         try
         {
+            logger.Here().Debug("Handling {Name}", nameof(request));
+
             await dungeonRepository.SaveAsync(request.Dungeon, cancellationToken);
 
             await PublishAsync(new DungeonCreated(request.Dungeon), cancellationToken);
@@ -26,6 +31,7 @@ public class CreateDungeonCommandHandler : CommandHandler<CreateDungeonCommand>
         }
         catch (Exception e)
         {
+            logger.Debug(e, "Handling failed");
             return ExecutionResult.Failure(e.Message);
         }
     }

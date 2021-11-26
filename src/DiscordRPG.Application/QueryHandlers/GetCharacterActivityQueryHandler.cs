@@ -7,7 +7,7 @@ public class GetCharacterActivityQueryHandler : QueryHandler<GetCharacterActivit
 {
     private readonly IRepository<Activity> repository;
 
-    public GetCharacterActivityQueryHandler(IRepository<Activity> repository)
+    public GetCharacterActivityQueryHandler(IRepository<Activity> repository, ILogger logger) : base(logger)
     {
         this.repository = repository;
     }
@@ -15,6 +15,7 @@ public class GetCharacterActivityQueryHandler : QueryHandler<GetCharacterActivit
     public override async Task<Activity> Handle(GetCharacterActivityQuery request,
         CancellationToken cancellationToken = default)
     {
+        logger.Here().Debug("Handling Query {Query}", nameof(request));
         var result = await repository.FindAsync(a => a.CharId == request.CharId, cancellationToken);
 
         return result.FirstOrDefault();

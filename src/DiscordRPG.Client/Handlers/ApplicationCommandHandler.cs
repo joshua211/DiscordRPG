@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Discord.WebSocket;
 using DiscordRPG.Client.Commands.Base;
+using DiscordRPG.Common.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
@@ -17,7 +18,7 @@ public class ApplicationCommandHandler : IHandler
     {
         this.client = client;
         this.provider = provider;
-        this.logger = logger;
+        this.logger = logger.WithContext(GetType());
         loadedCommands = new Dictionary<string, IGuildCommand>();
     }
 
@@ -25,7 +26,7 @@ public class ApplicationCommandHandler : IHandler
 
     public Task InstallAsync()
     {
-        logger.Information("Installing ApplicationCommandHandler");
+        logger.Here().Information("Installing ApplicationCommandHandler");
         client.SlashCommandExecuted += HandleSlashCommandAsync;
         LoadSlashCommands();
 
@@ -40,7 +41,7 @@ public class ApplicationCommandHandler : IHandler
         }
         else
         {
-            logger.Warning("No guildCommand with Name {Name} found", command.Data.Name);
+            logger.Here().Warning("No guildCommand with Name {Name} found", command.Data.Name);
         }
     }
 

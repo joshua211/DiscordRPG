@@ -1,6 +1,8 @@
-﻿using DiscordRPG.Core.Entities;
+﻿using DiscordRPG.Common.Extensions;
+using DiscordRPG.Core.Entities;
 using DiscordRPG.Core.Events;
 using MediatR;
+using Serilog;
 
 namespace DiscordRPG.Core.Commands.Characters;
 
@@ -11,7 +13,7 @@ public class CreateCharacterCommandHandler : CommandHandler<CreateCharacterComma
 
 
     public CreateCharacterCommandHandler(IRepository<Character> characterRepository, IMediator mediator,
-        IRepository<Guild> guildRepository) : base(mediator)
+        IRepository<Guild> guildRepository, ILogger logger) : base(mediator, logger)
     {
         this.characterRepository = characterRepository;
         this.guildRepository = guildRepository;
@@ -22,6 +24,8 @@ public class CreateCharacterCommandHandler : CommandHandler<CreateCharacterComma
     {
         try
         {
+            logger.Here().Debug("Handling {Name}", nameof(command));
+
             await characterRepository.SaveAsync(command.Character, cancellationToken);
 //TODO do this in an event
             var guild = await guildRepository.GetAsync(command.Character.GuildId, cancellationToken);
@@ -34,6 +38,7 @@ public class CreateCharacterCommandHandler : CommandHandler<CreateCharacterComma
         }
         catch (Exception e)
         {
+            logger.Here().Debug(e, "Handle failed");
             return ExecutionResult.Failure(e.Message);
         }
     }

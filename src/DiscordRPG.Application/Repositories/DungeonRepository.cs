@@ -2,7 +2,6 @@
 using DiscordRPG.Application.Settings;
 using DiscordRPG.Common;
 using MongoDB.Driver;
-using Serilog;
 
 namespace DiscordRPG.Application.Repositories;
 
@@ -13,7 +12,7 @@ public class DungeonRepository : IRepository<Dungeon>
 
     public DungeonRepository(IDatabaseSettings databaseSettings, ILogger logger)
     {
-        this.logger = logger;
+        this.logger = logger.WithContext(GetType());
         var client = new MongoClient(databaseSettings.ConnectionString);
         dungeons = client.GetDatabase(databaseSettings.DatabaseName)
             .GetCollection<Dungeon>(databaseSettings.DungeonCollectionName);
@@ -21,38 +20,43 @@ public class DungeonRepository : IRepository<Dungeon>
 
     public async Task SaveAsync(Dungeon entity, CancellationToken cancellationToken)
     {
-        logger.Verbose("Saving dungeon {@Dungeon}", entity);
+        logger.Here().Verbose("Saving dungeon {@Dungeon}", entity);
         await dungeons.InsertOneAsync(entity, null, cancellationToken);
     }
 
     public async Task UpdateAsync(Dungeon entity, CancellationToken cancellationToken)
     {
-        logger.Verbose("Updating dungeon {@entity}", entity);
+        logger.Here().Verbose("Updating dungeon {@entity}", entity);
         var result = await dungeons.ReplaceOneAsync(d => d.ID == entity.ID, entity,
             cancellationToken: cancellationToken);
-        logger.Verbose("Updated {Count} dungeons", result.ModifiedCount);
+        logger.Here().Verbose("Updated {Count} dungeons", result.ModifiedCount);
     }
 
     public async Task DeleteAsync(Identity id, CancellationToken cancellationToken)
     {
-        logger.Verbose("Deleting dungeon with id {Id}", id);
-        await dungeons.DeleteOneAsync(d => d.ID == id, cancellationToken);
+        logger.Here().Verbose("Deleting dungeon with id {Id}", id);
+        var result = await dungeons.DeleteOneAsync(d => d.ID == id, cancellationToken);
+        logger.Here().Verbose("Deleted {Count} dungeons", result.DeletedCount);
     }
 
     public async Task<Dungeon> GetAsync(Identity id, CancellationToken cancellationToken)
     {
-        logger.Verbose("Getting dungeon with id {Id}", id);
+        logger.Here().Verbose("Getting dungeon with id {Id}", id);
         var cursor = await dungeons.FindAsync(d => d.ID == id, cancellationToken: cancellationToken);
+        var dungeon = await cursor.FirstOrDefaultAsync(cancellationToken);
+        logger.Here().Verbose("Found dungeon {@Dungeon}", dungeon);
 
-        return await cursor.FirstOrDefaultAsync(cancellationToken);
+        return dungeon;
     }
 
     public async Task<IEnumerable<Dungeon>> GetAllAsync(CancellationToken cancellationToken)
     {
-        logger.Verbose("Getting all dungeons");
+        logger.Here().Verbose("Getting all dungeons");
         var cursor = await dungeons.FindAsync(d => true, cancellationToken: cancellationToken);
+        var list = await cursor.ToListAsync(cancellationToken: cancellationToken);
+        logger.Here().Verbose("Found {Count} dungeons", list.Count);
 
-        return await cursor.ToListAsync(cancellationToken: cancellationToken);
+        return list;
     }
 
     public async Task<IEnumerable<Dungeon>> FindAsync(Expression<Func<Dungeon, bool>> expression,
@@ -60,7 +64,9 @@ public class DungeonRepository : IRepository<Dungeon>
     {
         logger.Verbose("Finding dungeons with expression {Expression}", expression);
         var cursor = await dungeons.FindAsync(expression, cancellationToken: cancellationToken);
+        var list = await cursor.ToListAsync(cancellationToken: cancellationToken);
+        logger.Here().Verbose("Found {Count} dungeons", list.Count);
 
-        return await cursor.ToListAsync(cancellationToken: cancellationToken);
+        return list;
     }
 }

@@ -7,7 +7,7 @@ public class GetCharacterByUserIdHandler : QueryHandler<GetCharacterByUserIdQuer
 {
     protected readonly IRepository<Character> repository;
 
-    public GetCharacterByUserIdHandler(IRepository<Character> repository)
+    public GetCharacterByUserIdHandler(IRepository<Character> repository, ILogger logger) : base(logger)
     {
         this.repository = repository;
     }
@@ -15,6 +15,7 @@ public class GetCharacterByUserIdHandler : QueryHandler<GetCharacterByUserIdQuer
     public override async Task<Character> Handle(GetCharacterByUserIdQuery request,
         CancellationToken cancellationToken = default)
     {
+        logger.Here().Debug("Handling Query {Query}", nameof(request));
         return (await repository.FindAsync(c => c.UserId.Value == request.UserId && c.GuildId.Value == request.GuildId,
             cancellationToken)).FirstOrDefault();
     }

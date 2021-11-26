@@ -1,6 +1,8 @@
-﻿using DiscordRPG.Core.Entities;
+﻿using DiscordRPG.Common.Extensions;
+using DiscordRPG.Core.Entities;
 using DiscordRPG.Core.Events;
 using MediatR;
+using Serilog;
 
 namespace DiscordRPG.Core.Commands.Activities;
 
@@ -8,7 +10,8 @@ public class CreateActivityCommandHandler : CommandHandler<CreateActivityCommand
 {
     private readonly IRepository<Activity> activityRepository;
 
-    public CreateActivityCommandHandler(IMediator mediator, IRepository<Activity> activityRepository) : base(mediator)
+    public CreateActivityCommandHandler(IMediator mediator, IRepository<Activity> activityRepository, ILogger logger) :
+        base(mediator, logger)
     {
         this.activityRepository = activityRepository;
     }
@@ -16,6 +19,7 @@ public class CreateActivityCommandHandler : CommandHandler<CreateActivityCommand
     public override async Task<ExecutionResult> Handle(CreateActivityCommand request,
         CancellationToken cancellationToken)
     {
+        logger.Here().Debug("Handling {Name}", nameof(request));
         try
         {
             await activityRepository.SaveAsync(request.Activity, cancellationToken);
@@ -26,6 +30,7 @@ public class CreateActivityCommandHandler : CommandHandler<CreateActivityCommand
         }
         catch (Exception e)
         {
+            logger.Here().Debug(e, "Handling failed");
             return ExecutionResult.Failure(e.Message);
         }
     }

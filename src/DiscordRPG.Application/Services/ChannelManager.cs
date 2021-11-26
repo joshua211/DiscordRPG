@@ -2,7 +2,6 @@
 using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces;
 using DiscordRPG.Application.Interfaces.Services;
-using Serilog;
 
 namespace DiscordRPG.Application.Services;
 
@@ -16,34 +15,35 @@ public class ChannelManager : IChannelManager
     {
         this.client = client;
         this.guildService = guildService;
-        this.logger = logger;
+        this.logger = logger.WithContext(GetType());
     }
 
     public async Task<ulong> CreateDungeonThreadAsync(DiscordId guildId, string dungeonName)
     {
-        logger.Information("Creating dungeon channel {Name} for guild {Id}", dungeonName, guildId);
+        logger.Here().Debug("Creating dungeon channel {Name} for guild {Id}", dungeonName, guildId);
         var result = await guildService.GetGuildWithDiscordIdAsync(guildId);
         if (!result.WasSuccessful)
         {
-            logger.Warning("No guild found");
+            logger.Here().Warning("No guild found");
             return 0;
         }
 
         var socketGuild = client.GetGuild(guildId);
-        var cat = socketGuild.CategoryChannels.FirstOrDefault(c => c.Name == "--RPG--");
         var dungeonChannel = socketGuild.GetTextChannel(result.Value.DungeonHallId);
         var thread = await dungeonChannel.CreateThreadAsync(dungeonName);
 
-        logger.Information("Created dungeon channel {Name}", dungeonName);
+        logger.Here().Debug("Created dungeon channel {Name}", dungeonName);
 
         return thread.Id;
     }
 
     public async Task SendToGuildHallAsync(DiscordId guildId, string text)
     {
+        logger.Here().Verbose("Sending Message to GuildHall: {Msg}", text);
         var result = await guildService.GetGuildWithDiscordIdAsync(guildId);
         if (!result.WasSuccessful)
         {
+            logger.Here().Warning("No guild found, cant send message");
             return;
         }
 
@@ -54,9 +54,11 @@ public class ChannelManager : IChannelManager
 
     public async Task SendToDungeonHallAsync(DiscordId guildId, string text)
     {
+        logger.Here().Verbose("Sending Message to GuildHall: {Msg}", text);
         var result = await guildService.GetGuildWithDiscordIdAsync(guildId);
         if (!result.WasSuccessful)
         {
+            logger.Here().Warning("No guild found, cant send message");
             return;
         }
 
@@ -69,13 +71,13 @@ public class ChannelManager : IChannelManager
     {
         try
         {
-            logger.Verbose("Deleting thread {Id}", threadId);
+            logger.Here().Debug("Deleting thread {Id}", threadId);
             var channel = client.GetChannel(threadId) as IGuildChannel;
             await channel.DeleteAsync();
         }
         catch (Exception e)
         {
-            logger.Error(e, "Failed to delete thread {ThreadId}", threadId);
+            logger.Here().Error(e, "Failed to delete thread {ThreadId}", threadId);
         }
     }
 
@@ -83,13 +85,13 @@ public class ChannelManager : IChannelManager
     {
         try
         {
-            logger.Verbose("Updating Thread {Id} name to {Name}", threadId, name);
+            logger.Here().Debug("Updating Thread {Id} name to {Name}", threadId, name);
             var channel = client.GetChannel(threadId) as SocketGuildChannel;
             await channel.ModifyAsync(properties => properties.Name = name);
         }
         catch (Exception e)
         {
-            logger.Error(e, "Failed to update name of thread {Id}", threadId);
+            logger.Here().Error(e, "Failed to update name of thread {Id}", threadId);
         }
     }
 }

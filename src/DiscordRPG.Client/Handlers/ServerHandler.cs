@@ -1,5 +1,6 @@
 ﻿using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Common.Extensions;
 using Serilog;
 
 namespace DiscordRPG.Client.Handlers;
@@ -21,14 +22,14 @@ public class ServerHandler : IHandler
     {
         this.client = client;
         this.guildService = guildService;
-        this.logger = logger;
+        this.logger = logger.WithContext(GetType());
         this.applicationCommandHandler = applicationCommandHandler;
         this.characterService = characterService;
     }
 
     public Task InstallAsync()
     {
-        logger.Information("Installing ServerHandler");
+        logger.Here().Information("Installing ServerHandler");
         client.JoinedGuild += SetupServer;
         client.LeftGuild += CleanServer;
 
@@ -39,6 +40,7 @@ public class ServerHandler : IHandler
     {
         try
         {
+            logger.Here().Debug("Cleaning server {Id}", socketGuild.Id);
             var result = await guildService.GetGuildWithDiscordIdAsync(socketGuild.Id);
             if (!result.WasSuccessful)
             {
@@ -54,7 +56,7 @@ public class ServerHandler : IHandler
         }
         catch (Exception e)
         {
-            logger.Error(e, "Failed to clean up server");
+            logger.Here().Error(e, "Failed to clean up server");
         }
     }
 
@@ -62,10 +64,10 @@ public class ServerHandler : IHandler
     {
         try
         {
-            logger.Information("Installing guild commands");
+            logger.Here().Debug("Installing guild commands");
             await InstallGuildCommands(socketGuild);
 
-            logger.Information("Setting up channels for Guild {Id}", socketGuild.Id);
+            logger.Here().Debug("Setting up channels for Guild {Id}", socketGuild.Id);
             await guildService.DeleteGuildAsync(socketGuild.Id);
 
             var category = await socketGuild.CreateCategoryChannelAsync(CategoryName);
@@ -82,15 +84,15 @@ public class ServerHandler : IHandler
 
             if (result.WasSuccessful)
             {
-                logger.Information("Created Guild {Id}", socketGuild.Id);
+                logger.Here().Debug("Created Guild {Id}", socketGuild.Id);
                 return;
             }
 
-            logger.Warning("Failed to create Guild. {Msg}", result.ErrorMessage);
+            logger.Here().Warning("Failed to create Guild. {Msg}", result.ErrorMessage);
         }
         catch (Exception e)
         {
-            logger.Error(e, "Failed to create Guild");
+            logger.Here().Error(e, "Failed to create Guild");
         }
     }
 
