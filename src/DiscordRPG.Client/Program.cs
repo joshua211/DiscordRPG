@@ -28,7 +28,7 @@ public class Program
         Serilog.Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
             .MinimumLevel.Override("Hangfire", LogEventLevel.Warning)
-            .MinimumLevel.Debug()
+            .MinimumLevel.Verbose()
             .Enrich.FromLogContext()
             .WriteTo.Console()
             .CreateLogger();

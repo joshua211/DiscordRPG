@@ -25,13 +25,21 @@ public class DungeonRepository : IRepository<Dungeon>
         await dungeons.InsertOneAsync(entity, null, cancellationToken);
     }
 
-    public async Task DeleteAsync(string id, CancellationToken cancellationToken)
+    public async Task UpdateAsync(Dungeon entity, CancellationToken cancellationToken)
+    {
+        logger.Verbose("Updating dungeon {@entity}", entity);
+        var result = await dungeons.ReplaceOneAsync(d => d.ID == entity.ID, entity,
+            cancellationToken: cancellationToken);
+        logger.Verbose("Updated {Count} dungeons", result.ModifiedCount);
+    }
+
+    public async Task DeleteAsync(Identity id, CancellationToken cancellationToken)
     {
         logger.Verbose("Deleting dungeon with id {Id}", id);
         await dungeons.DeleteOneAsync(d => d.ID == id, cancellationToken);
     }
 
-    public async Task<Dungeon> GetAsync(string id, CancellationToken cancellationToken)
+    public async Task<Dungeon> GetAsync(Identity id, CancellationToken cancellationToken)
     {
         logger.Verbose("Getting dungeon with id {Id}", id);
         var cursor = await dungeons.FindAsync(d => d.ID == id, cancellationToken: cancellationToken);
@@ -50,7 +58,7 @@ public class DungeonRepository : IRepository<Dungeon>
     public async Task<IEnumerable<Dungeon>> FindAsync(Expression<Func<Dungeon, bool>> expression,
         CancellationToken cancellationToken)
     {
-        logger.Verbose("Finding dungeons with expression {@Expression}", expression);
+        logger.Verbose("Finding dungeons with expression {Expression}", expression);
         var cursor = await dungeons.FindAsync(expression, cancellationToken: cancellationToken);
 
         return await cursor.ToListAsync(cancellationToken: cancellationToken);

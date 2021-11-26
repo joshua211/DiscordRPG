@@ -39,7 +39,7 @@ public class ServerHandler : IHandler
     {
         try
         {
-            var result = await guildService.GetGuildAsync(socketGuild.Id);
+            var result = await guildService.GetGuildWithDiscordIdAsync(socketGuild.Id);
             if (!result.WasSuccessful)
             {
                 return;

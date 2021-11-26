@@ -34,10 +34,13 @@ public abstract class CommandBase : IGuildCommand
 
     public abstract Task InstallAsync(SocketGuild guild);
 
+    //TODO maybe handle this in parallel?
     public async Task HandleAsync(SocketSlashCommand command)
     {
         var requireName =
             (RequireChannelNameAttribute) Attribute.GetCustomAttribute(GetType(), typeof(RequireChannelNameAttribute))!;
+        var requireGuild =
+            (RequireGuildAttribute) Attribute.GetCustomAttribute(GetType(), typeof(RequireGuildAttribute))!;
         var requireChar =
             (RequireCharacterAttribute) Attribute.GetCustomAttribute(GetType(), typeof(RequireCharacterAttribute))!;
         var requireNoActivity =
@@ -53,6 +56,20 @@ public abstract class CommandBase : IGuildCommand
                 await command.RespondAsync($"This command can only be used in the {requireName.ChannelName} channel!");
                 return;
             }
+        }
+
+        Guild guild = null;
+        if (requireGuild is not null)
+        {
+            var channel = command.Channel as IGuildChannel;
+            var guildResult = await guildService.GetGuildWithDiscordIdAsync(channel.Guild.Id);
+            if (!guildResult.WasSuccessful)
+            {
+                await command.RespondAsync("No Guild was setup for this server!");
+                return;
+            }
+
+            guild = guildResult.Value;
         }
 
         Dungeon dungeon = null;
@@ -72,7 +89,7 @@ public abstract class CommandBase : IGuildCommand
         if (requireChar is not null)
         {
             var user = command.User as IGuildUser;
-            var charResult = await characterService.GetCharacterAsync(user.Id, user.Guild.Id);
+            var charResult = await characterService.GetCharacterAsync(user.Id, guild.ID);
             if (!charResult.WasSuccessful)
             {
                 await command.RespondAsync("Please create a character first!");
@@ -96,7 +113,7 @@ public abstract class CommandBase : IGuildCommand
             }
         }
 
-        await HandleAsync(command, new GuildCommandContext(character, activity, dungeon));
+        await HandleAsync(command, new GuildCommandContext(character, activity, dungeon, guild));
     }
 
     private async Task HandleSelectionAsync(SocketMessageComponent component)

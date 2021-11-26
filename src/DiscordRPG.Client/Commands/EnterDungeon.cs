@@ -11,10 +11,10 @@ using ActivityType = DiscordRPG.Core.Enums.ActivityType;
 
 namespace DiscordRPG.Client.Commands;
 
-//TODO require dungeon
 [RequireCharacter]
 [RequireNoCurrentActivity]
 [RequireDungeon]
+[RequireGuild]
 public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
 {
     public EnterDungeon(DiscordSocketClient client, ILogger logger, IActivityService activityService,
@@ -89,7 +89,7 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
         var result = await activityService.QueueActivityAsync(dialog.CharId, duration,
             ActivityType.Dungeon, new ActivityData
             {
-                DungeonId = dialog.Dungeon.DungeonChannelId,
+                ThreadId = dialog.Dungeon.DungeonChannelId,
             });
 
         await component.UpdateAsync(properties =>

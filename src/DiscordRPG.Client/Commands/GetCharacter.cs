@@ -9,6 +9,7 @@ using Serilog;
 namespace DiscordRPG.Client.Commands;
 
 [RequireChannelName(ServerHandler.GuildHallName)]
+[RequireGuild]
 [RequireCharacter]
 public class GetCharacter : CommandBase
 {

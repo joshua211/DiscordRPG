@@ -1,17 +1,17 @@
-﻿using DiscordRPG.Core.Events;
-using DiscordRPG.Core.Repositories;
+﻿using DiscordRPG.Core.Entities;
+using DiscordRPG.Core.Events;
 using MediatR;
 
 namespace DiscordRPG.Core.Commands.Characters;
 
 public class CreateCharacterCommandHandler : CommandHandler<CreateCharacterCommand>
 {
-    private readonly ICharacterRepository characterRepository;
-    private readonly IGuildRepository guildRepository;
+    private readonly IRepository<Character> characterRepository;
+    private readonly IRepository<Guild> guildRepository;
 
 
-    public CreateCharacterCommandHandler(ICharacterRepository characterRepository, IMediator mediator,
-        IGuildRepository guildRepository) : base(mediator)
+    public CreateCharacterCommandHandler(IRepository<Character> characterRepository, IMediator mediator,
+        IRepository<Guild> guildRepository) : base(mediator)
     {
         this.characterRepository = characterRepository;
         this.guildRepository = guildRepository;
@@ -22,11 +22,11 @@ public class CreateCharacterCommandHandler : CommandHandler<CreateCharacterComma
     {
         try
         {
-            await characterRepository.SaveCharacterAsync(command.Character, cancellationToken);
-
-            var guild = await guildRepository.GetGuildAsync(command.Character.GuildId, cancellationToken);
-            guild.Characters.Add(command.Character.UserId);
-            await guildRepository.UpdateGuildAsync(guild, cancellationToken);
+            await characterRepository.SaveAsync(command.Character, cancellationToken);
+//TODO do this in an event
+            var guild = await guildRepository.GetAsync(command.Character.GuildId, cancellationToken);
+            guild.Characters.Add(command.Character.ID);
+            await guildRepository.UpdateAsync(guild, cancellationToken);
 
             await PublishAsync(new CharacterCreated(command.Character), cancellationToken);
 

@@ -1,14 +1,14 @@
-﻿using DiscordRPG.Core.Events;
-using DiscordRPG.Core.Repositories;
+﻿using DiscordRPG.Core.Entities;
+using DiscordRPG.Core.Events;
 using MediatR;
 
 namespace DiscordRPG.Core.Commands.Guilds;
 
 public class CreateGuildCommandHandler : CommandHandler<CreateGuildCommand>
 {
-    private readonly IGuildRepository repository;
+    private readonly IRepository<Guild> repository;
 
-    public CreateGuildCommandHandler(IMediator mediator, IGuildRepository repository) : base(mediator)
+    public CreateGuildCommandHandler(IMediator mediator, IRepository<Guild> repository) : base(mediator)
     {
         this.repository = repository;
     }
@@ -17,7 +17,7 @@ public class CreateGuildCommandHandler : CommandHandler<CreateGuildCommand>
     {
         try
         {
-            await repository.SaveGuildAsync(request.Guild, cancellationToken);
+            await repository.SaveAsync(request.Guild, cancellationToken);
 
             await PublishAsync(new GuildCreated(request.Guild), cancellationToken);
 

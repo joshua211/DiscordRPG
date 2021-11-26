@@ -14,6 +14,7 @@ namespace DiscordRPG.Client.Commands;
 
 [RequireChannelName(ServerHandler.DungeonHallName)]
 [RequireCharacter]
+[RequireGuild]
 [RequireNoCurrentActivity]
 public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
 {
@@ -48,6 +49,7 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
 
         var character = context.Character;
         dialog.Character = character;
+        dialog.ServerId = user.Guild.Id;
 
         var component = new ComponentBuilder()
             .WithButton("Search", CommandName + ".accept")
@@ -89,7 +91,7 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
             ActivityType.SearchDungeon, new ActivityData
             {
                 PlayerLevel = dialog.Character.Level.CurrentLevel,
-                GuildId = dialog.Character.GuildId
+                ServerId = dialog.ServerId
             });
 
         if (!result.WasSuccessful)

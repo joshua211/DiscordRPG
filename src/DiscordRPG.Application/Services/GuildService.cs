@@ -13,18 +13,42 @@ public class GuildService : ApplicationService, IGuildService
     {
     }
 
-    public async Task<Result<Guild>> GetGuildAsync(ulong guildId, TransactionContext parentContext = null,
+    public async Task<Result<Guild>> GetGuildAsync(Identity identity, TransactionContext parentContext = null,
         CancellationToken cancellationToken = default)
     {
         using var ctx = TransactionBegin(parentContext);
         try
         {
-            var query = new GetGuildQuery(guildId);
+            var query = new GetGuildQuery(identity);
+            var result = await ProcessAsync(ctx, query, cancellationToken);
+            if (result is null)
+            {
+                TransactionWarning(ctx, "No guild found for id {Identity}", identity);
+                return Result<Guild>.Failure("No guild found");
+            }
+
+            return Result<Guild>.Success(result);
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result<Guild>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Result<Guild>> GetGuildWithDiscordIdAsync(DiscordId serverId,
+        TransactionContext parentContext = null,
+        CancellationToken cancellationToken = default)
+    {
+        using var ctx = TransactionBegin(parentContext);
+        try
+        {
+            var query = new GetGuildByServerIdQuery(serverId);
             var result = await ProcessAsync(ctx, query, cancellationToken);
 
             if (result is null)
             {
-                TransactionWarning(ctx, "No Guild found with id {ID}", true, guildId);
+                TransactionWarning(ctx, "No Guild found with id {ID}", serverId);
 
                 return Result<Guild>.Failure("No Guild found");
             }
@@ -38,14 +62,14 @@ public class GuildService : ApplicationService, IGuildService
         }
     }
 
-    public async Task<Result<Guild>> CreateGuildAsync(ulong guildId, string guildName, ulong guildHallId,
-        ulong dungeonHallId, TransactionContext parentContext = null,
+    public async Task<Result<Guild>> CreateGuildAsync(DiscordId serverId, string guildName, DiscordId guildHallId,
+        DiscordId dungeonHallId, TransactionContext parentContext = null,
         CancellationToken token = default)
     {
         using var ctx = TransactionBegin(parentContext);
         try
         {
-            var guild = new Guild(guildId, guildName, guildHallId, dungeonHallId, new List<ulong>());
+            var guild = new Guild(serverId, guildName, guildHallId, dungeonHallId, new List<Identity>());
             var cmd = new CreateGuildCommand(guild);
 
             var result = await PublishAsync(ctx, cmd, token);
@@ -64,13 +88,13 @@ public class GuildService : ApplicationService, IGuildService
         }
     }
 
-    public async Task<Result> DeleteGuildAsync(ulong id, TransactionContext parentContext = null,
+    public async Task<Result> DeleteGuildAsync(DiscordId serverId, TransactionContext parentContext = null,
         CancellationToken cancellationToken = default)
     {
         using var ctx = TransactionBegin(parentContext);
         try
         {
-            var cmd = new DeleteGuildCommand(id);
+            var cmd = new DeleteGuildCommand(serverId);
             var result = await PublishAsync(ctx, cmd, cancellationToken);
 
             if (!result.WasSuccessful)

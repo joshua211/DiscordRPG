@@ -4,10 +4,10 @@ namespace DiscordRPG.Application.Queries;
 
 public class GetDungeonByChannelIdQuery : Query<Dungeon>
 {
-    public GetDungeonByChannelIdQuery(ulong channelId)
+    public GetDungeonByChannelIdQuery(DiscordId channelId)
     {
         ChannelId = channelId;
     }
 
-    public ulong ChannelId { get; private set; }
+    public DiscordId ChannelId { get; private set; }
 }

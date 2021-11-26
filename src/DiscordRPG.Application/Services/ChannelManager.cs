@@ -19,10 +19,10 @@ public class ChannelManager : IChannelManager
         this.logger = logger;
     }
 
-    public async Task<ulong> CreateDungeonThreadAsync(ulong guildId, string dungeonName)
+    public async Task<ulong> CreateDungeonThreadAsync(DiscordId guildId, string dungeonName)
     {
         logger.Information("Creating dungeon channel {Name} for guild {Id}", dungeonName, guildId);
-        var result = await guildService.GetGuildAsync(guildId);
+        var result = await guildService.GetGuildWithDiscordIdAsync(guildId);
         if (!result.WasSuccessful)
         {
             logger.Warning("No guild found");
@@ -39,9 +39,9 @@ public class ChannelManager : IChannelManager
         return thread.Id;
     }
 
-    public async Task SendToGuildHallAsync(ulong guildId, string text)
+    public async Task SendToGuildHallAsync(DiscordId guildId, string text)
     {
-        var result = await guildService.GetGuildAsync(guildId);
+        var result = await guildService.GetGuildWithDiscordIdAsync(guildId);
         if (!result.WasSuccessful)
         {
             return;
@@ -52,9 +52,9 @@ public class ChannelManager : IChannelManager
             await channel.SendMessageAsync(text);
     }
 
-    public async Task SendToDungeonHallAsync(ulong guildId, string text)
+    public async Task SendToDungeonHallAsync(DiscordId guildId, string text)
     {
-        var result = await guildService.GetGuildAsync(guildId);
+        var result = await guildService.GetGuildWithDiscordIdAsync(guildId);
         if (!result.WasSuccessful)
         {
             return;
@@ -65,7 +65,7 @@ public class ChannelManager : IChannelManager
             await channel.SendMessageAsync(text);
     }
 
-    public async Task DeleteDungeonThreadAsync(ulong threadId)
+    public async Task DeleteDungeonThreadAsync(DiscordId threadId)
     {
         try
         {
@@ -79,7 +79,7 @@ public class ChannelManager : IChannelManager
         }
     }
 
-    public async Task UpdateDungeonThreadNameAsync(ulong threadId, string name)
+    public async Task UpdateDungeonThreadNameAsync(DiscordId threadId, string name)
     {
         try
         {

@@ -2,7 +2,8 @@
 
 public class Guild : Entity
 {
-    public Guild(ulong serverId, string guildName, ulong guildHallId, ulong dungeonHallId, List<ulong> characters)
+    public Guild(DiscordId serverId, string guildName, DiscordId guildHallId, DiscordId dungeonHallId,
+        List<Identity> characters)
     {
         ServerId = serverId;
         GuildName = guildName;
@@ -11,9 +12,9 @@ public class Guild : Entity
         Characters = characters;
     }
 
-    public ulong ServerId { get; private set; }
+    public DiscordId ServerId { get; private set; }
     public string GuildName { get; private set; }
-    public ulong GuildHallId { get; private set; }
-    public ulong DungeonHallId { get; private set; }
-    public List<ulong> Characters { get; private set; }
+    public DiscordId GuildHallId { get; private set; }
+    public DiscordId DungeonHallId { get; private set; }
+    public List<Identity> Characters { get; private set; }
 }

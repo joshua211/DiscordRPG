@@ -1,11 +1,12 @@
-﻿using DiscordRPG.Application.Settings;
-using DiscordRPG.Core.Repositories;
+﻿using System.Linq.Expressions;
+using DiscordRPG.Application.Settings;
+using DiscordRPG.Common;
 using MongoDB.Driver;
 using Serilog;
 
 namespace DiscordRPG.Application.Repositories;
 
-public class GuildRepository : IGuildRepository
+public class GuildRepository : IRepository<Guild>
 {
     private readonly IMongoCollection<Guild> guilds;
     private readonly ILogger logger;
@@ -18,35 +19,53 @@ public class GuildRepository : IGuildRepository
             .GetCollection<Guild>(databaseSettings.GuildCollectionName);
     }
 
-    public async Task<Guild> GetGuildAsync(ulong guildId, CancellationToken token)
+    public async Task SaveAsync(Guild entity, CancellationToken cancellationToken)
     {
-        logger.Verbose("Getting Guild {Id}", guildId);
-        var result = await guilds.FindAsync(g => g.ServerId == guildId, cancellationToken: token);
+        logger.Verbose("Saving guild {@guild}", entity);
+        await guilds.InsertOneAsync(entity, null, cancellationToken);
+    }
 
-        var guild = await result.FirstOrDefaultAsync(cancellationToken: token);
+    public async Task UpdateAsync(Guild entity, CancellationToken cancellationToken)
+    {
+        logger.Verbose("Updating guild {@guild}", entity);
+        var result = await guilds.ReplaceOneAsync(g => g.ID == entity.ID, entity,
+            cancellationToken: cancellationToken);
+        logger.Verbose("Updated {Count} guilds", result.ModifiedCount);
+    }
+
+    public async Task DeleteAsync(Identity id, CancellationToken cancellationToken)
+    {
+        logger.Verbose("Deleting guild {Dd}", id);
+        var result = await guilds.DeleteOneAsync(g => g.ID == id, cancellationToken);
+        logger.Verbose("Deleted {Count} guilds", result.DeletedCount);
+    }
+
+    public async Task<Guild> GetAsync(Identity id, CancellationToken cancellationToken)
+    {
+        logger.Verbose("Getting Guild {Id}", id);
+        var result = await guilds.FindAsync(g => g.ID == id, cancellationToken: cancellationToken);
+
+        var guild = await result.FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         logger.Verbose("Found guild: {@Guild}", guild);
         return guild;
     }
 
-    public async Task SaveGuildAsync(Guild guild, CancellationToken cancellationToken)
+    public async Task<IEnumerable<Guild>> GetAllAsync(CancellationToken cancellationToken)
     {
-        logger.Verbose("Saving guild {@guild}", guild);
-        await guilds.InsertOneAsync(guild, null, cancellationToken);
+        logger.Verbose("Getting all guilds");
+
+        var result = await guilds.FindAsync(g => true);
+
+        return await result.ToListAsync(cancellationToken);
     }
 
-    public async Task UpdateGuildAsync(Guild guild, CancellationToken cancellationToken)
+    public async Task<IEnumerable<Guild>> FindAsync(Expression<Func<Guild, bool>> expression,
+        CancellationToken cancellationToken)
     {
-        logger.Verbose("Updating guild {@guild}");
-        var result = await guilds.ReplaceOneAsync(g => g.ServerId == guild.ServerId, guild,
-            cancellationToken: cancellationToken);
-        logger.Verbose("Updated {Count} guilds", result.ModifiedCount);
-    }
+        logger.Verbose("Finding dungeons with expression {Expression}", expression.ToString());
+        var cursor = await guilds.FindAsync(expression, cancellationToken: cancellationToken);
 
-    public async Task DeleteGuildAsync(ulong guildId, CancellationToken cancellationToken)
-    {
-        logger.Verbose("Deleting guild {Dd}", guildId);
-        var result = await guilds.DeleteOneAsync(g => g.ServerId == guildId, cancellationToken);
-        logger.Verbose("Deleted {Count} guilds", result.DeletedCount);
+        return await cursor.ToListAsync(cancellationToken: cancellationToken);
     }
 }

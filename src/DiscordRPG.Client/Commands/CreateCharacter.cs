@@ -12,6 +12,7 @@ using Serilog;
 namespace DiscordRPG.Client.Commands;
 
 [RequireChannelName(ServerHandler.GuildHallName)]
+[RequireGuild]
 public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
 {
     public CreateCharacter(DiscordSocketClient client, ILogger logger, IActivityService activityService,
@@ -43,16 +44,9 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
     protected override async Task HandleDialogAsync(SocketSlashCommand command, GuildCommandContext context,
         CreateCharacterDialog dialog)
     {
-        var user = command.User as SocketGuildUser;
-        var result = await guildService.GetGuildAsync(user.Guild.Id);
-        if (!result.WasSuccessful)
-        {
-            await command.RespondAsync("No guild was set up for this server!");
-            EndDialog(user.Id);
-            return;
-        }
-
-        if (result.Value.Characters.Contains(user.Id))
+        var user = command.User as IGuildUser;
+        var result = await characterService.GetCharacterAsync(user.Id, context.Guild.ID);
+        if (result.WasSuccessful)
         {
             await command.RespondAsync("You can only create one character on each server!");
             EndDialog(user.Id);
@@ -61,6 +55,7 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
 
         var name = command.Data.Options.First().Value as string;
         dialog.Name = name;
+        dialog.GuildId = context.Guild.ID;
 
         var menuBuilder = new SelectMenuBuilder()
             .WithPlaceholder("Choose your race")
@@ -127,7 +122,7 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
         var @class = new Class(dialog.Class);
         var race = new Race(dialog.Race);
         var result =
-            await characterService.CreateCharacterAsync(guildUser.Id, guildUser.Guild.Id, dialog.Name, @class, race);
+            await characterService.CreateCharacterAsync(guildUser.Id, dialog.GuildId, dialog.Name, @class, race);
         if (!result.WasSuccessful)
         {
             await component.RespondAsync("Something went wrong! " + result.ErrorMessage);

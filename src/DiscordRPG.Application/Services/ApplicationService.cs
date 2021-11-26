@@ -34,7 +34,8 @@ public abstract class ApplicationService
 
     protected void TransactionWarning(TransactionContext context, string content, params object[] properties)
     {
-        logger.Warning("{ID} " + content, context.Id, properties);
+        var template = $"{context.Id} {content}";
+        logger.Warning(template, properties);
     }
 
     protected void TransactionDebug(TransactionContext context, string content, params object[] properties)

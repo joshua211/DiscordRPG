@@ -9,5 +9,5 @@ public abstract class Entity
         ID = Guid.NewGuid().ToString();
     }
 
-    [BsonId] public string ID { get; set; }
+    [BsonId] public Identity ID { get; set; }
 }

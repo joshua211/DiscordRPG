@@ -5,10 +5,10 @@ namespace DiscordRPG.Application.Interfaces.Services;
 
 public interface IDungeonService
 {
-    Task<Result<Dungeon>> CreateDungeonAsync(ulong guildId, ulong threadId, uint charLevel,
+    Task<Result<Dungeon>> CreateDungeonAsync(DiscordId serverId, DiscordId threadId, uint charLevel,
         TransactionContext parentContext = null,
         CancellationToken token = default);
 
-    Task<Result<Dungeon>> GetDungeonFromChannelIdAsync(ulong channelId, TransactionContext parentContext = null,
+    Task<Result<Dungeon>> GetDungeonFromChannelIdAsync(DiscordId channelId, TransactionContext parentContext = null,
         CancellationToken token = default);
 }

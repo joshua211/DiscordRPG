@@ -22,7 +22,8 @@ public class ActivityService : ApplicationService, IActivityService
         this.channelManager = channelManager;
     }
 
-    public async Task<Result> QueueActivityAsync(string charId, TimeSpan duration, ActivityType type, ActivityData data,
+    public async Task<Result> QueueActivityAsync(Identity charId, TimeSpan duration, ActivityType type,
+        ActivityData data,
         TransactionContext parentContext = null,
         CancellationToken cancellationToken = default)
     {
@@ -51,7 +52,7 @@ public class ActivityService : ApplicationService, IActivityService
         }
     }
 
-    public async Task<Result<Activity>> GetCharacterActivityAsync(string charId,
+    public async Task<Result<Activity>> GetCharacterActivityAsync(Identity charId,
         TransactionContext parentContext = null, CancellationToken token = default)
     {
         using var ctx = TransactionBegin(parentContext);
@@ -74,7 +75,7 @@ public class ActivityService : ApplicationService, IActivityService
         }
     }
 
-    public async Task<Result<Activity>> GetActivityAsync(string activityId, TransactionContext parentContext = null,
+    public async Task<Result<Activity>> GetActivityAsync(Identity activityId, TransactionContext parentContext = null,
         CancellationToken token = default)
     {
         using var ctx = TransactionBegin(parentContext);

@@ -2,7 +2,7 @@
 
 public class Activity : Entity
 {
-    public Activity(string charId, DateTime startTime, TimeSpan duration, ActivityType type, ActivityData data)
+    public Activity(Identity charId, DateTime startTime, TimeSpan duration, ActivityType type, ActivityData data)
     {
         CharId = charId;
         StartTime = startTime;
@@ -11,7 +11,7 @@ public class Activity : Entity
         Data = data;
     }
 
-    public string CharId { get; private set; }
+    public Identity CharId { get; private set; }
     public DateTime StartTime { get; private set; }
     public TimeSpan Duration { get; private set; }
     public ActivityType Type { get; set; }

@@ -4,10 +4,10 @@ namespace DiscordRPG.Application.Queries;
 
 public class GetGuildQuery : Query<Guild>
 {
-    public GetGuildQuery(ulong guildId)
+    public GetGuildQuery(Identity identity)
     {
-        GuildId = guildId;
+        Identity = identity;
     }
 
-    public ulong GuildId { get; private set; }
+    public Identity Identity { get; private set; }
 }

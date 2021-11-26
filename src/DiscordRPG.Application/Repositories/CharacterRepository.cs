@@ -1,11 +1,12 @@
-﻿using DiscordRPG.Application.Settings;
-using DiscordRPG.Core.Repositories;
+﻿using System.Linq.Expressions;
+using DiscordRPG.Application.Settings;
+using DiscordRPG.Common;
 using MongoDB.Driver;
 using Serilog;
 
 namespace DiscordRPG.Application.Repositories;
 
-public class CharacterRepository : ICharacterRepository
+public class CharacterRepository : IRepository<Character>
 {
     private readonly IMongoCollection<Character> characters;
     private readonly ILogger logger;
@@ -18,28 +19,53 @@ public class CharacterRepository : ICharacterRepository
             .GetCollection<Character>(databaseSettings.CharacterCollectionName);
     }
 
-    public async Task<Character> GetGuildCharacterAsync(ulong userId, ulong guildId, CancellationToken token = default)
+    public async Task SaveAsync(Character entity, CancellationToken cancellationToken)
     {
-        logger.Verbose("Getting character {ChraId} for guild {guildId}", userId, guildId);
-        var result =
-            await characters.FindAsync(c => c.UserId == userId && c.GuildId == guildId, cancellationToken: token);
-
-        var character = await result.FirstOrDefaultAsync(token);
-
-        logger.Verbose("Found character: {@Char}", character);
-        return character;
+        logger.Verbose("Saving character {@Character}", entity);
+        await characters.InsertOneAsync(entity, null, cancellationToken);
     }
 
-    public async Task SaveCharacterAsync(Character character, CancellationToken token = default)
+    public async Task UpdateAsync(Character entity, CancellationToken cancellationToken)
     {
-        logger.Verbose("Saving character {@Char}", character);
-        await characters.InsertOneAsync(character, cancellationToken: token);
+        logger.Verbose("Updating Character {@Character}", entity);
+        var result = await characters.ReplaceOneAsync(g => g.ID == entity.ID, entity,
+            cancellationToken: cancellationToken);
+        logger.Verbose("Updated {Count} Characters", result.ModifiedCount);
     }
 
-    public async Task DeleteCharacterAsync(ulong charId, CancellationToken cancellationToken)
+    public async Task DeleteAsync(Identity id, CancellationToken cancellationToken)
     {
-        logger.Verbose("Deleting character {CharId}", charId);
-        var result = await characters.DeleteOneAsync(c => c.UserId == charId, cancellationToken: cancellationToken);
-        logger.Verbose("Deleted {Count} character", result.DeletedCount);
+        logger.Verbose("Deleting Character {Dd}", id);
+        var result = await characters.DeleteOneAsync(c => c.ID == id, cancellationToken);
+        logger.Verbose("Deleted {Count} characters", result.DeletedCount);
+    }
+
+    public async Task<Character> GetAsync(Identity id, CancellationToken cancellationToken)
+    {
+        logger.Verbose("Getting Character {Id}", id);
+        var result = await characters.FindAsync(g => g.ID == id, cancellationToken: cancellationToken);
+
+        var entity = await result.FirstOrDefaultAsync(cancellationToken: cancellationToken);
+
+        logger.Verbose("Found Character: {@Character}", entity);
+        return entity;
+    }
+
+    public async Task<IEnumerable<Character>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        logger.Verbose("Getting all Characters");
+
+        var result = await characters.FindAsync(c => true, cancellationToken: cancellationToken);
+
+        return await result.ToListAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<Character>> FindAsync(Expression<Func<Character, bool>> expression,
+        CancellationToken cancellationToken)
+    {
+        logger.Verbose("Finding Characters with expression {Expression}", expression);
+        var cursor = await characters.FindAsync(expression, cancellationToken: cancellationToken);
+
+        return await cursor.ToListAsync(cancellationToken: cancellationToken);
     }
 }

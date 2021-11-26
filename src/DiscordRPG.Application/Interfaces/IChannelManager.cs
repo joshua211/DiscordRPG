@@ -2,13 +2,13 @@
 
 public interface IChannelManager
 {
-    Task<ulong> CreateDungeonThreadAsync(ulong guildId, string dungeonName);
+    Task<ulong> CreateDungeonThreadAsync(DiscordId serverId, string dungeonName);
 
-    Task SendToGuildHallAsync(ulong guildId, string text);
+    Task SendToGuildHallAsync(DiscordId serverId, string text);
 
-    Task SendToDungeonHallAsync(ulong guildId, string text);
+    Task SendToDungeonHallAsync(DiscordId serverId, string text);
 
-    Task DeleteDungeonThreadAsync(ulong threadId);
+    Task DeleteDungeonThreadAsync(DiscordId threadId);
 
-    Task UpdateDungeonThreadNameAsync(ulong threadId, string name);
+    Task UpdateDungeonThreadNameAsync(DiscordId threadId, string name);
 }

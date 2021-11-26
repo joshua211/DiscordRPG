@@ -1,20 +1,19 @@
 ﻿using DiscordRPG.Application.Queries;
 using DiscordRPG.Common;
-using DiscordRPG.Core.Repositories;
 
 namespace DiscordRPG.Application.QueryHandlers;
 
 public class GetGuildQueryHandler : QueryHandler<GetGuildQuery, Guild>
 {
-    private readonly IGuildRepository guildRepository;
+    private readonly IRepository<Guild> guildRepository;
 
-    public GetGuildQueryHandler(IGuildRepository guildRepository)
+    public GetGuildQueryHandler(IRepository<Guild> guildRepository)
     {
         this.guildRepository = guildRepository;
     }
 
     public override async Task<Guild> Handle(GetGuildQuery request, CancellationToken cancellationToken = default)
     {
-        return await guildRepository.GetGuildAsync(request.GuildId, cancellationToken);
+        return await guildRepository.GetAsync(request.Identity, cancellationToken);
     }
 }

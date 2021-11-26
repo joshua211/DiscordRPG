@@ -4,12 +4,12 @@ namespace DiscordRPG.Application.Queries;
 
 public class GetCharacterByUserIdQuery : Query<Character>
 {
-    public GetCharacterByUserIdQuery(ulong userId, ulong guildId)
+    public GetCharacterByUserIdQuery(ulong userId, string guildId)
     {
         UserId = userId;
         GuildId = guildId;
     }
 
     public ulong UserId { get; init; }
-    public ulong GuildId { get; init; }
+    public string GuildId { get; init; }
 }

@@ -2,7 +2,7 @@
 
 public class Character : Entity
 {
-    public Character(ulong userId, ulong guildId, string characterName, Class characterClass, Race characterRace,
+    public Character(DiscordId userId, Identity guildId, string characterName, Class characterClass, Race characterRace,
         Level level,
         EquipmentInfo equipment, List<Item> inventory, List<Wound> wounds, int money)
     {
@@ -18,8 +18,8 @@ public class Character : Entity
         Money = money;
     }
 
-    public ulong UserId { get; private set; }
-    public ulong GuildId { get; private set; }
+    public DiscordId UserId { get; private set; }
+    public Identity GuildId { get; private set; }
     public string CharacterName { get; private set; }
     public Class CharacterClass { get; private set; }
     public Race CharacterRace { get; private set; }

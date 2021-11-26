@@ -1,14 +1,13 @@
 ﻿using DiscordRPG.Application.Queries;
 using DiscordRPG.Common;
-using DiscordRPG.Core.Repositories;
 
 namespace DiscordRPG.Application.QueryHandlers;
 
 public class GetCharacterActivityQueryHandler : QueryHandler<GetCharacterActivityQuery, Activity>
 {
-    private readonly IActivityRepository repository;
+    private readonly IRepository<Activity> repository;
 
-    public GetCharacterActivityQueryHandler(IActivityRepository repository)
+    public GetCharacterActivityQueryHandler(IRepository<Activity> repository)
     {
         this.repository = repository;
     }

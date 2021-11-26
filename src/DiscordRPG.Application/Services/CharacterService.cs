@@ -16,7 +16,7 @@ public class CharacterService : ApplicationService, ICharacterService
         this.guildService = guildService;
     }
 
-    public async Task<Result<Character>> CreateCharacterAsync(ulong userId, ulong guildId, string name,
+    public async Task<Result<Character>> CreateCharacterAsync(DiscordId userId, Identity guildId, string name,
         Class characterClass,
         Race race, TransactionContext parentContext = null,
         CancellationToken cancellationToken = default)
@@ -43,13 +43,7 @@ public class CharacterService : ApplicationService, ICharacterService
         }
     }
 
-    public Task<Result> DeleteCharacterAsync(ulong userId, TransactionContext parentContext = null,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task<Result<Character>> GetCharacterAsync(ulong userId, ulong guildId,
+    public async Task<Result<Character>> GetCharacterAsync(DiscordId userId, Identity guildId,
         TransactionContext parentContext = null,
         CancellationToken token = default)
     {

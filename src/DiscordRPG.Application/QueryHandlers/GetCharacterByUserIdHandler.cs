@@ -1,14 +1,13 @@
 ﻿using DiscordRPG.Application.Queries;
 using DiscordRPG.Common;
-using DiscordRPG.Core.Repositories;
 
 namespace DiscordRPG.Application.QueryHandlers;
 
 public class GetCharacterByUserIdHandler : QueryHandler<GetCharacterByUserIdQuery, Character>
 {
-    protected readonly ICharacterRepository repository;
+    protected readonly IRepository<Character> repository;
 
-    public GetCharacterByUserIdHandler(ICharacterRepository repository)
+    public GetCharacterByUserIdHandler(IRepository<Character> repository)
     {
         this.repository = repository;
     }
@@ -16,6 +15,7 @@ public class GetCharacterByUserIdHandler : QueryHandler<GetCharacterByUserIdQuer
     public override async Task<Character> Handle(GetCharacterByUserIdQuery request,
         CancellationToken cancellationToken = default)
     {
-        return await repository.GetGuildCharacterAsync(request.UserId, request.GuildId, cancellationToken);
+        return (await repository.FindAsync(c => c.UserId.Value == request.UserId && c.GuildId.Value == request.GuildId,
+            cancellationToken)).FirstOrDefault();
     }
 }

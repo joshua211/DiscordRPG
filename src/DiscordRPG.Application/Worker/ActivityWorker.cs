@@ -69,14 +69,14 @@ public class ActivityWorker
 
     private async Task ExecuteEnterDungeon(Activity activity)
     {
-        logger.Information("{Name} has been completed!", activity.Data.DungeonId);
+        logger.Information("{Name} has been completed!", activity.Data.ThreadId);
     }
 
     private async Task ExecuteSearchDungeon(Activity activity)
     {
-        var threadId = await channelManager.CreateDungeonThreadAsync(activity.Data.GuildId, "Dungeon");
+        var threadId = await channelManager.CreateDungeonThreadAsync(activity.Data.ServerId, "Dungeon");
 
-        var createDungeonResult = await dungeonService.CreateDungeonAsync(activity.Data.GuildId, threadId,
+        var createDungeonResult = await dungeonService.CreateDungeonAsync(activity.Data.ServerId, threadId,
             activity.Data.PlayerLevel);
 
         if (!createDungeonResult.WasSuccessful)

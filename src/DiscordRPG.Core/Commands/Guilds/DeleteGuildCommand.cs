@@ -2,10 +2,10 @@
 
 public class DeleteGuildCommand : Command
 {
-    public DeleteGuildCommand(ulong id)
+    public DeleteGuildCommand(DiscordId id)
     {
         Id = id;
     }
 
-    public ulong Id { get; private set; }
+    public DiscordId Id { get; private set; }
 }

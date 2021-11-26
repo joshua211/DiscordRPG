@@ -16,14 +16,14 @@ public class DungeonService : ApplicationService, IDungeonService
         this.guildService = guildService;
     }
 
-    public async Task<Result<Dungeon>> CreateDungeonAsync(ulong guildId, ulong threadId, uint charLevel,
+    public async Task<Result<Dungeon>> CreateDungeonAsync(DiscordId serverId, DiscordId threadId, uint charLevel,
         TransactionContext parentContext = null,
         CancellationToken token = default)
     {
         using var ctx = TransactionBegin(parentContext);
         try
         {
-            var guildResult = await guildService.GetGuildAsync(guildId, ctx, token);
+            var guildResult = await guildService.GetGuildWithDiscordIdAsync(serverId, ctx, token);
             if (!guildResult.WasSuccessful)
             {
                 TransactionWarning(ctx, "No guild found to add the dungeon");
@@ -33,7 +33,7 @@ public class DungeonService : ApplicationService, IDungeonService
 
 
             //TODO generate dungeon
-            var dungeon = new Dungeon(guildId, threadId, charLevel, Rarity.Common, "Some new name");
+            var dungeon = new Dungeon(serverId, threadId, charLevel, Rarity.Common, "Some new name");
             var cmd = new CreateDungeonCommand(dungeon);
 
             var result = await PublishAsync(ctx, cmd, token);
@@ -41,7 +41,7 @@ public class DungeonService : ApplicationService, IDungeonService
             {
                 TransactionError(ctx,
                     "Failed to create Dungeon with channelId: {ChannelId}, for guild: {GuildId} because: {Reason}",
-                    threadId, guildId, result.ErrorMessage);
+                    threadId, serverId, result.ErrorMessage);
 
                 return Result<Dungeon>.Failure("Failed to create dungeon");
             }
@@ -55,7 +55,7 @@ public class DungeonService : ApplicationService, IDungeonService
         }
     }
 
-    public async Task<Result<Dungeon>> GetDungeonFromChannelIdAsync(ulong channelId,
+    public async Task<Result<Dungeon>> GetDungeonFromChannelIdAsync(DiscordId channelId,
         TransactionContext parentContext = null,
         CancellationToken token = default)
     {

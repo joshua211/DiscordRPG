@@ -13,4 +13,5 @@ public class SearchDungeonDialog : Dialog
     }
 
     public Character Character { get; set; }
+    public ulong ServerId { get; set; }
 }

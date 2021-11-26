@@ -1,20 +1,19 @@
 ﻿using DiscordRPG.Application.Queries;
 using DiscordRPG.Common;
-using DiscordRPG.Core.Repositories;
 
 namespace DiscordRPG.Application.QueryHandlers;
 
 public class GetActivityQueryHandler : QueryHandler<GetActivityQuery, Activity>
 {
-    private readonly IActivityRepository repository;
+    private readonly IRepository<Activity> repository;
 
-    public GetActivityQueryHandler(IActivityRepository repository)
+    public GetActivityQueryHandler(IRepository<Activity> repository)
     {
         this.repository = repository;
     }
 
     public override async Task<Activity> Handle(GetActivityQuery request, CancellationToken cancellationToken = default)
     {
-        return await repository.GetActivityAsync(request.Id, cancellationToken);
+        return await repository.GetAsync(request.Id, cancellationToken);
     }
 }
