@@ -10,29 +10,28 @@ public abstract class DialogCommandBase<T> : CommandBase where T : Dialog, new()
     private readonly Dictionary<ulong, T> dialogs;
 
     protected DialogCommandBase(DiscordSocketClient client, ILogger logger, IActivityService activityService,
-        ICharacterService characterService) : base(client, logger, activityService, characterService)
+        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService) : base(client,
+        logger, activityService, characterService, dungeonService, guildService)
     {
         dialogs = new Dictionary<ulong, T>();
     }
 
-    public override async Task HandleAsync(SocketSlashCommand command)
+    protected override async Task HandleAsync(SocketSlashCommand command, GuildCommandContext context)
     {
-        if (!await ShouldExecuteAsync(command))
-            return;
-
         var dialog = (T) Activator.CreateInstance(typeof(T), command.User.Id)!;
         dialogs[dialog.UserId] = dialog;
         logger.Debug("Initiated new dialog: {@Dialog}", dialog);
-        await Handle(command, dialog);
+        await HandleDialogAsync(command, context, dialog);
     }
 
-    protected override async Task HandleSelection(SocketMessageComponent component, string id)
+
+    protected override async Task HandleSelectionAsync(SocketMessageComponent component, string id)
     {
         var dialog = dialogs[component.User.Id];
         await HandleSelection(component, id, dialog);
     }
 
-    protected override async Task HandleButton(SocketMessageComponent component, string id)
+    protected override async Task HandleButtonAsync(SocketMessageComponent component, string id)
     {
         var dialog = dialogs[component.User.Id];
         await HandleButton(component, id, dialog);
@@ -54,5 +53,5 @@ public abstract class DialogCommandBase<T> : CommandBase where T : Dialog, new()
 
     protected abstract Task HandleButton(SocketMessageComponent component, string id, T dialog);
 
-    protected abstract Task Handle(SocketSlashCommand command, T dialog);
+    protected abstract Task HandleDialogAsync(SocketSlashCommand command, GuildCommandContext context, T dialog);
 }

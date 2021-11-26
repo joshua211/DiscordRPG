@@ -9,6 +9,6 @@ public interface IDungeonService
         TransactionContext parentContext = null,
         CancellationToken token = default);
 
-    Task<Result<Dungeon>> GetDungeonAsync(ulong channelId, TransactionContext parentContext = null,
+    Task<Result<Dungeon>> GetDungeonFromChannelIdAsync(ulong channelId, TransactionContext parentContext = null,
         CancellationToken token = default);
 }

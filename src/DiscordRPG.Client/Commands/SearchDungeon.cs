@@ -18,8 +18,8 @@ namespace DiscordRPG.Client.Commands;
 public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
 {
     public SearchDungeon(DiscordSocketClient client, ILogger logger, IActivityService activityService,
-        ICharacterService characterService) : base(client,
-        logger, activityService, characterService)
+        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService) : base(client,
+        logger, activityService, characterService, dungeonService, guildService)
     {
     }
 
@@ -41,19 +41,12 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
         }
     }
 
-    protected override async Task Handle(SocketSlashCommand command, SearchDungeonDialog dialog)
+    protected override async Task HandleDialogAsync(SocketSlashCommand command, GuildCommandContext context,
+        SearchDungeonDialog dialog)
     {
         var user = command.User as SocketGuildUser;
-        var result = await characterService.GetCharacterAsync(dialog.UserId, user.Guild.Id);
-        if (!result.WasSuccessful)
-        {
-            await command.RespondAsync("Please create a character first!");
-            EndDialog(dialog.UserId);
 
-            return;
-        }
-
-        var character = result.Value;
+        var character = context.Character;
         dialog.Character = character;
 
         var component = new ComponentBuilder()

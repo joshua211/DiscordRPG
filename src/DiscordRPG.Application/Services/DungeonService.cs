@@ -55,7 +55,8 @@ public class DungeonService : ApplicationService, IDungeonService
         }
     }
 
-    public async Task<Result<Dungeon>> GetDungeonAsync(ulong channelId, TransactionContext parentContext = null,
+    public async Task<Result<Dungeon>> GetDungeonFromChannelIdAsync(ulong channelId,
+        TransactionContext parentContext = null,
         CancellationToken token = default)
     {
         using var ctx = TransactionBegin(parentContext);

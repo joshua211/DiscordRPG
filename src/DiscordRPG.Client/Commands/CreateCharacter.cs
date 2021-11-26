@@ -14,13 +14,10 @@ namespace DiscordRPG.Client.Commands;
 [RequireChannelName(ServerHandler.GuildHallName)]
 public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
 {
-    private readonly IGuildService guildService;
-
     public CreateCharacter(DiscordSocketClient client, ILogger logger, IActivityService activityService,
-        ICharacterService characterService, IGuildService guildService) : base(
-        client, logger, activityService, characterService)
+        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService) : base(client,
+        logger, activityService, characterService, dungeonService, guildService)
     {
-        this.guildService = guildService;
     }
 
     public override string CommandName => "create-character";
@@ -43,7 +40,8 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
         }
     }
 
-    protected override async Task Handle(SocketSlashCommand command, CreateCharacterDialog dialog)
+    protected override async Task HandleDialogAsync(SocketSlashCommand command, GuildCommandContext context,
+        CreateCharacterDialog dialog)
     {
         var user = command.User as SocketGuildUser;
         var result = await guildService.GetGuildAsync(user.Guild.Id);

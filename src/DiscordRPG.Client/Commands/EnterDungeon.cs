@@ -13,15 +13,14 @@ namespace DiscordRPG.Client.Commands;
 
 //TODO require dungeon
 [RequireCharacter]
+[RequireNoCurrentActivity]
+[RequireDungeon]
 public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
 {
-    private readonly IDungeonService dungeonService;
-
     public EnterDungeon(DiscordSocketClient client, ILogger logger, IActivityService activityService,
-        ICharacterService characterService, IDungeonService dungeonService) : base(client,
-        logger, activityService, characterService)
+        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService) : base(client,
+        logger, activityService, characterService, dungeonService, guildService)
     {
-        this.dungeonService = dungeonService;
     }
 
     public override string CommandName => "enter";
@@ -42,28 +41,11 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
         }
     }
 
-    protected override async Task Handle(SocketSlashCommand command, EnterDungeonDialog dialog)
+    protected override async Task HandleDialogAsync(SocketSlashCommand command, GuildCommandContext context,
+        EnterDungeonDialog dialog)
     {
-        var user = command.User as SocketGuildUser;
-        var charResult = await characterService.GetCharacterAsync(user.Id, user.Guild.Id);
-        if (!charResult.WasSuccessful)
-        {
-            EndDialog(dialog.UserId);
-            await command.RespondAsync("Please create a character first!");
-        }
-
-        //TODO check if this is a dungeon
-        var dungeonResult = await dungeonService.GetDungeonAsync(command.Channel.Id);
-        if (!dungeonResult.WasSuccessful)
-        {
-            await command.RespondAsync("This command can only be used in a dungeon!");
-            EndDialog(dialog.UserId);
-
-            return;
-        }
-
-        dialog.CharId = charResult.Value.ID;
-        dialog.Dungeon = dungeonResult.Value;
+        dialog.CharId = context.Character!.ID;
+        dialog.Dungeon = context.Dungeon!;
 
         var component = new ComponentBuilder()
             .WithButton("Enter Dungeon", CommandName + ".enter")
@@ -71,7 +53,7 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
             .Build();
 
         var text =
-            $"Do you want to enter the level {dungeonResult.Value.DungeonLevel} Dungeon {dungeonResult.Value.Name}?";
+            $"Do you want to enter the level {context.Dungeon!.DungeonLevel} Dungeon {context.Dungeon!.Name}?";
 
         await command.RespondAsync(text, component: component);
     }

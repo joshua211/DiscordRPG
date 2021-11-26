@@ -13,8 +13,8 @@ namespace DiscordRPG.Client.Commands;
 public class GetCharacter : CommandBase
 {
     public GetCharacter(DiscordSocketClient client, ILogger logger, IActivityService activityService,
-        ICharacterService characterService) : base(client,
-        logger, activityService, characterService)
+        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService) : base(client,
+        logger, activityService, characterService, dungeonService, guildService)
     {
     }
 
@@ -37,20 +37,8 @@ public class GetCharacter : CommandBase
         }
     }
 
-    public override async Task HandleAsync(SocketSlashCommand command)
+    protected override async Task HandleAsync(SocketSlashCommand command, GuildCommandContext context)
     {
-        if (!await ShouldExecuteAsync(command))
-            return;
-
-        var guildUser = command.User as SocketGuildUser;
-        var result = await characterService.GetCharacterAsync(guildUser.Id, guildUser.Guild.Id);
-
-        if (!result.WasSuccessful)
-        {
-            await command.RespondAsync("You have to first create a character by using /create-character");
-            return;
-        }
-
-        await command.RespondAsync(result.Value.CharacterName);
+        await command.RespondAsync(context.Character!.CharacterName);
     }
 }

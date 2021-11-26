@@ -12,15 +12,19 @@ public abstract class CommandBase : IGuildCommand
     protected readonly IActivityService activityService;
     protected readonly ICharacterService characterService;
     protected readonly DiscordSocketClient client;
+    protected readonly IDungeonService dungeonService;
+    protected readonly IGuildService guildService;
     protected readonly ILogger logger;
 
     protected CommandBase(DiscordSocketClient client, ILogger logger, IActivityService activityService,
-        ICharacterService characterService)
+        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService)
     {
         this.client = client;
         this.logger = logger;
         this.activityService = activityService;
         this.characterService = characterService;
+        this.dungeonService = dungeonService;
+        this.guildService = guildService;
 
         client.SelectMenuExecuted += HandleSelectionAsync;
         client.ButtonExecuted += HandleButtonAsync;
@@ -30,11 +34,8 @@ public abstract class CommandBase : IGuildCommand
 
     public abstract Task InstallAsync(SocketGuild guild);
 
-    public abstract Task HandleAsync(SocketSlashCommand command);
-
-    public async Task<bool> ShouldExecuteAsync(SocketSlashCommand command)
+    public async Task HandleAsync(SocketSlashCommand command)
     {
-        //TODO save char, dungeon and guild for commands
         var requireName =
             (RequireChannelNameAttribute) Attribute.GetCustomAttribute(GetType(), typeof(RequireChannelNameAttribute))!;
         var requireChar =
@@ -42,14 +43,29 @@ public abstract class CommandBase : IGuildCommand
         var requireNoActivity =
             (RequireNoCurrentActivityAttribute) Attribute.GetCustomAttribute(GetType(),
                 typeof(RequireNoCurrentActivityAttribute))!;
+        var requireDungeon =
+            (RequireDungeonAttribute) Attribute.GetCustomAttribute(GetType(), typeof(RequireDungeonAttribute))!;
 
         if (requireName is not null)
         {
             if (command.Channel.Name != requireName.ChannelName)
             {
                 await command.RespondAsync($"This command can only be used in the {requireName.ChannelName} channel!");
-                return false;
+                return;
             }
+        }
+
+        Dungeon dungeon = null;
+        if (requireDungeon is not null)
+        {
+            var dungeonResult = await dungeonService.GetDungeonFromChannelIdAsync(command.Channel.Id);
+            if (!dungeonResult.WasSuccessful)
+            {
+                await command.RespondAsync("This command can only be used in a dungeon!");
+                return;
+            }
+
+            dungeon = dungeonResult.Value;
         }
 
         Character character = null;
@@ -60,12 +76,13 @@ public abstract class CommandBase : IGuildCommand
             if (!charResult.WasSuccessful)
             {
                 await command.RespondAsync("Please create a character first!");
-                return false;
+                return;
             }
 
             character = charResult.Value;
         }
 
+        Activity activity = null;
         if (requireNoActivity is not null)
         {
             var currentActivityResult =
@@ -75,21 +92,11 @@ public abstract class CommandBase : IGuildCommand
                 var timeLeft = ((currentActivityResult.Value.StartTime + currentActivityResult.Value.Duration) -
                                 DateTime.UtcNow);
                 await command.RespondAsync($"You're already on an adventure, try again in {timeLeft.Minutes} minutes!");
-                return false;
+                return;
             }
         }
 
-        return true;
-    }
-
-    protected virtual Task HandleSelection(SocketMessageComponent component, string id)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected virtual Task HandleButton(SocketMessageComponent component, string id)
-    {
-        return Task.CompletedTask;
+        await HandleAsync(command, new GuildCommandContext(character, activity, dungeon));
     }
 
     private async Task HandleSelectionAsync(SocketMessageComponent component)
@@ -98,7 +105,7 @@ public abstract class CommandBase : IGuildCommand
         if (idSplit[0] != CommandName)
             return;
 
-        await HandleSelection(component, idSplit[1]);
+        await HandleSelectionAsync(component, idSplit[1]);
     }
 
     private async Task HandleButtonAsync(SocketMessageComponent component)
@@ -107,6 +114,13 @@ public abstract class CommandBase : IGuildCommand
         if (idSplit[0] != CommandName)
             return;
 
-        await HandleButton(component, idSplit[1]);
+        await HandleButtonAsync(component, idSplit[1]);
     }
+
+    protected abstract Task HandleAsync(SocketSlashCommand command, GuildCommandContext context);
+
+    protected virtual Task HandleSelectionAsync(SocketMessageComponent component, string id)
+        => Task.CompletedTask;
+
+    protected virtual Task HandleButtonAsync(SocketMessageComponent component, string id) => Task.CompletedTask;
 }
