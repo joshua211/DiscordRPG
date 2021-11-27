@@ -22,7 +22,7 @@ public class DeleteGuildCommandHandler : CommandHandler<DeleteGuildCommand>
     {
         try
         {
-            logger.Here().Debug("Handling {Name}", nameof(request));
+            logger.Here().Debug("Handling {Name}", request.GetType().Name);
 
             var guild = (await guildRepository.FindAsync(g => g.ServerId == request.Id, cancellationToken))
                 .FirstOrDefault();

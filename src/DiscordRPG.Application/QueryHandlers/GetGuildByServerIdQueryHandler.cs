@@ -15,7 +15,7 @@ public class GetGuildByServerIdQueryHandler : QueryHandler<GetGuildByServerIdQue
     public override async Task<Guild> Handle(GetGuildByServerIdQuery request,
         CancellationToken cancellationToken = default)
     {
-        logger.Here().Debug("Handling Query {Query}", nameof(request));
+        logger.Here().Debug("Handling Query {Query}", request.GetType().Name);
         return (await guildRepository.FindAsync(g => g.ServerId == request.GuildId, cancellationToken))
             .FirstOrDefault();
     }

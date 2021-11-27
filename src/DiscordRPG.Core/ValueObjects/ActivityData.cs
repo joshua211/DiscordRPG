@@ -6,4 +6,5 @@ public class ActivityData
     public ulong ServerId { get; set; }
     public ulong ChannelId { get; set; }
     public ulong ThreadId { get; set; }
+    public string DungeonId { get; set; }
 }

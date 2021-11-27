@@ -14,7 +14,7 @@ public class GetActivityQueryHandler : QueryHandler<GetActivityQuery, Activity>
 
     public override async Task<Activity> Handle(GetActivityQuery request, CancellationToken cancellationToken = default)
     {
-        logger.Here().Debug("Handling Query {Query}", nameof(request));
+        logger.Here().Debug("Handling Query {Query}", request.GetType().Name);
         return await repository.GetAsync(request.Id, cancellationToken);
     }
 }

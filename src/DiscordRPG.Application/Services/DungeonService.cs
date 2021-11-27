@@ -3,17 +3,19 @@ using DiscordRPG.Application.Queries;
 using DiscordRPG.Common;
 using DiscordRPG.Core.Commands.Dungeons;
 using MediatR;
-using Serilog;
 
 namespace DiscordRPG.Application.Services;
 
 public class DungeonService : ApplicationService, IDungeonService
 {
+    private readonly ICharacterService characterService;
     private readonly IGuildService guildService;
 
-    public DungeonService(IMediator mediator, ILogger logger, IGuildService guildService) : base(mediator, logger)
+    public DungeonService(IMediator mediator, ILogger logger, IGuildService guildService,
+        ICharacterService characterService) : base(mediator, logger)
     {
         this.guildService = guildService;
+        this.characterService = characterService;
     }
 
     public async Task<Result<Dungeon>> CreateDungeonAsync(DiscordId serverId, DiscordId threadId, uint charLevel,
@@ -76,6 +78,44 @@ public class DungeonService : ApplicationService, IDungeonService
         {
             TransactionError(ctx, e);
             return Result<Dungeon>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Result<DungeonResult>> GetDungeonAdventureResultAsync(Identity charId, DiscordId threadId,
+        TransactionContext parentContext = null,
+        CancellationToken token = default)
+    {
+        using var ctx = TransactionBegin(parentContext);
+        try
+        {
+            var charResult = await characterService.GetCharacterAsync(charId, ctx, token: token);
+            if (!charResult.WasSuccessful)
+            {
+                TransactionWarning(ctx, "No character with ID {Id} found to execute dungeon search", charId);
+                return Result<DungeonResult>.Failure(charResult.ErrorMessage);
+            }
+
+            var dungeonResult = await GetDungeonFromChannelIdAsync(threadId, ctx, token: token);
+            if (!dungeonResult.WasSuccessful)
+            {
+                TransactionWarning(ctx, "No dungeon with channelID {Id} found to execute dungeon search", threadId);
+                return Result<DungeonResult>.Failure(charResult.ErrorMessage);
+            }
+
+            var query = new GetDungeonAdventureQuery(charResult.Value, dungeonResult.Value);
+            var result = await ProcessAsync(ctx, query, token);
+            if (result is null)
+            {
+                TransactionWarning(ctx, "Could not get an adventure result");
+                return Result<DungeonResult>.Failure("Failed to get result");
+            }
+
+            return Result<DungeonResult>.Success(result);
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result<DungeonResult>.Failure(e.Message);
         }
     }
 }

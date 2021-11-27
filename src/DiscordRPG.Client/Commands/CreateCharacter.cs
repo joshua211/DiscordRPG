@@ -46,7 +46,7 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
         CreateCharacterDialog dialog)
     {
         var user = command.User as IGuildUser;
-        var result = await characterService.GetCharacterAsync(user.Id, context.Guild.ID);
+        var result = await characterService.GetUsersCharacterAsync(user.Id, context.Guild.ID);
         if (result.WasSuccessful)
         {
             await command.RespondAsync("You can only create one character on each server!");

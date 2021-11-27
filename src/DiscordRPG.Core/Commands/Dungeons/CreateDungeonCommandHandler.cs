@@ -21,7 +21,7 @@ public class CreateDungeonCommandHandler : CommandHandler<CreateDungeonCommand>
     {
         try
         {
-            logger.Here().Debug("Handling {Name}", nameof(request));
+            logger.Here().Debug("Handling {Name}", request.GetType().Name);
 
             await dungeonRepository.SaveAsync(request.Dungeon, cancellationToken);
 

@@ -20,7 +20,7 @@ public class CreateGuildCommandHandler : CommandHandler<CreateGuildCommand>
     {
         try
         {
-            logger.Here().Debug("Handling {Name}", nameof(request));
+            logger.Here().Debug("Handling {Name}", request.GetType().Name);
             await repository.SaveAsync(request.Guild, cancellationToken);
 
             await PublishAsync(new GuildCreated(request.Guild), cancellationToken);

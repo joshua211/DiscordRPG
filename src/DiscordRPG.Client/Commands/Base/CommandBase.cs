@@ -90,7 +90,7 @@ public abstract class CommandBase : IGuildCommand
         if (requireChar is not null)
         {
             var user = command.User as IGuildUser;
-            var charResult = await characterService.GetCharacterAsync(user.Id, guild.ID);
+            var charResult = await characterService.GetUsersCharacterAsync(user.Id, guild.ID);
             if (!charResult.WasSuccessful)
             {
                 await command.RespondAsync("Please create a character first!");

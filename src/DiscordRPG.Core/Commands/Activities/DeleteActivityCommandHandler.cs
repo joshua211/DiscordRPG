@@ -21,7 +21,7 @@ public class DeleteActivityCommandHandler : CommandHandler<DeleteActivityCommand
     {
         try
         {
-            logger.Here().Debug("Handling {Name}", nameof(request));
+            logger.Here().Debug("Handling {Name}", request.GetType().Name);
             await repository.DeleteAsync(request.Id, cancellationToken);
 
             await PublishAsync(new ActivityDeleted(request.Id), cancellationToken);

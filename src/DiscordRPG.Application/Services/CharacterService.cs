@@ -3,7 +3,6 @@ using DiscordRPG.Application.Queries;
 using DiscordRPG.Common;
 using DiscordRPG.Core.Commands.Characters;
 using MediatR;
-using Serilog;
 
 namespace DiscordRPG.Application.Services;
 
@@ -43,7 +42,28 @@ public class CharacterService : ApplicationService, ICharacterService
         }
     }
 
-    public async Task<Result<Character>> GetCharacterAsync(DiscordId userId, Identity guildId,
+    public async Task<Result<Character>> GetCharacterAsync(Identity identity, TransactionContext parentContext = null,
+        CancellationToken token = default)
+    {
+        using var ctx = TransactionBegin(parentContext);
+        try
+        {
+            var query = new GetCharacterQuery(identity);
+            var result = await ProcessAsync(ctx, query, token);
+
+            if (result is null)
+                return Result<Character>.Failure("No character found");
+
+            return Result<Character>.Success(result);
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result<Character>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Result<Character>> GetUsersCharacterAsync(DiscordId userId, Identity guildId,
         TransactionContext parentContext = null,
         CancellationToken token = default)
     {

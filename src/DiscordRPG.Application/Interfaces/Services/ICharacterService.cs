@@ -9,7 +9,10 @@ public interface ICharacterService
         Race race, TransactionContext parentContext = null,
         CancellationToken cancellationToken = default);
 
-    Task<Result<Character>> GetCharacterAsync(DiscordId userId, Identity guildId,
+    Task<Result<Character>> GetCharacterAsync(Identity identity, TransactionContext parentContext = null,
+        CancellationToken token = default);
+
+    Task<Result<Character>> GetUsersCharacterAsync(DiscordId userId, Identity guildId,
         TransactionContext parentContext = null,
         CancellationToken token = default);
 }

@@ -19,7 +19,7 @@ public class CreateActivityCommandHandler : CommandHandler<CreateActivityCommand
     public override async Task<ExecutionResult> Handle(CreateActivityCommand request,
         CancellationToken cancellationToken)
     {
-        logger.Here().Debug("Handling {Name}", nameof(request));
+        logger.Here().Debug("Handling {Name}", request.GetType().Name);
         try
         {
             await activityRepository.SaveAsync(request.Activity, cancellationToken);

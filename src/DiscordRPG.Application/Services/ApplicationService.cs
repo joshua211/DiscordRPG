@@ -39,14 +39,15 @@ public abstract class ApplicationService
 
     protected void TransactionDebug(TransactionContext context, string content, params object[] properties)
     {
-        var template = $"{context.Id} {content}";
+        var template = "{Id} " + $"{content}";
         logger.Debug(template, context.Id, properties);
     }
 
     protected void TransactionError(TransactionContext context, string content, params object[] properties)
     {
         context.HasFailed = true;
-        logger.Error("{ID} " + content, context.Id, properties);
+        var template = $"{context.Id} {content}";
+        logger.Error(template, properties);
     }
 
     protected void TransactionError(TransactionContext context, Exception e)

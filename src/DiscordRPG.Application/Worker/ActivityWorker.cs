@@ -9,18 +9,20 @@ public class ActivityWorker
 {
     private readonly IActivityService activityService;
     private readonly IChannelManager channelManager;
+    private readonly ICharacterService characterService;
     private readonly IDungeonService dungeonService;
     private readonly ILogger logger;
     private readonly IMediator mediator;
 
     public ActivityWorker(IMediator mediator, IChannelManager channelManager, IDungeonService dungeonService,
-        ILogger logger, IActivityService activityService)
+        ILogger logger, IActivityService activityService, ICharacterService characterService)
     {
         this.mediator = mediator;
         this.channelManager = channelManager;
         this.dungeonService = dungeonService;
         this.logger = logger.WithContext(GetType());
         this.activityService = activityService;
+        this.characterService = characterService;
     }
 
     public async Task ExecuteActivityAsync(string activityId)
@@ -69,7 +71,30 @@ public class ActivityWorker
 
     private async Task ExecuteEnterDungeon(Activity activity)
     {
-        logger.Here().Information("{Name} has been completed!", activity.Data.ThreadId);
+        var executionResult =
+            await dungeonService.GetDungeonAdventureResultAsync(activity.CharId, activity.Data.ThreadId);
+        if (!executionResult.WasSuccessful)
+        {
+            logger.Here().Warning("Failed to get execution result for dungeon search");
+            return;
+        }
+
+        logger.Here().Information("Sustained {Count} wound(s)", executionResult.Value.Wounds.Count);
+
+        /*var woundResult  = await characterService.ApplyWoundsAsync(executionResult.Value.Wounds);
+        if (!woundResult.WasSuccessful)
+        {
+            logger.Here().Warning("Failed to apply wounds, stopping execution");
+            return;
+        }*/
+
+        //var lootResult = characterService.AddItemsAsync()
+        //get character
+        //get dungeon
+
+        //result = GetDungeonResult(dungeon, character)
+        //ApplyWoundsToCharacter(result.Wounds)
+        //AddItemsToInventory(result.Loot)
     }
 
     private async Task ExecuteSearchDungeon(Activity activity)

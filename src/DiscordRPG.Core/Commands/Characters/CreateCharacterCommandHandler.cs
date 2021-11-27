@@ -24,7 +24,7 @@ public class CreateCharacterCommandHandler : CommandHandler<CreateCharacterComma
     {
         try
         {
-            logger.Here().Debug("Handling {Name}", nameof(command));
+            logger.Here().Debug("Handling {Name}", command.GetType().Name);
 
             await characterRepository.SaveAsync(command.Character, cancellationToken);
 //TODO do this in an event

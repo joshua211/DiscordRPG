@@ -15,7 +15,7 @@ public class GetDungeonByChannelIdQueryHandler : QueryHandler<GetDungeonByChanne
     public override async Task<Dungeon> Handle(GetDungeonByChannelIdQuery request,
         CancellationToken cancellationToken = default)
     {
-        logger.Here().Debug("Handling Query {Query}", nameof(request));
+        logger.Here().Debug("Handling Query {Query}", request.GetType().Name);
         return (await repository.FindAsync(d => d.DungeonChannelId == request.ChannelId, cancellationToken))
             .FirstOrDefault()!;
     }
