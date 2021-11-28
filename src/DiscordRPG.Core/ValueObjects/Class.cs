@@ -18,9 +18,9 @@ public class Class : IAttributeModifier
     public byte BaseIntelligence { get; init; } = 10;
     public byte BaseLuck { get; init; } = 10;
 
-    public float StrengthModifier { get; init; } = 0;
-    public float VitalityModifier { get; init; } = 0;
-    public float AgilityModifier { get; init; } = 0;
-    public float IntelligenceModifier { get; init; } = 0;
-    public float LuckModifier { get; init; } = 0;
+    public float StrengthModifier { get; init; } = 1;
+    public float VitalityModifier { get; init; } = 1;
+    public float AgilityModifier { get; init; } = 1;
+    public float IntelligenceModifier { get; init; } = 1;
+    public float LuckModifier { get; init; } = 1;
 }

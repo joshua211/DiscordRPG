@@ -120,7 +120,9 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
     {
         //TODO validate
         var guildUser = component.User as SocketGuildUser;
-        var @class = new Class(dialog.Class);
+        var @class = new Class(dialog.Class)
+        {
+        };
         var race = new Race(dialog.Race);
         var result =
             await characterService.CreateCharacterAsync(guildUser.Id, dialog.GuildId, dialog.Name, @class, race);

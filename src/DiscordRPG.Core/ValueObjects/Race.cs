@@ -12,9 +12,9 @@ public class Race : IAttributeModifier
 
     public string RaceName { get; private set; }
 
-    public float StrengthModifier { get; init; } = 0;
-    public float VitalityModifier { get; init; } = 0;
-    public float AgilityModifier { get; init; } = 0;
-    public float IntelligenceModifier { get; init; } = 0;
-    public float LuckModifier { get; init; } = 0;
+    public float StrengthModifier { get; init; } = 1;
+    public float VitalityModifier { get; init; } = 1;
+    public float AgilityModifier { get; init; } = 1;
+    public float IntelligenceModifier { get; init; } = 1;
+    public float LuckModifier { get; init; } = 1;
 }
