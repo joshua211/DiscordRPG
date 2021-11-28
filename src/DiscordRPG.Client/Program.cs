@@ -43,7 +43,6 @@ public class Program
     {
         var host = new HostBuilder().ConfigureServices(collection => ConfigureServices(collection)).Build();
         var serviceProvider = host.Services;
-
         var client = serviceProvider.GetService<DiscordSocketClient>();
         client.Log += LogClientMessage;
 

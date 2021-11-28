@@ -141,4 +141,45 @@ public class DungeonService : ApplicationService, IDungeonService
             return Result.Failure(e.Message);
         }
     }
+
+    public async Task<Result<IEnumerable<Dungeon>>> GetAllDungeonsAsync(TransactionContext parentContext = null,
+        CancellationToken token = default)
+    {
+        using var ctx = TransactionBegin(parentContext);
+        try
+        {
+            var query = new GetAllDungeonsQuery();
+            var result = await ProcessAsync(ctx, query, token);
+
+            return Result<IEnumerable<Dungeon>>.Success(result);
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result<IEnumerable<Dungeon>>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Result> DeleteDungeonAsync(Dungeon dungeon, TransactionContext parentContext = null,
+        CancellationToken token = default)
+    {
+        using var ctx = TransactionBegin(parentContext);
+        try
+        {
+            var command = new DeleteDungeonCommand(dungeon.ID);
+            var result = await PublishAsync(ctx, command, token);
+            if (!result.WasSuccessful)
+            {
+                TransactionError(ctx, "Failed to delete dungeon: {Reason}", result.ErrorMessage);
+                return Result.Failure("Failed to Delete Dungeon");
+            }
+
+            return Result.Success();
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result.Failure(e.Message);
+        }
+    }
 }

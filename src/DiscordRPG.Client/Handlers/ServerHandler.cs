@@ -1,6 +1,8 @@
 ﻿using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Application.Worker;
 using DiscordRPG.Common.Extensions;
+using Hangfire;
 using Serilog;
 
 namespace DiscordRPG.Client.Handlers;
@@ -32,6 +34,8 @@ public class ServerHandler : IHandler
         logger.Here().Information("Installing ServerHandler");
         client.JoinedGuild += SetupServer;
         client.LeftGuild += CleanServer;
+
+        RecurringJob.AddOrUpdate<CleaningWorker>("DungeonCleaner", x => x.RemoveExhaustedDungeons(), "0 0 * * *");
 
         return Task.CompletedTask;
     }

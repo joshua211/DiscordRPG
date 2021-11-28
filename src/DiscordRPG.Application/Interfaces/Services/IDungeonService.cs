@@ -18,4 +18,10 @@ public interface IDungeonService
 
     Task<Result> DecreaseExplorationsAsync(Dungeon dialogDungeon, TransactionContext parentContext = null,
         CancellationToken token = default);
+
+    Task<Result<IEnumerable<Dungeon>>> GetAllDungeonsAsync(TransactionContext parentContext = null,
+        CancellationToken token = default);
+
+    Task<Result> DeleteDungeonAsync(Dungeon dungeon, TransactionContext parentContext = null,
+        CancellationToken token = default);
 }
