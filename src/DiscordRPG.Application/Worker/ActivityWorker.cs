@@ -72,7 +72,7 @@ public class ActivityWorker
     private async Task ExecuteEnterDungeon(Activity activity)
     {
         var executionResult =
-            await dungeonService.GetDungeonAdventureResultAsync(activity.CharId, activity.Data.ThreadId);
+            await dungeonService.CalculateDungeonAdventureResultAsync(activity.CharId, activity.Data.ThreadId);
     }
 
     private async Task ExecuteSearchDungeon(Activity activity)

@@ -35,7 +35,7 @@ public class DungeonService : ApplicationService, IDungeonService
 
 
             //TODO generate dungeon
-            var dungeon = new Dungeon(serverId, threadId, charLevel, Rarity.Common, "Some new name");
+            var dungeon = new Dungeon(serverId, threadId, charLevel, Rarity.Common, "Some new name", 10);
             var cmd = new CreateDungeonCommand(dungeon);
 
             var result = await PublishAsync(ctx, cmd, token);
@@ -81,7 +81,7 @@ public class DungeonService : ApplicationService, IDungeonService
         }
     }
 
-    public async Task<Result> GetDungeonAdventureResultAsync(Identity charId, DiscordId threadId,
+    public async Task<Result> CalculateDungeonAdventureResultAsync(Identity charId, DiscordId threadId,
         TransactionContext parentContext = null,
         CancellationToken token = default)
     {
@@ -108,6 +108,29 @@ public class DungeonService : ApplicationService, IDungeonService
             {
                 TransactionError(ctx, "Failed to calculate dungeon result: {Reason}", result.ErrorMessage);
                 return Result.Failure("Failed to calculate result");
+            }
+
+            return Result.Success();
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result.Failure(e.Message);
+        }
+    }
+
+    public async Task<Result> DecreaseExplorationsAsync(Dungeon dungeon, TransactionContext parentContext = null,
+        CancellationToken token = default)
+    {
+        using var ctx = TransactionBegin(parentContext);
+        try
+        {
+            var command = new DecreaseExplorationCommand(dungeon);
+            var result = await PublishAsync(ctx, command, token);
+            if (!result.WasSuccessful)
+            {
+                TransactionError(ctx, "Failed to decrease dungeon explorations: {Reason}", result.ErrorMessage);
+                return Result.Failure("Failed to decrease explorations");
             }
 
             return Result.Success();

@@ -48,6 +48,13 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
         dialog.CharId = context.Character!.ID;
         dialog.Dungeon = context.Dungeon!;
 
+        if (context.Dungeon.ExplorationsLeft <= 0)
+        {
+            await command.RespondAsync("This dungeon has already been thoroughly searched!");
+            EndDialog(dialog.UserId);
+            return;
+        }
+
         var component = new ComponentBuilder()
             .WithButton("Enter Dungeon", CommandName + ".enter")
             .WithButton("Cancel", CommandName + ".cancel", ButtonStyle.Secondary)
@@ -92,6 +99,8 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
             {
                 ThreadId = dialog.Dungeon.DungeonChannelId,
             });
+
+        await dungeonService.DecreaseExplorationsAsync(dialog.Dungeon);
 
         await component.UpdateAsync(properties =>
         {

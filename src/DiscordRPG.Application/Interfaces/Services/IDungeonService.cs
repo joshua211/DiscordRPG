@@ -12,7 +12,10 @@ public interface IDungeonService
     Task<Result<Dungeon>> GetDungeonFromChannelIdAsync(DiscordId channelId, TransactionContext parentContext = null,
         CancellationToken token = default);
 
-    Task<Result> GetDungeonAdventureResultAsync(Identity chadId, DiscordId threadId,
+    Task<Result> CalculateDungeonAdventureResultAsync(Identity chadId, DiscordId threadId,
         TransactionContext parentContext = null,
+        CancellationToken token = default);
+
+    Task<Result> DecreaseExplorationsAsync(Dungeon dialogDungeon, TransactionContext parentContext = null,
         CancellationToken token = default);
 }
