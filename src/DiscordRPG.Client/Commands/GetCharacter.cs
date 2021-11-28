@@ -41,6 +41,25 @@ public class GetCharacter : CommandBase
 
     protected override async Task HandleAsync(SocketSlashCommand command, GuildCommandContext context)
     {
-        await command.RespondAsync(context.Character!.CharacterName);
+        var character = context.Character!;
+        var builder = new EmbedBuilder()
+            .WithTitle(character.CharacterName)
+            .WithDescription("Your character")
+            .WithColor(Color.DarkGreen)
+            .AddField("Class", character.CharacterClass.ClassName, true)
+            .AddField("Level", character.Level.CurrentLevel, true)
+            .AddField("Experience", $"{character.Level.CurrentExp}/{character.Level.NeedExp}")
+            .AddField("\u200B", "\u200B")
+            .AddField("Health", $"{character.CurrentHealth}/{character.MaxHealth}", true)
+            .AddField("Armor", character.Armor, true)
+            .AddField("Magic Armor", character.MagicArmor, true)
+            .AddField("Stength", character.Stength, true)
+            .AddField("Agility", character.Agility, true)
+            .AddField("\u200b", "\u200b", true)
+            .AddField("Vitality", character.Vitality, true)
+            .AddField("Intelligence", character.Intelligence, true)
+            .AddField("\u200b", "\u200b", true);
+
+        await command.RespondAsync(embed: builder.Build(), ephemeral: true);
     }
 }
