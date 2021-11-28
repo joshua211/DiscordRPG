@@ -8,6 +8,8 @@ public interface IChannelManager
 
     Task SendToDungeonHallAsync(DiscordId serverId, string text);
 
+    Task SendToChannelAsync(DiscordId channelId, string text);
+
     Task DeleteDungeonThreadAsync(DiscordId threadId);
 
     Task UpdateDungeonThreadNameAsync(DiscordId threadId, string name);

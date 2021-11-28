@@ -67,6 +67,19 @@ public class ChannelManager : IChannelManager
             await channel.SendMessageAsync(text);
     }
 
+    public async Task SendToChannelAsync(DiscordId channelId, string text)
+    {
+        logger.Here().Verbose("Sending Message to Channel: {Channel}", channelId.Value);
+        var channel = client.GetChannel(channelId) as SocketTextChannel;
+        if (channel is null)
+        {
+            logger.Here().Warning("No channel found with id {Id}, cant send message", channelId.Value);
+            return;
+        }
+
+        await channel.SendMessageAsync(text);
+    }
+
     public async Task DeleteDungeonThreadAsync(DiscordId threadId)
     {
         try

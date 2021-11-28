@@ -81,7 +81,7 @@ public class DungeonService : ApplicationService, IDungeonService
         }
     }
 
-    public async Task<Result<DungeonResult>> GetDungeonAdventureResultAsync(Identity charId, DiscordId threadId,
+    public async Task<Result> GetDungeonAdventureResultAsync(Identity charId, DiscordId threadId,
         TransactionContext parentContext = null,
         CancellationToken token = default)
     {
@@ -92,30 +92,30 @@ public class DungeonService : ApplicationService, IDungeonService
             if (!charResult.WasSuccessful)
             {
                 TransactionWarning(ctx, "No character with ID {Id} found to execute dungeon search", charId);
-                return Result<DungeonResult>.Failure(charResult.ErrorMessage);
+                return Result.Failure(charResult.ErrorMessage);
             }
 
             var dungeonResult = await GetDungeonFromChannelIdAsync(threadId, ctx, token: token);
             if (!dungeonResult.WasSuccessful)
             {
                 TransactionWarning(ctx, "No dungeon with channelID {Id} found to execute dungeon search", threadId);
-                return Result<DungeonResult>.Failure(charResult.ErrorMessage);
+                return Result.Failure(charResult.ErrorMessage);
             }
 
-            var query = new GetDungeonAdventureQuery(charResult.Value, dungeonResult.Value);
-            var result = await ProcessAsync(ctx, query, token);
-            if (result is null)
+            var command = new CalculateAdventureResultCommand(charResult.Value, dungeonResult.Value);
+            var result = await PublishAsync(ctx, command, token);
+            if (!result.WasSuccessful)
             {
-                TransactionWarning(ctx, "Could not get an adventure result");
-                return Result<DungeonResult>.Failure("Failed to get result");
+                TransactionError(ctx, "Failed to calculate dungeon result: {Reason}", result.ErrorMessage);
+                return Result.Failure("Failed to calculate result");
             }
 
-            return Result<DungeonResult>.Success(result);
+            return Result.Success();
         }
         catch (Exception e)
         {
             TransactionError(ctx, e);
-            return Result<DungeonResult>.Failure(e.Message);
+            return Result.Failure(e.Message);
         }
     }
 }
