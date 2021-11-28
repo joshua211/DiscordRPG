@@ -1,16 +1,23 @@
-﻿namespace DiscordRPG.Core.Entities;
+﻿using DiscordRPG.Core.DomainServices;
+using MongoDB.Bson.Serialization.Attributes;
+
+namespace DiscordRPG.Core.Entities;
 
 public class Character : Entity
 {
-    public Character(DiscordId userId, Identity guildId, string characterName, Class characterClass, Race characterRace,
+    private IClassService classService;
+
+    private IRaceService raceService;
+
+    public Character(DiscordId userId, Identity guildId, string characterName, int classId, int raceId,
         Level level,
         EquipmentInfo equipment, List<Item> inventory, List<Wound> wounds, int money)
     {
         UserId = userId;
         GuildId = guildId;
         CharacterName = characterName;
-        CharacterClass = characterClass;
-        CharacterRace = characterRace;
+        ClassId = classId;
+        RaceId = raceId;
         Level = level;
         Equipment = equipment;
         Inventory = inventory;
@@ -21,13 +28,38 @@ public class Character : Entity
     public DiscordId UserId { get; private set; }
     public Identity GuildId { get; private set; }
     public string CharacterName { get; private set; }
-    public Class CharacterClass { get; private set; }
-    public Race CharacterRace { get; private set; }
+    public int ClassId { get; private set; }
+    public int RaceId { get; private set; }
     public Level Level { get; private set; }
     public EquipmentInfo Equipment { get; private set; }
     public int Money { get; private set; }
     public List<Item> Inventory { get; private set; }
     public List<Wound> Wounds { get; private set; }
+
+
+    [BsonIgnore] public Class CharacterClass { get; set; }
+
+    [BsonIgnore] public Race CharacterRace { get; set; }
+
+    [BsonIgnore] public IClassService ClassService
+    {
+        get => classService;
+        set
+        {
+            classService = value;
+            CharacterClass = classService.GetClass(ClassId);
+        }
+    }
+
+    [BsonIgnore] public IRaceService RaceService
+    {
+        get => raceService;
+        set
+        {
+            raceService = value;
+            CharacterRace = raceService.GetRace(RaceId);
+        }
+    }
 
     #region Attributes
 
@@ -36,10 +68,10 @@ public class Character : Entity
         get
         {
             var totalMod = CharacterClass.StrengthModifier + CharacterRace.StrengthModifier;
-            var charStrength = (int) ((CharacterClass.BaseStrength * Level.CurrentLevel) * totalMod);
-            var equipStrength = Equipment.GetTotalAttribute(CharacterAttribute.Strength);
+            var charAttr = (int) (CharacterClass.BaseStrength + (1 * Level.CurrentLevel * totalMod));
+            var equipAttr = Equipment.GetTotalAttribute(CharacterAttribute.Strength);
 
-            return charStrength + equipStrength;
+            return charAttr + equipAttr;
         }
     }
 
@@ -48,10 +80,10 @@ public class Character : Entity
         get
         {
             var totalMod = CharacterClass.VitalityModifier + CharacterRace.VitalityModifier;
-            var charVit = (int) ((CharacterClass.BaseVitality * Level.CurrentLevel) * totalMod);
-            var equipStrength = Equipment.GetTotalAttribute(CharacterAttribute.Vitality);
+            var charAttr = (int) (CharacterClass.BaseVitality + (1 * Level.CurrentLevel * totalMod));
+            var equipAttr = Equipment.GetTotalAttribute(CharacterAttribute.Vitality);
 
-            return charVit + equipStrength;
+            return charAttr + equipAttr;
         }
     }
 
@@ -60,10 +92,10 @@ public class Character : Entity
         get
         {
             var totalMod = CharacterClass.AgilityModifier + CharacterRace.AgilityModifier;
-            var charAg = (int) ((CharacterClass.BaseAgility * Level.CurrentLevel) * totalMod);
-            var equipStrength = Equipment.GetTotalAttribute(CharacterAttribute.Agility);
+            var charAttr = (int) (CharacterClass.BaseAgility + (1 * Level.CurrentLevel * totalMod));
+            var equipAttr = Equipment.GetTotalAttribute(CharacterAttribute.Agility);
 
-            return charAg + equipStrength;
+            return charAttr + equipAttr;
         }
     }
 
@@ -72,10 +104,10 @@ public class Character : Entity
         get
         {
             var totalMod = CharacterClass.IntelligenceModifier + CharacterRace.IntelligenceModifier;
-            var charInt = (int) ((CharacterClass.BaseIntelligence * Level.CurrentLevel) * totalMod);
-            var equipStrength = Equipment.GetTotalAttribute(CharacterAttribute.Intelligence);
+            var charAttr = (int) (CharacterClass.BaseIntelligence + (1 * Level.CurrentLevel * totalMod));
+            var equipAttr = Equipment.GetTotalAttribute(CharacterAttribute.Intelligence);
 
-            return charInt + equipStrength;
+            return charAttr + equipAttr;
         }
     }
 
@@ -84,10 +116,10 @@ public class Character : Entity
         get
         {
             var totalMod = CharacterClass.LuckModifier + CharacterRace.LuckModifier;
-            var charLuck = (int) ((CharacterClass.BaseLuck * Level.CurrentLevel) * totalMod);
-            var equipStrength = Equipment.GetTotalAttribute(CharacterAttribute.Luck);
+            var charAttr = (int) (CharacterClass.BaseLuck + (1 * Level.CurrentLevel * totalMod));
+            var equipAttr = Equipment.GetTotalAttribute(CharacterAttribute.Luck);
 
-            return charLuck + equipStrength;
+            return charAttr + equipAttr;
         }
     }
 

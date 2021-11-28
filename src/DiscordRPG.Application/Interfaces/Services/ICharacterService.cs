@@ -5,8 +5,8 @@ namespace DiscordRPG.Application.Interfaces.Services;
 
 public interface ICharacterService
 {
-    Task<Result<Character>> CreateCharacterAsync(DiscordId userId, Identity guildId, string name, Class characterClass,
-        Race race, TransactionContext parentContext = null,
+    Task<Result<Character>> CreateCharacterAsync(DiscordId userId, Identity guildId, string name, int classId,
+        int raceId, TransactionContext parentContext = null,
         CancellationToken cancellationToken = default);
 
     Task<Result<Character>> GetCharacterAsync(Identity identity, TransactionContext parentContext = null,

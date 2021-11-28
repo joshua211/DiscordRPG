@@ -16,14 +16,14 @@ public class CharacterService : ApplicationService, ICharacterService
     }
 
     public async Task<Result<Character>> CreateCharacterAsync(DiscordId userId, Identity guildId, string name,
-        Class characterClass,
-        Race race, TransactionContext parentContext = null,
+        int classId,
+        int raceId, TransactionContext parentContext = null,
         CancellationToken cancellationToken = default)
     {
         using var ctx = TransactionBegin(parentContext);
         try
         {
-            var character = new Character(userId, guildId, name, characterClass, race, new Level(1, 0, 100),
+            var character = new Character(userId, guildId, name, classId, raceId, new Level(1, 0, 100),
                 new EquipmentInfo(null, null, null, null, null, null, null), new List<Item>(), new List<Wound>(), 0);
 
             var result = await PublishAsync(ctx, new CreateCharacterCommand(character), cancellationToken);

@@ -44,8 +44,9 @@ public class GetCharacter : CommandBase
         var character = context.Character!;
         var builder = new EmbedBuilder()
             .WithTitle(character.CharacterName)
-            .WithDescription("Your character")
+            .WithDescription("No Title equiped")
             .WithColor(Color.DarkGreen)
+            .AddField("Race", character.CharacterRace.RaceName, true)
             .AddField("Class", character.CharacterClass.ClassName, true)
             .AddField("Level", character.Level.CurrentLevel, true)
             .AddField("Experience", $"{character.Level.CurrentExp}/{character.Level.NeedExp}")

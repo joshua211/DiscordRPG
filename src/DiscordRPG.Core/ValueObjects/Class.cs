@@ -1,17 +1,14 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
-
-namespace DiscordRPG.Core.ValueObjects;
+﻿namespace DiscordRPG.Core.ValueObjects;
 
 public class Class : IAttributeModifier
 {
-    [BsonConstructor]
     public Class(string className)
     {
         ClassName = className;
     }
 
     public string ClassName { get; private set; }
-
+    public string Description { get; set; }
     public byte BaseStrength { get; init; } = 10;
     public byte BaseVitality { get; init; } = 10;
     public byte BaseAgility { get; init; } = 10;
