@@ -33,6 +33,7 @@ public class CharacterRepository : IRepository<Character>
     public async Task UpdateAsync(Character entity, CancellationToken cancellationToken)
     {
         logger.Here().Verbose("Updating Character {@Character}", entity);
+        entity.LastModified = DateTime.UtcNow;
         var result = await characters.ReplaceOneAsync(g => g.ID == entity.ID, entity,
             cancellationToken: cancellationToken);
         logger.Verbose("Updated {Count} Characters", result.ModifiedCount);

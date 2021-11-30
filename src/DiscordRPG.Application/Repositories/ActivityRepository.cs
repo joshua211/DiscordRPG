@@ -28,6 +28,7 @@ public class ActivityRepository : IRepository<Activity>
     public async Task UpdateAsync(Activity entity, CancellationToken cancellationToken)
     {
         logger.Here().Verbose("Updating Character {@Activity}", entity);
+        entity.LastModified = DateTime.UtcNow;
         var result = await activities.ReplaceOneAsync(e => e.ID == entity.ID, entity,
             cancellationToken: cancellationToken);
         logger.Here().Verbose("Updated {Count} Activities", result.ModifiedCount);

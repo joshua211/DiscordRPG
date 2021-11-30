@@ -27,6 +27,7 @@ public class GuildRepository : IRepository<Guild>
     public async Task UpdateAsync(Guild entity, CancellationToken cancellationToken)
     {
         logger.Here().Verbose("Updating guild {@guild}", entity);
+        entity.LastModified = DateTime.UtcNow;
         var result = await guilds.ReplaceOneAsync(g => g.ID == entity.ID, entity,
             cancellationToken: cancellationToken);
         logger.Here().Verbose("Updated {Count} guilds", result.ModifiedCount);

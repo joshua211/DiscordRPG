@@ -27,6 +27,7 @@ public class DungeonRepository : IRepository<Dungeon>
     public async Task UpdateAsync(Dungeon entity, CancellationToken cancellationToken)
     {
         logger.Here().Verbose("Updating dungeon {@entity}", entity);
+        entity.LastModified = DateTime.UtcNow;
         var result = await dungeons.ReplaceOneAsync(d => d.ID == entity.ID, entity,
             cancellationToken: cancellationToken);
         logger.Here().Verbose("Updated {Count} dungeons", result.ModifiedCount);
