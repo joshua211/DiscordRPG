@@ -16,7 +16,7 @@ public class CleaningWorker
         this.logger = logger.WithContext(GetType());
     }
 
-    public async Task RemoveExhaustedDungeons()
+    public async Task RemoveExhaustedAndUnusedDungeons()
     {
         logger.Here().Information("Removing all exhausted Dungeons");
         var allDungeonResult = await dungeonService.GetAllDungeonsAsync();
@@ -29,9 +29,12 @@ public class CleaningWorker
         var deletedCount = 0;
         foreach (var dungeon in allDungeonResult.Value)
         {
-            if (dungeon.ExplorationsLeft <= 0)
+            if (dungeon.ExplorationsLeft <= 0 || (DateTime.UtcNow - dungeon.LastModified).Hours >= 23)
             {
-                logger.Here().Verbose("Removing dungeon {Id} because no more explorations are left", dungeon.ID);
+                logger.Here()
+                    .Verbose(
+                        "Removing dungeon {Id} because no more explorations are left or it was not used in 24 hours",
+                        dungeon.ID);
                 var deleteResult = await dungeonService.DeleteDungeonAsync(dungeon);
                 if (!deleteResult.WasSuccessful)
                     logger.Here().Error("Failed to delete dungeon with ID {Id}", dungeon.ID);

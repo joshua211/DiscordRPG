@@ -35,7 +35,8 @@ public class ServerHandler : IHandler
         client.JoinedGuild += SetupServer;
         client.LeftGuild += CleanServer;
 
-        RecurringJob.AddOrUpdate<CleaningWorker>("DungeonCleaner", x => x.RemoveExhaustedDungeons(), "0 0 * * *");
+        RecurringJob.AddOrUpdate<CleaningWorker>("DungeonCleaner", x => x.RemoveExhaustedAndUnusedDungeons(),
+            "0 0 * * *");
 
         return Task.CompletedTask;
     }
