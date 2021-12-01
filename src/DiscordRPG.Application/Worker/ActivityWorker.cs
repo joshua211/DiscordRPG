@@ -1,4 +1,5 @@
 ﻿using DiscordRPG.Application.Interfaces;
+using DiscordRPG.Application.Interfaces.Generators;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Core.Commands.Activities;
 using MediatR;
@@ -13,9 +14,11 @@ public class ActivityWorker
     private readonly IDungeonService dungeonService;
     private readonly ILogger logger;
     private readonly IMediator mediator;
+    private readonly IRarityGenerator rarityGenerator;
 
     public ActivityWorker(IMediator mediator, IChannelManager channelManager, IDungeonService dungeonService,
-        ILogger logger, IActivityService activityService, ICharacterService characterService)
+        ILogger logger, IActivityService activityService, ICharacterService characterService,
+        IRarityGenerator rarityGenerator)
     {
         this.mediator = mediator;
         this.channelManager = channelManager;
@@ -23,6 +26,7 @@ public class ActivityWorker
         this.logger = logger.WithContext(GetType());
         this.activityService = activityService;
         this.characterService = characterService;
+        this.rarityGenerator = rarityGenerator;
     }
 
     public async Task ExecuteActivityAsync(string activityId)
@@ -79,8 +83,10 @@ public class ActivityWorker
     {
         var threadId = await channelManager.CreateDungeonThreadAsync(activity.Data.ServerId, "Dungeon");
 
+        var rarity = rarityGenerator.GenerateRarityFromActivityDuration(activity.Duration);
+
         var createDungeonResult = await dungeonService.CreateDungeonAsync(activity.Data.ServerId, threadId,
-            activity.Data.PlayerLevel);
+            activity.Data.PlayerLevel, rarity);
 
         if (!createDungeonResult.WasSuccessful)
         {

@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\DiscordRPG.Core\DiscordRPG.Core.csproj"/>
+        <ProjectReference Include="..\DiscordRPG.WeightedRandom\DiscordRPG.WeightedRandom.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

@@ -30,7 +30,7 @@ public class ActivityService : ApplicationService, IActivityService
         try
         {
             var timespan = TimeSpan.FromSeconds((int) duration);
-            var activity = new Activity(charId, DateTime.Now, timespan, type, data);
+            var activity = new Activity(charId, DateTime.Now, duration, type, data);
             var jobId = BackgroundJob.Schedule<ActivityWorker>(x => x.ExecuteActivityAsync(activity.ID), timespan);
             activity.JobId = jobId;
 

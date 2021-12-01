@@ -1,5 +1,7 @@
 ﻿using DiscordRPG.Application.Data;
+using DiscordRPG.Application.Generators;
 using DiscordRPG.Application.Interfaces;
+using DiscordRPG.Application.Interfaces.Generators;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Repositories;
 using DiscordRPG.Application.Services;
@@ -23,6 +25,8 @@ public static class Application
             .AddTransient<IRepository<Activity>, ActivityRepository>()
             .AddTransient<IRepository<Dungeon>, DungeonRepository>()
             .AddTransient<IChannelManager, ChannelManager>()
+            .AddTransient<IRarityGenerator, RarityGenerator>()
+            .AddTransient<IDungeonGenerator, DungeonGenerator>()
             .AddSingleton<IClassService, Classes>()
             .AddSingleton<IRaceService, Races>();
     }

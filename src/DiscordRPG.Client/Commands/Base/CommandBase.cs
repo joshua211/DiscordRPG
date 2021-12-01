@@ -108,7 +108,8 @@ public abstract class CommandBase : IGuildCommand
                 await activityService.GetCharacterActivityAsync(character.ID);
             if (currentActivityResult.WasSuccessful)
             {
-                var timeLeft = ((currentActivityResult.Value.StartTime + currentActivityResult.Value.Duration) -
+                var timeLeft = ((currentActivityResult.Value.StartTime +
+                                 TimeSpan.FromSeconds((int) currentActivityResult.Value.Duration)) -
                                 DateTime.UtcNow);
                 await command.RespondAsync($"You're already on an adventure, try again in {timeLeft.Minutes} minutes!");
                 return;

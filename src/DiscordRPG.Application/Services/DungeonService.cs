@@ -1,4 +1,5 @@
-﻿using DiscordRPG.Application.Interfaces.Services;
+﻿using DiscordRPG.Application.Interfaces.Generators;
+using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Queries;
 using DiscordRPG.Common;
 using DiscordRPG.Core.Commands.Dungeons;
@@ -9,16 +10,19 @@ namespace DiscordRPG.Application.Services;
 public class DungeonService : ApplicationService, IDungeonService
 {
     private readonly ICharacterService characterService;
+    private readonly IDungeonGenerator dungeonGenerator;
     private readonly IGuildService guildService;
 
     public DungeonService(IMediator mediator, ILogger logger, IGuildService guildService,
-        ICharacterService characterService) : base(mediator, logger)
+        ICharacterService characterService, IDungeonGenerator dungeonGenerator) : base(mediator, logger)
     {
         this.guildService = guildService;
         this.characterService = characterService;
+        this.dungeonGenerator = dungeonGenerator;
     }
 
     public async Task<Result<Dungeon>> CreateDungeonAsync(DiscordId serverId, DiscordId threadId, uint charLevel,
+        Rarity rarity,
         TransactionContext parentContext = null,
         CancellationToken token = default)
     {
@@ -34,8 +38,8 @@ public class DungeonService : ApplicationService, IDungeonService
             }
 
 
-            //TODO generate dungeon
-            var dungeon = new Dungeon(serverId, threadId, charLevel, Rarity.Common, "Some new name", 10);
+            var dungeon = dungeonGenerator.GenerateRandomDungeon(serverId, threadId, charLevel, rarity);
+            //var dungeon = new Dungeon(serverId, threadId, charLevel, Rarity.Common, "Some new name", 10);
             var cmd = new CreateDungeonCommand(dungeon);
 
             var result = await PublishAsync(ctx, cmd, token);
