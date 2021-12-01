@@ -6,7 +6,6 @@ using DiscordRPG.Common;
 using DiscordRPG.Core.Commands.Activities;
 using Hangfire;
 using MediatR;
-using Serilog;
 
 namespace DiscordRPG.Application.Services;
 
@@ -22,7 +21,7 @@ public class ActivityService : ApplicationService, IActivityService
         this.channelManager = channelManager;
     }
 
-    public async Task<Result> QueueActivityAsync(Identity charId, TimeSpan duration, ActivityType type,
+    public async Task<Result> QueueActivityAsync(Identity charId, ActivityDuration duration, ActivityType type,
         ActivityData data,
         TransactionContext parentContext = null,
         CancellationToken cancellationToken = default)
@@ -30,8 +29,9 @@ public class ActivityService : ApplicationService, IActivityService
         using var ctx = TransactionBegin(parentContext);
         try
         {
-            var activity = new Activity(charId, DateTime.Now, duration, type, data);
-            var jobId = BackgroundJob.Schedule<ActivityWorker>(x => x.ExecuteActivityAsync(activity.ID), duration);
+            var timespan = TimeSpan.FromSeconds((int) duration);
+            var activity = new Activity(charId, DateTime.Now, timespan, type, data);
+            var jobId = BackgroundJob.Schedule<ActivityWorker>(x => x.ExecuteActivityAsync(activity.ID), timespan);
             activity.JobId = jobId;
 
             var result = await PublishAsync(ctx, new CreateActivityCommand(activity), cancellationToken);

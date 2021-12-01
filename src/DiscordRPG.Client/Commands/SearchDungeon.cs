@@ -7,6 +7,7 @@ using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Client.Handlers;
 using DiscordRPG.Common.Extensions;
+using DiscordRPG.Core.Enums;
 using DiscordRPG.Core.ValueObjects;
 using Serilog;
 using ActivityType = DiscordRPG.Core.Enums.ActivityType;
@@ -31,9 +32,12 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
     {
         try
         {
+            var optionBuilder = GetActivityDurationBuilder("Choose how long you are going to search");
+
             var command = new SlashCommandBuilder()
                 .WithName(CommandName)
-                .WithDescription("Search for a new dungeon");
+                .WithDescription("Search for a new dungeon")
+                .AddOption(optionBuilder);
 
             await guild.CreateApplicationCommandAsync(command.Build());
         }
@@ -52,14 +56,18 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
         dialog.Character = character;
         dialog.ServerId = user.Guild.Id;
 
+        var value = (long) command.Data.Options.FirstOrDefault().Value;
+        var duration = (ActivityDuration) (int) value;
+        dialog.Duration = duration;
+
         var component = new ComponentBuilder()
             .WithButton("Search", CommandName + ".accept")
             .WithButton("Cancel", CommandName + ".cancel", ButtonStyle.Secondary)
             .Build();
 
         //TODO some flavour text
-        var text = "Do you want to search?";
-        await command.RespondAsync(text, component: component);
+        var text = $"This will take you {(int) duration / 60} minutes, are you sure you want to search?";
+        await command.RespondAsync(text, component: component, ephemeral: true);
     }
 
     protected override Task HandleSelection(SocketMessageComponent component, string id, SearchDungeonDialog dialog)
@@ -88,7 +96,7 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
     private async Task HandleSearchDungeon(SocketMessageComponent component, SearchDungeonDialog dialog)
     {
         //TODO proper duration
-        var result = await activityService.QueueActivityAsync(dialog.Character.ID, TimeSpan.FromSeconds(10),
+        var result = await activityService.QueueActivityAsync(dialog.Character.ID, ActivityDuration.Quick,
             ActivityType.SearchDungeon, new ActivityData
             {
                 PlayerLevel = dialog.Character.Level.CurrentLevel,

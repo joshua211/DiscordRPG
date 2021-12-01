@@ -5,7 +5,7 @@ namespace DiscordRPG.Application.Interfaces.Services;
 
 public interface IActivityService
 {
-    Task<Result> QueueActivityAsync(Identity charId, TimeSpan duration, ActivityType type, ActivityData data,
+    Task<Result> QueueActivityAsync(Identity charId, ActivityDuration duration, ActivityType type, ActivityData data,
         TransactionContext parentContext = null,
         CancellationToken cancellationToken = default);
 

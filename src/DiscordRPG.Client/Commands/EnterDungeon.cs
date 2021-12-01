@@ -6,6 +6,7 @@ using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Common.Extensions;
+using DiscordRPG.Core.Enums;
 using DiscordRPG.Core.ValueObjects;
 using Serilog;
 using ActivityType = DiscordRPG.Core.Enums.ActivityType;
@@ -30,9 +31,11 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
     {
         try
         {
+            var optionBuilder = GetActivityDurationBuilder("How long do you want to explore this dungeon?");
             var command = new SlashCommandBuilder()
                 .WithName(CommandName)
-                .WithDescription("Enter and explore the current dungeon");
+                .WithDescription("Enter and explore the current dungeon")
+                .AddOption(optionBuilder);
 
             await guild.CreateApplicationCommandAsync(command.Build());
         }
@@ -47,6 +50,9 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
     {
         dialog.CharId = context.Character!.ID;
         dialog.Dungeon = context.Dungeon!;
+        var value = (long) command.Data.Options.FirstOrDefault().Value;
+        var duration = (ActivityDuration) (int) value;
+        dialog.Duration = duration;
 
         if (context.Dungeon.ExplorationsLeft <= 0)
         {
@@ -61,9 +67,9 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
             .Build();
 
         var text =
-            $"Do you want to enter the level {context.Dungeon!.DungeonLevel} Dungeon {context.Dungeon!.Name}?";
+            $"Do you want to explore the level {context.Dungeon!.DungeonLevel} Dungeon {context.Dungeon!.Name}? This will take you {(int) duration / 60} minutes";
 
-        await command.RespondAsync(text, component: component);
+        await command.RespondAsync(text, component: component, ephemeral: true);
     }
 
     protected override Task HandleSelection(SocketMessageComponent component, string id, EnterDungeonDialog dialog)
@@ -92,9 +98,7 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
 
     private async Task HandleEnterDungeon(SocketMessageComponent component, EnterDungeonDialog dialog)
     {
-        //TODO set proper duration
-        var duration = TimeSpan.FromSeconds(15);
-        var result = await activityService.QueueActivityAsync(dialog.CharId, duration,
+        var result = await activityService.QueueActivityAsync(dialog.CharId, dialog.Duration,
             ActivityType.Dungeon, new ActivityData
             {
                 ThreadId = dialog.Dungeon.DungeonChannelId,
@@ -107,7 +111,7 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
             properties.Components = null;
             if (result.WasSuccessful)
                 properties.Content =
-                    $"You have entered {dialog.Dungeon.Name}! Come back in {duration.Minutes} minutes.";
+                    $"You have entered {dialog.Dungeon.Name}! Come back in {(int) dialog.Duration / 60} minutes.";
             else
                 properties.Content = $"Something went wrong, please try again in a few minutes!";
         });

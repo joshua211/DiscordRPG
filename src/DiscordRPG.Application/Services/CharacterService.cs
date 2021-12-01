@@ -2,17 +2,23 @@
 using DiscordRPG.Application.Queries;
 using DiscordRPG.Common;
 using DiscordRPG.Core.Commands.Characters;
+using DiscordRPG.Core.DomainServices;
 using MediatR;
 
 namespace DiscordRPG.Application.Services;
 
 public class CharacterService : ApplicationService, ICharacterService
 {
+    private readonly IClassService classService;
     private readonly IGuildService guildService;
+    private readonly IRaceService raceService;
 
-    public CharacterService(ILogger logger, IMediator mediator, IGuildService guildService) : base(mediator, logger)
+    public CharacterService(ILogger logger, IMediator mediator, IGuildService guildService, IRaceService raceService,
+        IClassService classService) : base(mediator, logger)
     {
         this.guildService = guildService;
+        this.raceService = raceService;
+        this.classService = classService;
     }
 
     public async Task<Result<Character>> CreateCharacterAsync(DiscordId userId, Identity guildId, string name,
@@ -25,6 +31,8 @@ public class CharacterService : ApplicationService, ICharacterService
         {
             var character = new Character(userId, guildId, name, classId, raceId, new Level(1, 0, 100),
                 new EquipmentInfo(null, null, null, null, null, null, null), new List<Item>(), new List<Wound>(), 0);
+            character.ClassService = classService;
+            character.RaceService = raceService;
 
             var result = await PublishAsync(ctx, new CreateCharacterCommand(character), cancellationToken);
             if (!result.WasSuccessful)

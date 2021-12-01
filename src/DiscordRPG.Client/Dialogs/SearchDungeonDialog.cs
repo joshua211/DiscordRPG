@@ -1,4 +1,5 @@
 ﻿using DiscordRPG.Core.Entities;
+using DiscordRPG.Core.Enums;
 
 namespace DiscordRPG.Client.Dialogs;
 
@@ -14,4 +15,5 @@ public class SearchDungeonDialog : Dialog
 
     public Character Character { get; set; }
     public ulong ServerId { get; set; }
+    public ActivityDuration Duration { get; set; }
 }

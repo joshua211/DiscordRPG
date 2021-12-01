@@ -4,6 +4,7 @@ using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Common.Extensions;
 using DiscordRPG.Core.Entities;
+using DiscordRPG.Core.Enums;
 using Serilog;
 
 namespace DiscordRPG.Client.Commands.Base;
@@ -141,4 +142,17 @@ public abstract class CommandBase : IGuildCommand
         => Task.CompletedTask;
 
     protected virtual Task HandleButtonAsync(SocketMessageComponent component, string id) => Task.CompletedTask;
+
+    protected static SlashCommandOptionBuilder GetActivityDurationBuilder(string description)
+    {
+        return new SlashCommandOptionBuilder()
+            .WithName("duration")
+            .WithDescription(description)
+            .WithType(ApplicationCommandOptionType.Integer)
+            .WithRequired(true)
+            .AddChoice("quick", (int) ActivityDuration.Quick)
+            .AddChoice("short", (int) ActivityDuration.Short)
+            .AddChoice("medium", (int) ActivityDuration.Medium)
+            .AddChoice("long", (int) ActivityDuration.Long);
+    }
 }
