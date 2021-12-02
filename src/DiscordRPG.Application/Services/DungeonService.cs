@@ -1,4 +1,6 @@
-﻿using DiscordRPG.Application.Interfaces.Generators;
+﻿using Discord;
+using DiscordRPG.Application.Interfaces;
+using DiscordRPG.Application.Interfaces.Generators;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Queries;
 using DiscordRPG.Common;
@@ -9,16 +11,19 @@ namespace DiscordRPG.Application.Services;
 
 public class DungeonService : ApplicationService, IDungeonService
 {
+    private readonly IChannelManager channelManager;
     private readonly ICharacterService characterService;
     private readonly IDungeonGenerator dungeonGenerator;
     private readonly IGuildService guildService;
 
     public DungeonService(IMediator mediator, ILogger logger, IGuildService guildService,
-        ICharacterService characterService, IDungeonGenerator dungeonGenerator) : base(mediator, logger)
+        ICharacterService characterService, IDungeonGenerator dungeonGenerator, IChannelManager channelManager) : base(
+        mediator, logger)
     {
         this.guildService = guildService;
         this.characterService = characterService;
         this.dungeonGenerator = dungeonGenerator;
+        this.channelManager = channelManager;
     }
 
     public async Task<Result<Dungeon>> CreateDungeonAsync(DiscordId serverId, DiscordId threadId, Character character,
@@ -51,6 +56,23 @@ public class DungeonService : ApplicationService, IDungeonService
 
                 return Result<Dungeon>.Failure("Failed to create dungeon");
             }
+
+            await channelManager.UpdateDungeonThreadNameAsync(threadId, dungeon.Name);
+            await channelManager.AddUserToThread(threadId, character.UserId);
+            var embed = new EmbedBuilder()
+                .WithTitle(dungeon.Name)
+                .WithDescription($"{character.CharacterName} found this new dungeon!")
+                .WithColor(Color.Purple)
+                .AddField("Rarity", dungeon.Rarity.ToString())
+                .AddField("Level", dungeon.DungeonLevel)
+                .AddField("Explorations", $"{dungeon.ExplorationsLeft}")
+                .WithFooter(
+                    "This dungeon will be deleted if no explorations are left or if it has not been used for 24 hours")
+                .Build();
+
+            await channelManager.SendToChannelAsync(threadId, string.Empty, embed);
+            await channelManager.SendToDungeonHallAsync(serverId,
+                $"{character.CharacterName} found a new **{dungeon.Rarity.ToString()}** dungeon (Lvl. {dungeon.DungeonLevel})! <#{threadId}>");
 
             return Result<Dungeon>.Success(dungeon);
         }

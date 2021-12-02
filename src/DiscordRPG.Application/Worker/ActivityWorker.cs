@@ -2,9 +2,7 @@
 using DiscordRPG.Application.Interfaces.Generators;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Core.Commands.Activities;
-using Discord;
 using MediatR;
-using ActivityType = DiscordRPG.Core.Enums.ActivityType;
 
 namespace DiscordRPG.Application.Worker;
 
@@ -106,25 +104,6 @@ public class ActivityWorker
 
             return;
         }
-
-        var dungeon = createDungeonResult.Value;
-
-        await channelManager.UpdateDungeonThreadNameAsync(threadId, createDungeonResult.Value.Name);
-        await channelManager.AddUserToThread(threadId, character.UserId);
-        var embed = new EmbedBuilder()
-            .WithTitle(dungeon.Name)
-            .WithDescription($"{character.CharacterName} found this new dungeon!")
-            .WithColor(Color.Purple)
-            .AddField("Rarity", dungeon.Rarity.ToString())
-            .AddField("Level", dungeon.DungeonLevel)
-            .AddField("Explorations", $"{dungeon.ExplorationsLeft}")
-            .WithFooter(
-                "This dungeon will be deleted if no explorations are left or if it has not been used for 24 hours")
-            .Build();
-
-        await channelManager.SendToChannelAsync(threadId, string.Empty, embed);
-        await channelManager.SendToDungeonHallAsync(activity.Data.ServerId,
-            $"{character.CharacterName} found a new **{dungeon.Rarity.ToString()}** dungeon (Lvl. {dungeon.DungeonLevel})! <#{threadId}>");
 
         logger.Here().Debug("Created Dungeon {Name} with Thread {Channel}", createDungeonResult.Value.Name, threadId);
     }
