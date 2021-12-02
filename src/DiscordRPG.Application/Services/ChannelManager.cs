@@ -67,7 +67,7 @@ public class ChannelManager : IChannelManager
             await channel.SendMessageAsync(text);
     }
 
-    public async Task SendToChannelAsync(DiscordId channelId, string text)
+    public async Task SendToChannelAsync(DiscordId channelId, string text, Embed embed = null)
     {
         logger.Here().Verbose("Sending Message to Channel: {Channel}", channelId.Value);
         var channel = client.GetChannel(channelId) as SocketTextChannel;
@@ -77,7 +77,7 @@ public class ChannelManager : IChannelManager
             return;
         }
 
-        await channel.SendMessageAsync(text);
+        await channel.SendMessageAsync(text, embed: embed);
     }
 
     public async Task DeleteDungeonThreadAsync(DiscordId threadId)
@@ -105,6 +105,21 @@ public class ChannelManager : IChannelManager
         catch (Exception e)
         {
             logger.Here().Error(e, "Failed to update name of thread {Id}", threadId);
+        }
+    }
+
+    public async Task AddUserToThread(DiscordId threadId, DiscordId userId)
+    {
+        try
+        {
+            logger.Here().Debug("Adding user {UserId} to thread {ThreadId}", userId, threadId);
+            var thread = client.GetChannel(threadId) as SocketThreadChannel;
+            var user = thread.Guild.GetUser(userId);
+            await thread.AddUserAsync(user);
+        }
+        catch (Exception e)
+        {
+            logger.Here().Error(e, "Failed to add user to thread");
         }
     }
 }

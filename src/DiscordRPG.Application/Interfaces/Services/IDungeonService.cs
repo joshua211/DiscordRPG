@@ -5,7 +5,7 @@ namespace DiscordRPG.Application.Interfaces.Services;
 
 public interface IDungeonService
 {
-    Task<Result<Dungeon>> CreateDungeonAsync(DiscordId serverId, DiscordId threadId, uint charLevel, Rarity rarity,
+    Task<Result<Dungeon>> CreateDungeonAsync(DiscordId serverId, DiscordId threadId, Character character, Rarity rarity,
         TransactionContext parentContext = null,
         CancellationToken token = default);
 

@@ -2,4 +2,5 @@
 
 public interface INameGenerator
 {
+    string GenerateDungeonName(Rarity rarity);
 }

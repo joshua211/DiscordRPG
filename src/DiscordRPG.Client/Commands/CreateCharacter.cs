@@ -39,7 +39,7 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
                 .WithName(CommandName)
                 .WithDescription("Create your very own character")
                 .AddOption("name", ApplicationCommandOptionType.String, "Choose a name for your character",
-                    required: true);
+                    isRequired: true);
 
             await guild.CreateApplicationCommandAsync(command.Build());
         }

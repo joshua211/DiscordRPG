@@ -28,6 +28,7 @@ public static class Application
             .AddTransient<IRarityGenerator, RarityGenerator>()
             .AddTransient<IDungeonGenerator, DungeonGenerator>()
             .AddSingleton<IClassService, Classes>()
-            .AddSingleton<IRaceService, Races>();
+            .AddSingleton<IRaceService, Races>()
+            .AddSingleton<INameGenerator, NameGenerator>();
     }
 }

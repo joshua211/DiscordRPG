@@ -66,7 +66,7 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
             .Build();
 
         //TODO some flavour text
-        var text = $"This will take you {(int) duration / 60} minutes, are you sure you want to search?";
+        var text = $"This will take you {(int) duration} minutes, are you sure you want to search?";
         await command.RespondAsync(text, component: component, ephemeral: true);
     }
 
@@ -96,7 +96,7 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
     private async Task HandleSearchDungeon(SocketMessageComponent component, SearchDungeonDialog dialog)
     {
         //TODO proper duration
-        var result = await activityService.QueueActivityAsync(dialog.Character.ID, ActivityDuration.Quick,
+        var result = await activityService.QueueActivityAsync(dialog.Character.ID, dialog.Duration,
             ActivityType.SearchDungeon, new ActivityData
             {
                 PlayerLevel = dialog.Character.Level.CurrentLevel,
@@ -113,7 +113,7 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
         await component.UpdateAsync(properties =>
         {
             properties.Components = null;
-            properties.Content = "You started searching, cool!";
+            properties.Content = $"You've started searching, come back in {(int) dialog.Duration} minutes!";
         });
         EndDialog(dialog.UserId);
     }

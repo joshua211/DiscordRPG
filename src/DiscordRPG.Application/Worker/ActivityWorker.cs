@@ -2,7 +2,9 @@
 using DiscordRPG.Application.Interfaces.Generators;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Core.Commands.Activities;
+using Discord;
 using MediatR;
+using ActivityType = DiscordRPG.Core.Enums.ActivityType;
 
 namespace DiscordRPG.Application.Worker;
 
@@ -69,8 +71,9 @@ public class ActivityWorker
         await mediator.Send(new DeleteActivityCommand(activityId));
 
         var word = wasSuccess ? "Successfully" : "Unsuccessfully";
-        logger.Here().Information("{Word} executed and removed Activity {Name} after {Duration}", word, activity.Type,
-            activity.Duration);
+        logger.Here().Information("{Word} executed and removed Activity {Name} after {Duration} minutes", word,
+            activity.Type,
+            (int) activity.Duration);
     }
 
     private async Task ExecuteEnterDungeon(Activity activity)
@@ -81,12 +84,20 @@ public class ActivityWorker
 
     private async Task ExecuteSearchDungeon(Activity activity)
     {
+        var charResult = await characterService.GetCharacterAsync(activity.CharId);
+        if (!charResult.WasSuccessful)
+        {
+            logger.Here().Error("No character with ID {Id} found, cant execute SearchDungeon", activity.CharId.Value);
+            return;
+        }
+
+        var character = charResult.Value;
         var threadId = await channelManager.CreateDungeonThreadAsync(activity.Data.ServerId, "Dungeon");
 
         var rarity = rarityGenerator.GenerateRarityFromActivityDuration(activity.Duration);
 
         var createDungeonResult = await dungeonService.CreateDungeonAsync(activity.Data.ServerId, threadId,
-            activity.Data.PlayerLevel, rarity);
+            character, rarity);
 
         if (!createDungeonResult.WasSuccessful)
         {
@@ -96,7 +107,25 @@ public class ActivityWorker
             return;
         }
 
+        var dungeon = createDungeonResult.Value;
+
         await channelManager.UpdateDungeonThreadNameAsync(threadId, createDungeonResult.Value.Name);
+        await channelManager.AddUserToThread(threadId, character.UserId);
+        var embed = new EmbedBuilder()
+            .WithTitle(dungeon.Name)
+            .WithDescription($"{character.CharacterName} found this new dungeon!")
+            .WithColor(Color.Purple)
+            .AddField("Rarity", dungeon.Rarity.ToString())
+            .AddField("Level", dungeon.DungeonLevel)
+            .AddField("Explorations", $"{dungeon.ExplorationsLeft}")
+            .WithFooter(
+                "This dungeon will be deleted if no explorations are left or if it has not been used for 24 hours")
+            .Build();
+
+        await channelManager.SendToChannelAsync(threadId, string.Empty, embed);
+        await channelManager.SendToDungeonHallAsync(activity.Data.ServerId,
+            $"{character.CharacterName} found a new **{dungeon.Rarity.ToString()}** dungeon (Lvl. {dungeon.DungeonLevel})! <#{threadId}>");
+
         logger.Here().Debug("Created Dungeon {Name} with Thread {Channel}", createDungeonResult.Value.Name, threadId);
     }
 }

@@ -67,7 +67,7 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
             .Build();
 
         var text =
-            $"Do you want to explore the level {context.Dungeon!.DungeonLevel} Dungeon {context.Dungeon!.Name}? This will take you {(int) duration / 60} minutes";
+            $"Do you want to explore the level {context.Dungeon!.DungeonLevel} Dungeon {context.Dungeon!.Name}? This will take you {(int) duration} minutes";
 
         await command.RespondAsync(text, component: component, ephemeral: true);
     }
@@ -111,7 +111,7 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
             properties.Components = null;
             if (result.WasSuccessful)
                 properties.Content =
-                    $"You have entered {dialog.Dungeon.Name}! Come back in {(int) dialog.Duration / 60} minutes.";
+                    $"You have entered {dialog.Dungeon.Name}! Come back in {(int) dialog.Duration} minutes.";
             else
                 properties.Content = $"Something went wrong, please try again in a few minutes!";
         });

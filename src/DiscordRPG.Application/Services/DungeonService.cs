@@ -21,7 +21,7 @@ public class DungeonService : ApplicationService, IDungeonService
         this.dungeonGenerator = dungeonGenerator;
     }
 
-    public async Task<Result<Dungeon>> CreateDungeonAsync(DiscordId serverId, DiscordId threadId, uint charLevel,
+    public async Task<Result<Dungeon>> CreateDungeonAsync(DiscordId serverId, DiscordId threadId, Character character,
         Rarity rarity,
         TransactionContext parentContext = null,
         CancellationToken token = default)
@@ -38,9 +38,9 @@ public class DungeonService : ApplicationService, IDungeonService
             }
 
 
-            var dungeon = dungeonGenerator.GenerateRandomDungeon(serverId, threadId, charLevel, rarity);
-            //var dungeon = new Dungeon(serverId, threadId, charLevel, Rarity.Common, "Some new name", 10);
-            var cmd = new CreateDungeonCommand(dungeon);
+            var dungeon =
+                dungeonGenerator.GenerateRandomDungeon(serverId, threadId, character.Level.CurrentLevel, rarity);
+            var cmd = new CreateDungeonCommand(dungeon, character);
 
             var result = await PublishAsync(ctx, cmd, token);
             if (!result.WasSuccessful)

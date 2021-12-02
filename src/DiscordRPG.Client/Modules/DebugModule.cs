@@ -22,7 +22,7 @@ public class DebugModule
             this.logger = logger.WithContext<DebugModule>();
         }
 
-        [Command("activity-rarityDestribution")]
+        [Command("activity-rarityDistribution")]
         public async Task TestRarityDistribution()
         {
             logger.Here().Debug("Testing rarity distribution");
