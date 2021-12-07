@@ -29,7 +29,7 @@ public class CleaningWorker
         var deletedCount = 0;
         foreach (var dungeon in allDungeonResult.Value)
         {
-            if (dungeon.ExplorationsLeft <= 0 || (DateTime.UtcNow - dungeon.LastModified).Hours >= 23)
+            if (dungeon.ExplorationsLeft <= 0 || (DateTime.UtcNow - dungeon.LastModified).TotalHours >= 24)
             {
                 logger.Here()
                     .Verbose(

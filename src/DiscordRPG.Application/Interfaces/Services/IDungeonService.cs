@@ -13,6 +13,7 @@ public interface IDungeonService
         CancellationToken token = default);
 
     Task<Result> CalculateDungeonAdventureResultAsync(Identity chadId, DiscordId threadId,
+        ActivityDuration activityDuration,
         TransactionContext parentContext = null,
         CancellationToken token = default);
 

@@ -49,7 +49,7 @@ public class GetCharacter : CommandBase
             .AddField("Race", character.CharacterRace.RaceName, true)
             .AddField("Class", character.CharacterClass.ClassName, true)
             .AddField("Level", character.Level.CurrentLevel, true)
-            .AddField("Experience", $"{character.Level.CurrentExp}/{character.Level.NeedExp}")
+            .AddField("Experience", $"{character.Level.CurrentExp}/{character.Level.RequiredExp}")
             .AddField("\u200B", "\u200B")
             .AddField("Health", $"{character.CurrentHealth}/{character.MaxHealth}", true)
             .AddField("Armor", character.Armor, true)

@@ -1,4 +1,4 @@
-﻿namespace DiscordRPG.Application.Interfaces.Generators;
+﻿namespace DiscordRPG.Core.DomainServices.Generators;
 
 public interface IRarityGenerator
 {

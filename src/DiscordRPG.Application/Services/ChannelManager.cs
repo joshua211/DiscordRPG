@@ -37,7 +37,7 @@ public class ChannelManager : IChannelManager
         return thread.Id;
     }
 
-    public async Task SendToGuildHallAsync(DiscordId guildId, string text)
+    public async Task SendToGuildHallAsync(DiscordId guildId, string text, Embed embed = null)
     {
         logger.Here().Verbose("Sending Message to GuildHall: {Msg}", text);
         var result = await guildService.GetGuildWithDiscordIdAsync(guildId);
@@ -49,7 +49,7 @@ public class ChannelManager : IChannelManager
 
         var channel = client.GetChannel(result.Value.GuildHallId) as SocketTextChannel;
         if (channel is not null)
-            await channel.SendMessageAsync(text);
+            await channel.SendMessageAsync(text, embed: embed);
     }
 
     public async Task SendToDungeonHallAsync(DiscordId guildId, string text)

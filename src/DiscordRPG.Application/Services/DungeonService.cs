@@ -1,10 +1,10 @@
 ﻿using Discord;
 using DiscordRPG.Application.Interfaces;
-using DiscordRPG.Application.Interfaces.Generators;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Queries;
 using DiscordRPG.Common;
 using DiscordRPG.Core.Commands.Dungeons;
+using DiscordRPG.Core.DomainServices.Generators;
 using MediatR;
 
 namespace DiscordRPG.Application.Services;
@@ -108,6 +108,7 @@ public class DungeonService : ApplicationService, IDungeonService
     }
 
     public async Task<Result> CalculateDungeonAdventureResultAsync(Identity charId, DiscordId threadId,
+        ActivityDuration activityDuration,
         TransactionContext parentContext = null,
         CancellationToken token = default)
     {
@@ -128,7 +129,7 @@ public class DungeonService : ApplicationService, IDungeonService
                 return Result.Failure(charResult.ErrorMessage);
             }
 
-            var command = new CalculateAdventureResultCommand(charResult.Value, dungeonResult.Value);
+            var command = new CalculateAdventureResultCommand(charResult.Value, dungeonResult.Value, activityDuration);
             var result = await PublishAsync(ctx, command, token);
             if (!result.WasSuccessful)
             {

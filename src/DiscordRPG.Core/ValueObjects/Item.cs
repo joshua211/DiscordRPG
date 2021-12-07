@@ -17,4 +17,9 @@ public class Item
     public string Description { get; init; }
     public Rarity Rarity { get; init; }
     public int Worth { get; private set; }
+
+    public override string ToString()
+    {
+        return $"[{Rarity.ToString()} {GetType().Name}] {Name} ({Worth}$)";
+    }
 }

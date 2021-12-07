@@ -1,4 +1,6 @@
-﻿namespace DiscordRPG.Application.Interfaces.Generators;
+﻿using DiscordRPG.Core.Entities;
+
+namespace DiscordRPG.Core.DomainServices.Generators;
 
 public interface IDungeonGenerator
 {

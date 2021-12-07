@@ -13,4 +13,9 @@ public class Wound
 
     public string Description { get; private set; }
     public int DamageValue { get; private set; }
+
+    public override string ToString()
+    {
+        return $"{Description} (-{DamageValue})";
+    }
 }

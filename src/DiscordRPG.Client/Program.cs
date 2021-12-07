@@ -5,6 +5,7 @@ using DiscordRPG.Application;
 using DiscordRPG.Application.Settings;
 using DiscordRPG.Client.Handlers;
 using DiscordRPG.Common.Extensions;
+using DiscordRPG.Core;
 using Hangfire;
 using Hangfire.Mongo;
 using Hangfire.Mongo.Migration.Strategies;
@@ -85,6 +86,7 @@ public class Program
         services.AddSingleton<IHandler>(x => x.GetRequiredService<ServerHandler>());
         services.AddSingleton<IHandler, MessageCommandHandler>();
         services.AddSingleton(new CommandService());
+        services.AddCore();
         services.AddApplication();
         ApplicationCommandHandler.AddCommands(services);
 

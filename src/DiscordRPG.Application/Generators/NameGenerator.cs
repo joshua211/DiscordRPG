@@ -1,4 +1,4 @@
-﻿using DiscordRPG.Application.Interfaces.Generators;
+﻿using DiscordRPG.Core.DomainServices.Generators;
 
 namespace DiscordRPG.Application.Generators;
 
@@ -6,9 +6,69 @@ public class NameGenerator : GeneratorBase, INameGenerator
 {
     private static readonly Dictionary<Rarity, List<string>> dungeonAdjectives;
     private static readonly Dictionary<Rarity, List<string>> dungeonNouns;
+    private static List<string> woundAdjectives;
+    private static List<string> woundNouns;
+    private static List<string> items;
+    private static List<string> equipAdjectives;
+    private static Dictionary<EquipmentCategory, string> equipmentNames;
 
     static NameGenerator()
     {
+        equipmentNames = new Dictionary<EquipmentCategory, string>()
+        {
+            {EquipmentCategory.Amulet, "Amulet"},
+            {EquipmentCategory.Body, "Armor"},
+            {EquipmentCategory.Bow, "Bow"},
+            {EquipmentCategory.Dagger, "Dagger"},
+            {EquipmentCategory.Head, "Helmet"},
+            {EquipmentCategory.Leg, "Leg Armor"},
+            {EquipmentCategory.Mace, "Mace"},
+            {EquipmentCategory.Ring, "Ring"},
+            {EquipmentCategory.Scepter, "Scepter"},
+            {EquipmentCategory.Spear, "Spear"},
+            {EquipmentCategory.Staff, "Staff"},
+            {EquipmentCategory.Sword, "Sword"}
+        };
+        equipAdjectives = new List<string>()
+        {
+            "Big", "Small", "Shiny", "Sharp", "Sparkling", "Flaming", "Freezing"
+        };
+        items = new List<string>()
+        {
+            "Hide",
+            "Ore",
+            "Pelt",
+            "Bone",
+        };
+        woundAdjectives = new List<string>()
+        {
+            "Bleeding",
+            "Broken",
+            "Shattered",
+            "Cut to the",
+            "Bruised",
+            "Destroyed",
+            "Frozen",
+            "Burned"
+        };
+
+        woundNouns = new List<string>()
+        {
+            "Skull",
+            "Finger",
+            "Foot",
+            "Tooth",
+            "Pinky",
+            "Butt",
+            "Torso",
+            "Neck",
+            "Fingernail",
+            "Spine",
+            "Bone",
+            "Eyeball"
+        };
+
+
         dungeonAdjectives = new Dictionary<Rarity, List<string>>
         {
             {
@@ -115,5 +175,26 @@ public class NameGenerator : GeneratorBase, INameGenerator
         var noun = nounCategory[random.Next(0, nounCategory.Count)];
 
         return $"{adjective} {noun}";
+    }
+
+    public string GenerateWoundName() =>
+        $"{woundAdjectives[random.Next(woundAdjectives.Count)]} {woundNouns[random.Next(woundNouns.Count)]}";
+
+    public string GenerateRandomItemName() => items[random.Next(items.Count)];
+
+    public string GenerateRandomEquipmentName(Rarity rarity, EquipmentCategory category)
+    {
+        var adj = equipAdjectives[random.Next(equipAdjectives.Count)];
+        var noun = equipmentNames[category];
+
+        return $"{adj} {noun}";
+    }
+
+    public string GenerateRandomWeaponName(Rarity rarity, EquipmentCategory cat)
+    {
+        var adj = equipAdjectives[random.Next(equipAdjectives.Count)];
+        var noun = equipmentNames[cat];
+
+        return $"{adj} {noun}";
     }
 }

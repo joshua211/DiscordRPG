@@ -1,13 +1,15 @@
 ﻿namespace DiscordRPG.Core.ValueObjects;
 
-public class DungeonResult
+public class AdventureResult
 {
-    public DungeonResult(List<Wound> wounds, List<Item> items)
+    public AdventureResult(List<Wound> wounds, List<Item> items, ulong experience)
     {
         Wounds = wounds;
         Items = items;
+        Experience = experience;
     }
 
     public List<Wound> Wounds { get; init; }
     public List<Item> Items { get; private set; }
+    public ulong Experience { get; init; }
 }

@@ -5,14 +5,14 @@ namespace DiscordRPG.Core.ValueObjects;
 public class Level
 {
     [BsonConstructor]
-    public Level(uint currentLevel, int currentExp, int needExp)
+    public Level(uint currentLevel, ulong currentExp, ulong requiredExp)
     {
         CurrentLevel = currentLevel;
         CurrentExp = currentExp;
-        NeedExp = needExp;
+        RequiredExp = requiredExp;
     }
 
-    public uint CurrentLevel { get; private set; }
-    public int CurrentExp { get; private set; }
-    public int NeedExp { get; private set; }
+    public uint CurrentLevel { get; set; }
+    public ulong CurrentExp { get; set; }
+    public ulong RequiredExp { get; set; }
 }

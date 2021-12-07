@@ -1,8 +1,10 @@
-﻿using DiscordRPG.Application.Interfaces.Services;
+﻿using DiscordRPG.Application.Data;
+using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Queries;
 using DiscordRPG.Common;
 using DiscordRPG.Core.Commands.Characters;
 using DiscordRPG.Core.DomainServices;
+using DiscordRPG.Core.DomainServices.Progress;
 using MediatR;
 
 namespace DiscordRPG.Application.Services;
@@ -10,15 +12,17 @@ namespace DiscordRPG.Application.Services;
 public class CharacterService : ApplicationService, ICharacterService
 {
     private readonly IClassService classService;
+    private readonly IExperienceCurve experienceCurve;
     private readonly IGuildService guildService;
     private readonly IRaceService raceService;
 
     public CharacterService(ILogger logger, IMediator mediator, IGuildService guildService, IRaceService raceService,
-        IClassService classService) : base(mediator, logger)
+        IClassService classService, IExperienceCurve experienceCurve) : base(mediator, logger)
     {
         this.guildService = guildService;
         this.raceService = raceService;
         this.classService = classService;
+        this.experienceCurve = experienceCurve;
     }
 
     public async Task<Result<Character>> CreateCharacterAsync(DiscordId userId, Identity guildId, string name,
@@ -29,8 +33,10 @@ public class CharacterService : ApplicationService, ICharacterService
         using var ctx = TransactionBegin(parentContext);
         try
         {
-            var character = new Character(userId, guildId, name, classId, raceId, new Level(1, 0, 100),
-                new EquipmentInfo(null, null, null, null, null, null, null), new List<Item>(), new List<Wound>(), 0);
+            var character = new Character(userId, guildId, name, classId, raceId,
+                new Level(1, 0, experienceCurve.GetRequiredExperienceForLevel(1)),
+                new EquipmentInfo(Equip.StarterWeapon, null, Equip.StarterArmor, Equip.StarterLeg, null, null, null),
+                new List<Item>(), new List<Wound>(), 10);
             character.ClassService = classService;
             character.RaceService = raceService;
 

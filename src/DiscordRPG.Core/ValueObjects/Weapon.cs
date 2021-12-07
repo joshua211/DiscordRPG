@@ -7,8 +7,9 @@ public class Weapon : Equipment
     [BsonConstructor]
     public Weapon(string name, string description, Rarity rarity, int armor, int magicArmor, int strength, int vitality,
         int agility, int intelligence, int luck, int worth, CharacterAttribute damageAttribute, DamageType damageType,
-        int damageValue) : base(name, description, rarity, armor, magicArmor, strength, vitality, agility, intelligence,
-        luck, worth)
+        int damageValue, EquipmentCategory equipmentCategory) : base(name, description, rarity, armor, magicArmor,
+        strength, vitality, agility, intelligence,
+        luck, worth, equipmentCategory)
     {
         DamageAttribute = damageAttribute;
         DamageType = damageType;

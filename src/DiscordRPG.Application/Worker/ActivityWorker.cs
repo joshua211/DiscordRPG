@@ -1,7 +1,7 @@
 ﻿using DiscordRPG.Application.Interfaces;
-using DiscordRPG.Application.Interfaces.Generators;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Core.Commands.Activities;
+using DiscordRPG.Core.DomainServices.Generators;
 using MediatR;
 
 namespace DiscordRPG.Application.Worker;
@@ -77,7 +77,8 @@ public class ActivityWorker
     private async Task ExecuteEnterDungeon(Activity activity)
     {
         var executionResult =
-            await dungeonService.CalculateDungeonAdventureResultAsync(activity.CharId, activity.Data.ThreadId);
+            await dungeonService.CalculateDungeonAdventureResultAsync(activity.CharId, activity.Data.ThreadId,
+                activity.Duration);
     }
 
     private async Task ExecuteSearchDungeon(Activity activity)

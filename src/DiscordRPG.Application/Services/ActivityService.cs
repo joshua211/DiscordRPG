@@ -29,7 +29,7 @@ public class ActivityService : ApplicationService, IActivityService
         using var ctx = TransactionBegin(parentContext);
         try
         {
-            //var timespan = TimeSpan.FromMinutes((int) duration);
+            //TODO var timespan = TimeSpan.FromMinutes((int) duration);
             var timespan = TimeSpan.FromSeconds(1);
             var activity = new Activity(charId, DateTime.Now, duration, type, data);
             var jobId = BackgroundJob.Schedule<ActivityWorker>(x => x.ExecuteActivityAsync(activity.ID), timespan);

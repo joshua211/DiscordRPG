@@ -1,4 +1,4 @@
-﻿using DiscordRPG.Application.Interfaces.Generators;
+﻿using DiscordRPG.Core.DomainServices.Generators;
 using DiscordRPG.WeightedRandom;
 
 namespace DiscordRPG.Application.Generators;

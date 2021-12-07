@@ -1,4 +1,6 @@
 ﻿using DiscordRPG.Common.Extensions;
+using DiscordRPG.Core.DomainServices;
+using DiscordRPG.Core.DomainServices.Progress;
 using DiscordRPG.Core.Entities;
 using DiscordRPG.Core.Events;
 using MediatR;
@@ -8,36 +10,47 @@ namespace DiscordRPG.Core.Commands.Dungeons;
 
 public class CalculateAdventureResultCommandHandler : CommandHandler<CalculateAdventureResultCommand>
 {
+    private readonly IAdventureResultService adventureService;
     private readonly IRepository<Character> characterRepository;
+    private readonly IProgressService progressService;
 
     public CalculateAdventureResultCommandHandler(IMediator mediator, ILogger logger,
-        IRepository<Character> characterRepository) : base(mediator, logger)
+        IRepository<Character> characterRepository, IAdventureResultService adventureService,
+        IProgressService progressService) : base(mediator, logger)
     {
         this.characterRepository = characterRepository;
+        this.adventureService = adventureService;
+        this.progressService = progressService;
     }
 
     public override async Task<ExecutionResult> Handle(CalculateAdventureResultCommand request,
         CancellationToken cancellationToken)
     {
+        logger.Here().Debug("Handling {Name}", request.GetType().Name);
         try
         {
-            logger.Here().Debug("Handling {Name}", request.GetType().Name);
-            //TODO calculate result somewhere
-            var result = new DungeonResult(new List<Wound>()
-            {
-                new Wound("Cut to the dick", 1)
-            }, new List<Item>()
-            {
-                new Item("Lucky Gold Coin", "A seemingly ordinary gold coin, with an inscription you can barely read",
-                    Rarity.Legendary, 1)
-            });
+            var result =
+                adventureService.CalculateAdventureResult(request.Character, request.Dungeon, request.Duration);
 
             var character = request.Character;
-            character.Wounds.AddRange(result.Wounds);
-            character.Inventory.AddRange(result.Items);
-            await characterRepository.UpdateAsync(character, cancellationToken);
+            var woundResult = progressService.ApplyWounds(ref character, result.Wounds);
+            var expResult = progressService.ApplyExperience(ref character, result.Experience);
+            var itemResult = progressService.ApplyItems(ref character, result.Items);
 
-            await PublishAsync(new AdventureResultCalculated(result, character, request.Dungeon), cancellationToken);
+            if (woundResult.HasDied)
+            {
+                logger.Here().Debug("Character {ID} has died from {Wound}", character.ID, woundResult.FinalWound);
+                await characterRepository.DeleteAsync(character.ID, cancellationToken);
+                await PublishAsync(new CharacterDied(character, woundResult.FinalWound!), cancellationToken);
+            }
+            else
+            {
+                await characterRepository.UpdateAsync(character, cancellationToken);
+            }
+
+            await PublishAsync(
+                new AdventureResultCalculated(character, request.Dungeon, expResult, itemResult, woundResult),
+                cancellationToken);
 
             return ExecutionResult.Success();
         }

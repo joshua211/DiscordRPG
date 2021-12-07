@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
-using DiscordRPG.Application.Interfaces.Generators;
 using DiscordRPG.Common.Extensions;
+using DiscordRPG.Core.DomainServices.Generators;
 using DiscordRPG.Core.Enums;
 using Serilog;
 
