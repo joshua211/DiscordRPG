@@ -26,8 +26,8 @@ public class DungeonService : ApplicationService, IDungeonService
         this.channelManager = channelManager;
     }
 
-    public async Task<Result<Dungeon>> CreateDungeonAsync(DiscordId serverId, DiscordId threadId, Character character,
-        Rarity rarity,
+    public async Task<Result<Dungeon>> CreateDungeonAsync(DiscordId serverId, Character character,
+        ActivityDuration duration,
         TransactionContext parentContext = null,
         CancellationToken token = default)
     {
@@ -42,9 +42,10 @@ public class DungeonService : ApplicationService, IDungeonService
                 return Result<Dungeon>.Failure("No guild found");
             }
 
+            var threadId = await channelManager.CreateDungeonThreadAsync(guildResult.Value.ServerId, "Dungeon");
 
             var dungeon =
-                dungeonGenerator.GenerateRandomDungeon(serverId, threadId, character.Level.CurrentLevel, rarity);
+                dungeonGenerator.GenerateRandomDungeon(serverId, threadId, character.Level.CurrentLevel, duration);
             var cmd = new CreateDungeonCommand(dungeon, character);
 
             var result = await PublishAsync(ctx, cmd, token);

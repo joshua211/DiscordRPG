@@ -15,4 +15,8 @@ public interface ICharacterService
     Task<Result<Character>> GetUsersCharacterAsync(DiscordId userId, Identity guildId,
         TransactionContext parentContext = null,
         CancellationToken token = default);
+
+    Task<Result> RestoreWoundsFromRestAsync(Identity charId, ActivityDuration activityDuration,
+        TransactionContext parentContext = null,
+        CancellationToken token = default);
 }

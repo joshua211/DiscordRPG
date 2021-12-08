@@ -101,4 +101,44 @@ public class CharacterService : ApplicationService, ICharacterService
             return Result<Character>.Failure(e.Message);
         }
     }
+
+    public async Task<Result> RestoreWoundsFromRestAsync(Identity charId, ActivityDuration activityDuration,
+        TransactionContext parentContext = null,
+        CancellationToken token = default)
+    {
+        using var ctx = TransactionBegin(parentContext);
+        try
+        {
+            var characterResult = await GetCharacterAsync(charId, ctx, token);
+            if (!characterResult.WasSuccessful)
+            {
+                TransactionError(ctx, characterResult.ErrorMessage);
+                return Result.Failure("No character found");
+            }
+
+            var amount = GetRecoveryAmountFromRest(activityDuration);
+            var command = new RestoreHealthCommand(characterResult.Value, amount);
+            var result = await PublishAsync(ctx, command, token);
+            if (!result.WasSuccessful)
+            {
+                TransactionError(ctx, "Failed to restore health");
+            }
+
+            return Result.Success();
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result<Character>.Failure(e.Message);
+        }
+    }
+
+    private float GetRecoveryAmountFromRest(ActivityDuration duration) => duration switch
+    {
+        ActivityDuration.Quick => 0.05f,
+        ActivityDuration.Short => 0.25f,
+        ActivityDuration.Medium => 0.50f,
+        ActivityDuration.Long => 0.75f,
+        ActivityDuration.ExtraLong => 1
+    };
 }

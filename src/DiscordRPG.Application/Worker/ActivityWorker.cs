@@ -55,6 +55,9 @@ public class ActivityWorker
                 case ActivityType.Dungeon:
                     await ExecuteEnterDungeon(activity);
                     break;
+                case ActivityType.Rest:
+                    await ExecuteRest(activity);
+                    break;
                 default:
                     logger.Here().Warning("Activity is not handled, {Name}", activity.Type);
                     break;
@@ -74,6 +77,11 @@ public class ActivityWorker
             (int) activity.Duration);
     }
 
+    private async Task ExecuteRest(Activity activity)
+    {
+        var result = await characterService.RestoreWoundsFromRestAsync(activity.CharId, activity.Duration);
+    }
+
     private async Task ExecuteEnterDungeon(Activity activity)
     {
         var executionResult =
@@ -91,21 +99,18 @@ public class ActivityWorker
         }
 
         var character = charResult.Value;
-        var threadId = await channelManager.CreateDungeonThreadAsync(activity.Data.ServerId, "Dungeon");
 
-        var rarity = rarityGenerator.GenerateRarityFromActivityDuration(activity.Duration);
-
-        var createDungeonResult = await dungeonService.CreateDungeonAsync(activity.Data.ServerId, threadId,
-            character, rarity);
+        var createDungeonResult =
+            await dungeonService.CreateDungeonAsync(activity.Data.ServerId, character, activity.Duration);
 
         if (!createDungeonResult.WasSuccessful)
         {
-            logger.Here().Warning("Failed to add dungeon from activity {Id}, deleting thread", activity.ID);
-            await channelManager.DeleteDungeonThreadAsync(threadId);
+            logger.Here().Warning("Failed to add dungeon from activity {Id}", activity.ID);
 
             return;
         }
 
-        logger.Here().Debug("Created Dungeon {Name} with Thread {Channel}", createDungeonResult.Value.Name, threadId);
+        logger.Here().Debug("Created Dungeon {Name} with Thread {Channel}", createDungeonResult.Value.Name,
+            createDungeonResult.Value.DungeonChannelId);
     }
 }

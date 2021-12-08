@@ -12,7 +12,7 @@ public class Wound
     }
 
     public string Description { get; private set; }
-    public int DamageValue { get; private set; }
+    public int DamageValue { get; set; }
 
     public override string ToString()
     {
