@@ -30,6 +30,7 @@ public static class Application
             .AddTransient<INameGenerator, NameGenerator>()
             .AddTransient<IItemGenerator, ItemGenerator>()
             .AddTransient<IWoundGenerator, WoundGenerator>()
+            .AddTransient<IAspectGenerator, AspectGenerator>()
             .AddTransient<IExperienceGenerator, ExperienceGenerator>()
             .AddTransient<IEncounterGenerator, EncounterGenerator>()
             .AddSingleton<IClassService, Classes>()

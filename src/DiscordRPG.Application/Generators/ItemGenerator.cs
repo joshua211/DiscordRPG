@@ -14,48 +14,62 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
 
     public IEnumerable<Item> GenerateItems(Dungeon dungeon)
     {
-        var numOfItems = GetNumOfItems();
-        for (int j = 0; j < numOfItems; j++)
-        {
-            var rarity = GetItemRarityFromDungeonRarity(dungeon.Rarity);
-            var level = dungeon.DungeonLevel;
+        var totalNum = GetNumOfItems();
+        var rarity = GetItemRarityFromDungeonRarity(dungeon.Rarity);
+        var level = dungeon.DungeonLevel;
 
-            Item item = null;
-            var equipType = random.Next(3);
+        var selectorBuilder = new DynamicRandomSelector<int>();
+        selectorBuilder.Add(0, 2);
+        selectorBuilder.Add(1, 1);
+        selectorBuilder.Add(2, 1);
+        var selector = selectorBuilder.Build();
+
+        for (int i = 0; i < totalNum; i++)
+        {
+            var equipType = selector.SelectRandomItem();
             switch (equipType)
             {
                 case 0:
-                    item = GenerateRandomItem(rarity);
+                {
+                    var num = GetNumOfItems(true);
+                    for (int y = 0; y < num; y++)
+                    {
+                        yield return GenerateRandomItem(rarity, level);
+                    }
+                }
                     break;
                 case 1:
-                    item = GenerateRandomEquipment(rarity, level);
+                    yield return GenerateRandomEquipment(rarity, level, dungeon.DungeonAspect);
+
                     break;
                 case 2:
-                    item = GenerateRandomWeapon(rarity, level);
+                    yield return GenerateRandomWeapon(rarity, level, dungeon.DungeonAspect);
+
                     break;
             }
-
-            yield return item;
         }
     }
 
-    private Weapon GenerateRandomWeapon(Rarity rarity, uint level)
+    private Weapon GenerateRandomWeapon(Rarity rarity, uint level, Aspect aspect)
     {
         var str = GenerateRandomStat(rarity, level);
         var vit = GenerateRandomStat(rarity, level);
         var agi = GenerateRandomStat(rarity, level);
         var intel = GenerateRandomStat(rarity, level);
         var lck = GenerateRandomStat(rarity, level);
-        var worth = GenerateRandomEquipmentWorth(rarity, str + vit + vit + agi + intel + lck);
 
         var cat = GenerateRandomWeaponCategory();
+        var name = nameGenerator.GenerateRandomEquipmentName(rarity, cat, aspect);
+        var charAttr = GenerateRandomCharAttribute();
+        var dmgType = GenerateRandomDamageType();
+        var dmgValue = GenerateRandomDamageValue(rarity, level);
+        var worth = GenerateEquipmentWorth(rarity, level, str + vit + vit + agi + intel + lck + dmgValue);
 
-        return new Weapon(nameGenerator.GenerateRandomWeaponName(rarity, cat), "", rarity, 0, 0, str, vit, agi, intel,
-            lck, worth, GenerateRandomCharAttribute(), GenerateRandomDamageType(),
-            GenerateRandomDamageValue(rarity, level), cat);
+        return new Weapon(name, "", rarity, 0, 0, str, vit, agi, intel, lck, worth, charAttr, dmgType, dmgValue, cat,
+            level);
     }
 
-    private Equipment GenerateRandomEquipment(Rarity rarity, uint level)
+    private Equipment GenerateRandomEquipment(Rarity rarity, uint level, Aspect aspect)
     {
         var str = GenerateRandomStat(rarity, level);
         var vit = GenerateRandomStat(rarity, level);
@@ -64,28 +78,35 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         var lck = GenerateRandomStat(rarity, level);
         var armor = GenerateRandomArmor(rarity, level);
         var category = GenerateRandomEquipmentCategory();
+        var name = nameGenerator.GenerateRandomEquipmentName(rarity, category, aspect);
+        var worth = GenerateEquipmentWorth(rarity, level, str + vit + vit + agi + intel + lck + armor);
 
         var randomArmor = random.Next(3);
-        var worth = GenerateRandomEquipmentWorth(rarity, str + vit + vit + agi + intel + lck);
         switch (randomArmor)
         {
             case 0:
-                return new Equipment(nameGenerator.GenerateRandomEquipmentName(rarity, category), "", rarity, armor, 0,
-                    str, vit, agi, intel, lck, worth, category);
+                return new Equipment(name, "", rarity, armor, 0, str, vit, agi, intel, lck, worth, category, level);
             case 1:
-                return new Equipment(nameGenerator.GenerateRandomEquipmentName(rarity, category), "", rarity, armor / 2,
-                    armor / 2, str, vit, agi, intel, lck, worth, category);
+                return new Equipment(name, "", rarity, armor / 2, armor / 2, str, vit, agi, intel, lck, worth, category,
+                    level);
             case 2:
-                return new Equipment(nameGenerator.GenerateRandomEquipmentName(rarity, category), "", rarity, 0, armor,
-                    str, vit, agi, intel, lck, worth, category);
+                return new Equipment(name, "", rarity, 0, armor, str, vit, agi, intel, lck, worth, category, level);
             default:
                 return null;
         }
     }
 
-    private Item GenerateRandomItem(Rarity rarity)
+    private Item GenerateRandomItem(Rarity rarity, uint level)
     {
-        return new Item(nameGenerator.GenerateRandomItemName(), "", rarity, GenerateRandomItemWorth(rarity));
+        var name = nameGenerator.GenerateRandomItemName(rarity);
+        var worth = GenerateItemWorth(rarity, level);
+
+        return new Item(name.name, name.descr, rarity, worth, level);
+    }
+
+    private int GenerateItemWorth(Rarity rarity, uint level)
+    {
+        return (int) (((int) rarity + 1) * level * 2);
     }
 
     private int GenerateRandomDamageValue(Rarity rarity, uint level) =>
@@ -113,16 +134,27 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
     private int GenerateRandomStat(Rarity rarity, uint level) =>
         (int) (1 * level * ((int) rarity + 1) * (random.NextDouble() + 0.1));
 
-    private int GenerateRandomEquipmentWorth(Rarity rarity, int totalStats) => 10 * totalStats * ((int) rarity + 1);
+    private int GenerateEquipmentWorth(Rarity rarity, uint level, int totalStats) =>
+        (int) (((int) rarity + 1) * level + (10 * totalStats));
 
-    private int GenerateRandomItemWorth(Rarity rarity) => random.Next(10, 1000) * ((int) rarity + 1);
 
-    private int GetNumOfItems()
+    private int GetNumOfItems(bool isItem = false)
     {
         var selector = new DynamicRandomSelector<int>();
-        selector.Add(1, 1);
-        selector.Add(2, 0.5f);
-        selector.Add(3, 0.1f);
+        if (isItem)
+        {
+            selector.Add(1, 0.5f);
+            selector.Add(2, 0.7f);
+            selector.Add(3, 1f);
+            selector.Add(4, 0.7f);
+            selector.Add(5, 0.5f);
+        }
+        else
+        {
+            selector.Add(1, 1);
+            selector.Add(2, 0.5f);
+            selector.Add(3, 0.1f);
+        }
 
         return selector.Build().SelectRandomItem();
     }
@@ -137,42 +169,42 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
                 break;
             case Rarity.Uncommon:
                 selector.Add(Rarity.Common, 1);
-                selector.Add(Rarity.Uncommon, 2);
+                selector.Add(Rarity.Uncommon, 1);
                 break;
             case Rarity.Rare:
                 selector.Add(Rarity.Common, 1);
-                selector.Add(Rarity.Uncommon, 2);
-                selector.Add(Rarity.Rare, 3);
+                selector.Add(Rarity.Uncommon, 1);
+                selector.Add(Rarity.Rare, 1);
                 break;
             case Rarity.Unique:
                 selector.Add(Rarity.Common, 1);
-                selector.Add(Rarity.Uncommon, 2);
-                selector.Add(Rarity.Rare, 3);
-                selector.Add(Rarity.Unique, 4);
+                selector.Add(Rarity.Uncommon, 1);
+                selector.Add(Rarity.Rare, 1);
+                selector.Add(Rarity.Unique, 1);
                 break;
             case Rarity.Legendary:
                 selector.Add(Rarity.Common, 1);
-                selector.Add(Rarity.Uncommon, 2);
-                selector.Add(Rarity.Rare, 3);
-                selector.Add(Rarity.Unique, 4);
-                selector.Add(Rarity.Legendary, 5);
+                selector.Add(Rarity.Uncommon, 1);
+                selector.Add(Rarity.Rare, 1);
+                selector.Add(Rarity.Unique, 1);
+                selector.Add(Rarity.Legendary, 1);
                 break;
             case Rarity.Mythic:
                 selector.Add(Rarity.Common, 1);
-                selector.Add(Rarity.Uncommon, 2);
-                selector.Add(Rarity.Rare, 3);
-                selector.Add(Rarity.Unique, 4);
-                selector.Add(Rarity.Legendary, 5);
-                selector.Add(Rarity.Mythic, 6);
+                selector.Add(Rarity.Uncommon, 1);
+                selector.Add(Rarity.Rare, 1);
+                selector.Add(Rarity.Unique, 1);
+                selector.Add(Rarity.Legendary, 1);
+                selector.Add(Rarity.Mythic, 1);
                 break;
             case Rarity.Divine:
                 selector.Add(Rarity.Common, 1);
-                selector.Add(Rarity.Uncommon, 2);
-                selector.Add(Rarity.Rare, 3);
-                selector.Add(Rarity.Unique, 4);
-                selector.Add(Rarity.Legendary, 5);
-                selector.Add(Rarity.Mythic, 6);
-                selector.Add(Rarity.Divine, 7);
+                selector.Add(Rarity.Uncommon, 1);
+                selector.Add(Rarity.Rare, 1);
+                selector.Add(Rarity.Unique, 1);
+                selector.Add(Rarity.Legendary, 1);
+                selector.Add(Rarity.Mythic, 1);
+                selector.Add(Rarity.Divine, 1);
                 break;
         }
 

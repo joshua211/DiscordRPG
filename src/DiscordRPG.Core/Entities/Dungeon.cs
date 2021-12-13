@@ -3,14 +3,15 @@
 public class Dungeon : Entity
 {
     public Dungeon(DiscordId guildId, DiscordId dungeonChannelId, uint dungeonLevel, Rarity rarity, string name,
-        byte explorationsLeft)
+        byte explorationsLeft, Aspect dungeonAspect)
     {
         GuildId = guildId;
         DungeonChannelId = dungeonChannelId;
         DungeonLevel = dungeonLevel;
-        Rarity = rarity;
         Name = name;
+        Rarity = rarity;
         ExplorationsLeft = explorationsLeft;
+        DungeonAspect = dungeonAspect;
     }
 
     public DiscordId GuildId { get; private set; }
@@ -19,4 +20,5 @@ public class Dungeon : Entity
     public Rarity Rarity { get; private set; }
     public string Name { get; private set; }
     public byte ExplorationsLeft { get; set; }
+    public Aspect DungeonAspect { get; private set; }
 }

@@ -16,6 +16,6 @@ public class ExperienceGenerator : GeneratorBase, IExperienceGenerator
     public ulong GenerateExperienceFromEncounter(Encounter encounter)
     {
         var expForLevel = experienceCurve.GetRequiredExperienceForLevel(encounter.Level);
-        return (expForLevel / (uint) random.Next(2, 10));
+        return (expForLevel / (uint) random.Next(2, 5));
     }
 }

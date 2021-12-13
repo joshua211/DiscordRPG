@@ -2,9 +2,9 @@
 
 public enum EquipmentCategory
 {
-    Head,
-    Body,
-    Leg,
+    Helmet,
+    Armor,
+    Pants,
     Amulet,
     Ring,
     Sword,

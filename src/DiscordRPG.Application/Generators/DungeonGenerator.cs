@@ -5,19 +5,23 @@ namespace DiscordRPG.Application.Generators;
 
 public class DungeonGenerator : GeneratorBase, IDungeonGenerator
 {
+    private readonly IAspectGenerator aspectGenerator;
     private readonly INameGenerator nameGenerator;
     private readonly IRarityGenerator rarityGenerator;
 
-    public DungeonGenerator(INameGenerator nameGenerator, IRarityGenerator rarityGenerator)
+    public DungeonGenerator(INameGenerator nameGenerator, IRarityGenerator rarityGenerator,
+        IAspectGenerator aspectGenerator)
     {
         this.nameGenerator = nameGenerator;
         this.rarityGenerator = rarityGenerator;
+        this.aspectGenerator = aspectGenerator;
     }
 
     public Dungeon GenerateRandomDungeon(DiscordId serverId, DiscordId threadId, uint charLevel,
         ActivityDuration duration)
     {
         var rarity = rarityGenerator.GenerateRarityFromActivityDuration(duration);
+        var aspect = aspectGenerator.GetRandomAspect(rarity);
 
         var explorations = (byte) random.Next(3, 15);
         var selector = new DynamicRandomSelector<uint>();
@@ -29,8 +33,8 @@ public class DungeonGenerator : GeneratorBase, IDungeonGenerator
         var level = selector.Build().SelectRandomItem();
         level = level <= 0 ? 1 : level;
 
-        var name = nameGenerator.GenerateDungeonName(rarity);
-        var dungeon = new Dungeon(serverId, threadId, level, rarity, name, explorations);
+        var name = aspect.DungeonPrefix + " " + nameGenerator.GenerateDungeonName(rarity);
+        var dungeon = new Dungeon(serverId, threadId, level, rarity, name, explorations, aspect);
 
         return dungeon;
     }

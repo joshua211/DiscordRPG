@@ -14,8 +14,9 @@ public class Equipment : Item
 
     [BsonConstructor]
     public Equipment(string name, string description, Rarity rarity, int armor, int magicArmor, int strength,
-        int vitality, int agility, int intelligence, int luck, int worth, EquipmentCategory equipmentCategory) : base(
-        name, description, rarity, worth)
+        int vitality, int agility, int intelligence, int luck, int worth, EquipmentCategory equipmentCategory,
+        uint level) : base(
+        name, description, rarity, worth, level)
     {
         Armor = armor;
         MagicArmor = magicArmor;
@@ -38,6 +39,6 @@ public class Equipment : Item
 
     public override string ToString()
     {
-        return $"[{Rarity.ToString()} {EquipmentCategory.ToString()}] {Name} ({Worth}$)";
+        return $"[{Rarity.ToString()} Equipment] {Name} (Lvl: {Level}, $:{Worth})";
     }
 }

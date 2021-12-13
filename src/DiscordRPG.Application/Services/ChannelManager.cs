@@ -85,12 +85,13 @@ public class ChannelManager : IChannelManager
         try
         {
             logger.Here().Debug("Deleting thread {Id}", threadId);
+
             var channel = client.GetChannel(threadId) as IGuildChannel;
             await channel.DeleteAsync();
         }
-        catch (Exception e)
+        catch (Exception)
         {
-            logger.Here().Error(e, "Failed to delete thread {ThreadId}", threadId);
+            logger.Here().Warning("Failed to delete thread {ThreadId}", threadId);
         }
     }
 

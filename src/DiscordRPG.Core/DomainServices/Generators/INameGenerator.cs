@@ -4,7 +4,6 @@ public interface INameGenerator
 {
     string GenerateDungeonName(Rarity rarity);
     string GenerateWoundName();
-    string GenerateRandomItemName();
-    string GenerateRandomEquipmentName(Rarity rarity, EquipmentCategory category);
-    string GenerateRandomWeaponName(Rarity rarity, EquipmentCategory cat);
+    (string name, string descr) GenerateRandomItemName(Rarity rarity);
+    string GenerateRandomEquipmentName(Rarity rarity, EquipmentCategory category, Aspect aspect);
 }
