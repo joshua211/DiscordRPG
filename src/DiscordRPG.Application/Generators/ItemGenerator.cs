@@ -106,7 +106,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
 
     private int GenerateItemWorth(Rarity rarity, uint level)
     {
-        return (int) (((int) rarity + 1) * level * 2);
+        return (int) (((int) rarity + 1) * level * 10);
     }
 
     private int GenerateRandomDamageValue(Rarity rarity, uint level) =>
