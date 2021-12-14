@@ -64,7 +64,7 @@ public abstract class CommandBase : IGuildCommand
         if (requireGuild is not null)
         {
             var channel = command.Channel as IGuildChannel;
-            var guildResult = await guildService.GetGuildWithDiscordIdAsync(channel.Guild.Id);
+            var guildResult = await guildService.GetGuildWithDiscordIdAsync(channel.Guild.Id.ToString());
             if (!guildResult.WasSuccessful)
             {
                 await command.RespondAsync("No Guild was setup for this server!");
@@ -77,7 +77,7 @@ public abstract class CommandBase : IGuildCommand
         Dungeon dungeon = null;
         if (requireDungeon is not null)
         {
-            var dungeonResult = await dungeonService.GetDungeonFromChannelIdAsync(command.Channel.Id);
+            var dungeonResult = await dungeonService.GetDungeonFromChannelIdAsync(command.Channel.Id.ToString());
             if (!dungeonResult.WasSuccessful)
             {
                 await command.RespondAsync("This command can only be used in a dungeon!");
@@ -91,7 +91,7 @@ public abstract class CommandBase : IGuildCommand
         if (requireChar is not null)
         {
             var user = command.User as IGuildUser;
-            var charResult = await characterService.GetUsersCharacterAsync(user.Id, guild.ID);
+            var charResult = await characterService.GetUsersCharacterAsync(user.Id.ToString(), guild.ID);
             if (!charResult.WasSuccessful)
             {
                 await command.RespondAsync("Please create a character first!");

@@ -53,7 +53,7 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
         CreateCharacterDialog dialog)
     {
         var user = command.User as IGuildUser;
-        var result = await characterService.GetUsersCharacterAsync(user.Id, context.Guild.ID);
+        var result = await characterService.GetUsersCharacterAsync(user.Id.ToString(), context.Guild.ID);
         if (result.WasSuccessful)
         {
             await command.RespondAsync("You can only create one character on each server!");
@@ -226,7 +226,8 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
     {
         var guildUser = component.User as SocketGuildUser;
         var result =
-            await characterService.CreateCharacterAsync(guildUser.Id, dialog.GuildId, dialog.Name, dialog.ClassId,
+            await characterService.CreateCharacterAsync(guildUser.Id.ToString(), dialog.GuildId, dialog.Name,
+                dialog.ClassId,
                 dialog.RaceId);
         if (!result.WasSuccessful)
         {

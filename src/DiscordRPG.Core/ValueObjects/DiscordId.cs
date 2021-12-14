@@ -2,18 +2,18 @@
 
 public class DiscordId
 {
-    public DiscordId(ulong value)
+    public DiscordId(string value)
     {
         Value = value;
     }
 
-    public ulong Value { get; private set; }
+    public string Value { get; private set; }
 
-    public static implicit operator ulong(DiscordId id) => id.Value;
-    public static implicit operator DiscordId(ulong val) => new DiscordId(val);
+    public static implicit operator ulong(DiscordId id) => ulong.Parse(id.Value);
+    public static implicit operator DiscordId(string val) => new DiscordId(val);
 
     public override string ToString()
     {
-        return Value.ToString();
+        return Value;
     }
 }

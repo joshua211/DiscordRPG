@@ -16,7 +16,8 @@ public class GetCharacterByUserIdHandler : QueryHandler<GetCharacterByUserIdQuer
         CancellationToken cancellationToken = default)
     {
         logger.Here().Debug("Handling Query {Query}", request.GetType().Name);
-        return (await repository.FindAsync(c => c.UserId.Value == request.UserId && c.GuildId.Value == request.GuildId,
-            cancellationToken)).FirstOrDefault();
+        return (await repository.FindAsync(
+            c => c.UserId.Value == request.UserId.Value && c.GuildId.Value == request.GuildId,
+            cancellationToken)).FirstOrDefault()!;
     }
 }

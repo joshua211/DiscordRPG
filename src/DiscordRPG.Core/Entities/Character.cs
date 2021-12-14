@@ -133,14 +133,14 @@ public class Character : Entity
 
             var dmgFromAttributes = weapon.DamageAttribute switch
             {
-                CharacterAttribute.Strength => Stength + (int) (Vitality * 0.7) + (int) (Agility * 0.7) +
-                                               (int) (Intelligence * 0.7),
-                CharacterAttribute.Vitality => Vitality + (int) (Stength * 0.7) + (int) (Agility * 0.7) +
-                                               (int) (Intelligence * 0.7),
-                CharacterAttribute.Agility => Agility + (int) (Vitality * 0.7) + (int) (Stength * 0.7) +
-                                              (int) (Intelligence * 0.7),
-                CharacterAttribute.Intelligence => Intelligence + (int) (Vitality * 0.7) + (int) (Agility * 0.7) +
-                                                   (int) (Stength * 0.7),
+                CharacterAttribute.Strength => Stength + (int) (Vitality * 0.1) + (int) (Agility * 0.1) +
+                                               (int) (Intelligence * 0.1),
+                CharacterAttribute.Vitality => Vitality + (int) (Stength * 0.1) + (int) (Agility * 0.1) +
+                                               (int) (Intelligence * 0.1),
+                CharacterAttribute.Agility => Agility + (int) (Vitality * 0.1) + (int) (Stength * 0.1) +
+                                              (int) (Intelligence * 0.1),
+                CharacterAttribute.Intelligence => Intelligence + (int) (Vitality * 0.1) + (int) (Agility * 0.1) +
+                                                   (int) (Stength * 0.1),
                 _ => 0
             };
 

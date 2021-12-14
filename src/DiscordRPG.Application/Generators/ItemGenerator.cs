@@ -1,4 +1,5 @@
-﻿using DiscordRPG.Core.DomainServices.Generators;
+﻿using DiscordRPG.Application.Extensions;
+using DiscordRPG.Core.DomainServices.Generators;
 using DiscordRPG.WeightedRandom;
 
 namespace DiscordRPG.Application.Generators;
@@ -15,17 +16,17 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
     public IEnumerable<Item> GenerateItems(Dungeon dungeon)
     {
         var totalNum = GetNumOfItems();
-        var rarity = GetItemRarityFromDungeonRarity(dungeon.Rarity);
         var level = dungeon.DungeonLevel;
 
         var selectorBuilder = new DynamicRandomSelector<int>();
-        selectorBuilder.Add(0, 2);
+        selectorBuilder.Add(0, 3);
         selectorBuilder.Add(1, 1);
         selectorBuilder.Add(2, 1);
         var selector = selectorBuilder.Build();
 
         for (int i = 0; i < totalNum; i++)
         {
+            var rarity = GetItemRarityFromDungeonRarity(dungeon.Rarity);
             var equipType = selector.SelectRandomItem();
             switch (equipType)
             {
@@ -98,10 +99,11 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
 
     private Item GenerateRandomItem(Rarity rarity, uint level)
     {
+        var roundedLevel = level.RoundOff();
         var name = nameGenerator.GenerateRandomItemName(rarity);
-        var worth = GenerateItemWorth(rarity, level);
+        var worth = GenerateItemWorth(rarity, roundedLevel);
 
-        return new Item(name.name, name.descr, rarity, worth, level);
+        return new Item(name.name, name.descr, rarity, worth, roundedLevel);
     }
 
     private int GenerateItemWorth(Rarity rarity, uint level)

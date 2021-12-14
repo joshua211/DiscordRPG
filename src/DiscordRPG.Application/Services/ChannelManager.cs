@@ -18,14 +18,14 @@ public class ChannelManager : IChannelManager
         this.logger = logger.WithContext(GetType());
     }
 
-    public async Task<ulong> CreateDungeonThreadAsync(DiscordId guildId, string dungeonName)
+    public async Task<DiscordId> CreateDungeonThreadAsync(DiscordId guildId, string dungeonName)
     {
         logger.Here().Debug("Creating dungeon channel {Name} for guild {Id}", dungeonName, guildId);
         var result = await guildService.GetGuildWithDiscordIdAsync(guildId);
         if (!result.WasSuccessful)
         {
             logger.Here().Warning("No guild found");
-            return 0;
+            return null;
         }
 
         var socketGuild = client.GetGuild(guildId);
@@ -34,7 +34,7 @@ public class ChannelManager : IChannelManager
 
         logger.Here().Debug("Created dungeon channel {Name}", dungeonName);
 
-        return thread.Id;
+        return new DiscordId(thread.Id.ToString());
     }
 
     public async Task SendToGuildHallAsync(DiscordId guildId, string text, Embed embed = null)

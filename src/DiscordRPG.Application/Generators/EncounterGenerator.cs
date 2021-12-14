@@ -14,17 +14,28 @@ public class EncounterGenerator : GeneratorBase, IEncounterGenerator
 
     public Encounter CreateDungeonEncounter(Dungeon dungeon)
     {
-        //TODO random values based on level and rarity
-        var health = 10 + dungeon.DungeonLevel * 10;
-        var dmg = 10 + dungeon.DungeonLevel * 10;
-        var armor = 10 + dungeon.DungeonLevel * 10;
-        var mArmor = 10 + dungeon.DungeonLevel * 10;
+        var health = dungeon.DungeonLevel * random.Next(8, 12);
+        var dmg = dungeon.DungeonLevel * random.Next(5, 10);
+        var armor = dungeon.DungeonLevel * random.Next(5, 10);
+        var dmgType = GetRandomDamageType();
 
-        var encounter = new Encounter(new Damage(DamageType.Physical, (int) dmg), (int) health, (int) armor,
-            (int) mArmor, dungeon.DungeonLevel);
+        Encounter encounter;
+        if (random.Next(2) == 0)
+        {
+            encounter = new Encounter(new Damage(dmgType, (int) dmg), (int) health, (int) armor,
+                0, dungeon.DungeonLevel);
+        }
+        else
+        {
+            encounter = new Encounter(new Damage(dmgType, (int) dmg), (int) health, 0,
+                (int) armor, dungeon.DungeonLevel);
+        }
+
         logger.Here().Verbose("Generated encounter {@Encounter} for dungeon Level {DungeonLevel}", encounter,
             dungeon.DungeonLevel);
 
         return encounter;
     }
+
+    private DamageType GetRandomDamageType() => random.Next(2) == 0 ? DamageType.Physical : DamageType.Magical;
 }

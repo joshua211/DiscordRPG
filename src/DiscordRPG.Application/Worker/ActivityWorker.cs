@@ -85,7 +85,8 @@ public class ActivityWorker
     private async Task ExecuteEnterDungeon(Activity activity)
     {
         var executionResult =
-            await dungeonService.CalculateDungeonAdventureResultAsync(activity.CharId, activity.Data.ThreadId,
+            await dungeonService.CalculateDungeonAdventureResultAsync(activity.CharId,
+                activity.Data.ThreadId.ToString(),
                 activity.Duration);
     }
 
@@ -101,7 +102,7 @@ public class ActivityWorker
         var character = charResult.Value;
 
         var createDungeonResult =
-            await dungeonService.CreateDungeonAsync(activity.Data.ServerId, character, activity.Duration);
+            await dungeonService.CreateDungeonAsync(activity.Data.ServerId.ToString(), character, activity.Duration);
 
         if (!createDungeonResult.WasSuccessful)
         {

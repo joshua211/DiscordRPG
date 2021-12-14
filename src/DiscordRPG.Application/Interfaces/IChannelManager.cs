@@ -4,7 +4,7 @@ namespace DiscordRPG.Application.Interfaces;
 
 public interface IChannelManager
 {
-    Task<ulong> CreateDungeonThreadAsync(DiscordId serverId, string dungeonName);
+    Task<DiscordId> CreateDungeonThreadAsync(DiscordId serverId, string dungeonName);
 
     Task SendToGuildHallAsync(DiscordId serverId, string text, Embed embed = null);
 

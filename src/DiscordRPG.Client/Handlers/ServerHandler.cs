@@ -46,7 +46,7 @@ public class ServerHandler : IHandler
         try
         {
             logger.Here().Debug("Cleaning server {Id}", socketGuild.Id);
-            var result = await guildService.GetGuildWithDiscordIdAsync(socketGuild.Id);
+            var result = await guildService.GetGuildWithDiscordIdAsync(socketGuild.Id.ToString());
             if (!result.WasSuccessful)
             {
                 return;
@@ -57,7 +57,7 @@ public class ServerHandler : IHandler
             var cat = socketGuild.CategoryChannels.FirstOrDefault(c => c.Name == CategoryName);
             await cat?.DeleteAsync();
 
-            await guildService.DeleteGuildAsync(socketGuild.Id);
+            await guildService.DeleteGuildAsync(socketGuild.Id.ToString());
         }
         catch (Exception e)
         {
@@ -73,7 +73,7 @@ public class ServerHandler : IHandler
             await InstallGuildCommands(socketGuild);
 
             logger.Here().Debug("Setting up channels for Guild {Id}", socketGuild.Id);
-            await guildService.DeleteGuildAsync(socketGuild.Id);
+            await guildService.DeleteGuildAsync(socketGuild.Id.ToString());
 
             var category = await socketGuild.CreateCategoryChannelAsync(CategoryName);
 
@@ -85,7 +85,8 @@ public class ServerHandler : IHandler
                     properties => properties.CategoryId = category.Id);
 
             var result =
-                await guildService.CreateGuildAsync(socketGuild.Id, socketGuild.Name, guildHall.Id, dungeonHall.Id);
+                await guildService.CreateGuildAsync(socketGuild.Id.ToString(), socketGuild.Name,
+                    guildHall.Id.ToString(), dungeonHall.Id.ToString());
 
             if (result.WasSuccessful)
             {

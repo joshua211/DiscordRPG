@@ -31,6 +31,7 @@ public class Program
             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
             .MinimumLevel.Override("Hangfire", LogEventLevel.Warning)
             .MinimumLevel.Debug()
+            .CoreLogging()
             .Enrich.FromLogContext()
             .WriteTo.Console(
                 outputTemplate:
