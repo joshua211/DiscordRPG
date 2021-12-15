@@ -109,5 +109,7 @@ public class ServerHandler : IHandler
             logger.Here().Debug("Installing command {Name}", cmd.CommandName);
             await cmd.InstallAsync(guild);
         }
+
+        logger.Here().Debug("Successfully installed all commands");
     }
 }
