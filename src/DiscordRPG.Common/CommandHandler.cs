@@ -19,7 +19,14 @@ public abstract class CommandHandler<T> : IRequestHandler<T, ExecutionResult> wh
 
     public async Task PublishAsync(DomainEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        logger.Here().Debug("Publishing event {Name}", domainEvent.GetType().Name);
-        await mediator.Publish(domainEvent, cancellationToken);
+        try
+        {
+            logger.Here().Debug("Publishing event {Name}", domainEvent.GetType().Name);
+            await mediator.Publish(domainEvent, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            logger.Here().Error(e, "Failed to publish event");
+        }
     }
 }

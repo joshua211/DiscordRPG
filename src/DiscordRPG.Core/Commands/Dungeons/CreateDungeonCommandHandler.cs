@@ -25,7 +25,7 @@ public class CreateDungeonCommandHandler : CommandHandler<CreateDungeonCommand>
 
             await dungeonRepository.SaveAsync(request.Dungeon, cancellationToken);
 
-            await PublishAsync(new DungeonCreated(request.Dungeon), cancellationToken);
+            await PublishAsync(new DungeonCreated(request.Dungeon, request.ActivityDuration), cancellationToken);
 
             return ExecutionResult.Success();
         }

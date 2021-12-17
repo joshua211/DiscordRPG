@@ -37,6 +37,8 @@ public class ServerHandler : IHandler
 
         RecurringJob.AddOrUpdate<CleaningWorker>("DungeonCleaner", x => x.RemoveExhaustedAndUnusedDungeons(),
             "0 0 * * *");
+        RecurringJob.AddOrUpdate<DiagnosticsWorker>("Diagnostics", subscriber => subscriber.FlushAsync(),
+            "* * * * *");
 
         return Task.CompletedTask;
     }

@@ -4,7 +4,7 @@ namespace DiscordRPG.Core.Events;
 
 public class DungeonCreated : DomainEvent
 {
-    public DungeonCreated(Dungeon dungeon)
+    public DungeonCreated(Dungeon dungeon, ActivityDuration requestActivityDuration)
     {
         Dungeon = dungeon;
     }

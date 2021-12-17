@@ -24,18 +24,20 @@ public class AdventureResultService : IAdventureResultService
     {
         var wounds = new List<Wound>();
         var items = new List<Item>();
+        var encounters = new List<Encounter>();
         ulong exp = 0;
         var numEncounters = GetRandomNumberOfEncounters(duration);
 
         for (int i = 0; i < numEncounters; i++)
         {
             var encounter = encounterGenerator.CreateDungeonEncounter(dungeon);
+            encounters.Add(encounter);
             wounds.AddRange(woundGenerator.GenerateWounds(character, encounter));
             items.AddRange(itemGenerator.GenerateItems(dungeon));
             exp += experienceGenerator.GenerateExperienceFromEncounter(encounter);
         }
 
-        return new AdventureResult(wounds, items, exp);
+        return new AdventureResult(wounds, items, exp, encounters);
     }
 
     private int GetRandomNumberOfEncounters(ActivityDuration duration)

@@ -18,15 +18,16 @@ public class WoundGenerator : GeneratorBase, IWoundGenerator
     {
         var wounds = new List<Wound>();
         var totalDmg = 0;
-        while (encounter.Health > 0 && character.CurrentHealth > totalDmg)
+        var encounterHealth = encounter.Health;
+        while (encounterHealth > 0 && character.CurrentHealth > totalDmg)
         {
             var dmgToEncounter = character.TotalDamage.Value - (character.TotalDamage.DamageType == DamageType.Physical
                 ? encounter.Armor
                 : encounter.MagicArmor);
             dmgToEncounter = dmgToEncounter <= 0 ? 1 : dmgToEncounter;
-            encounter.Health -= dmgToEncounter;
+            encounterHealth -= dmgToEncounter;
 
-            if (encounter.Health <= 0)
+            if (encounterHealth <= 0)
                 continue;
 
             var dmgToCharacter = encounter.Damage.Value - (encounter.Damage.DamageType == DamageType.Physical

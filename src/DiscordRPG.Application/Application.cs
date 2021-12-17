@@ -4,6 +4,7 @@ using DiscordRPG.Application.Interfaces;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Repositories;
 using DiscordRPG.Application.Services;
+using DiscordRPG.Application.Worker;
 using DiscordRPG.Common;
 using DiscordRPG.Core.DomainServices;
 using DiscordRPG.Core.DomainServices.Generators;
@@ -35,6 +36,7 @@ public static class Application
             .AddTransient<IEncounterGenerator, EncounterGenerator>()
             .AddSingleton<IClassService, Classes>()
             .AddSingleton<IRaceService, Races>()
-            .AddSingleton<INameGenerator, NameGenerator>();
+            .AddSingleton<INameGenerator, NameGenerator>()
+            .AddSingleton<DiagnosticsWorker>();
     }
 }

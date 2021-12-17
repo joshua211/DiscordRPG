@@ -49,7 +49,8 @@ public class CalculateAdventureResultCommandHandler : CommandHandler<CalculateAd
             }
 
             await PublishAsync(
-                new AdventureResultCalculated(character, request.Dungeon, expResult, itemResult, woundResult),
+                new AdventureResultCalculated(character, request.Dungeon, expResult, itemResult, woundResult,
+                    result.Encounters),
                 cancellationToken);
 
             return ExecutionResult.Success();

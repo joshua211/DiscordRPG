@@ -46,7 +46,7 @@ public class DungeonService : ApplicationService, IDungeonService
 
             var dungeon =
                 dungeonGenerator.GenerateRandomDungeon(serverId, threadId, character.Level.CurrentLevel, duration);
-            var cmd = new CreateDungeonCommand(dungeon, character);
+            var cmd = new CreateDungeonCommand(dungeon, character, duration);
 
             var result = await PublishAsync(ctx, cmd, token);
             if (!result.WasSuccessful)
