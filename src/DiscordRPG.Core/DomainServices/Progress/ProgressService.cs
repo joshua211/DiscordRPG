@@ -44,7 +44,14 @@ public class ProgressService : IProgressService
 
     public ApplyItemsResult ApplyItems(ref Character character, List<Item> items)
     {
-        character.Inventory.AddRange(items);
+        foreach (var item in items)
+        {
+            var existing = character.Inventory.FirstOrDefault(i => i.GetItemCode() == item.GetItemCode());
+            if (existing is not null)
+                existing.Amount++;
+
+            character.Inventory.Add(item);
+        }
 
         return new ApplyItemsResult(items);
     }

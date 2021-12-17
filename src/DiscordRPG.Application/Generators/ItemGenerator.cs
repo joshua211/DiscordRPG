@@ -31,14 +31,12 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
             switch (equipType)
             {
                 case 0:
-                {
+
                     var num = GetNumOfItems(true);
-                    for (int y = 0; y < num; y++)
-                    {
-                        yield return GenerateRandomItem(rarity, level);
-                    }
-                }
+                    yield return GenerateRandomItem(rarity, level, num);
+
                     break;
+
                 case 1:
                     yield return GenerateRandomEquipment(rarity, level, dungeon.DungeonAspect);
 
@@ -101,13 +99,13 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         }
     }
 
-    private Item GenerateRandomItem(Rarity rarity, uint level)
+    private Item GenerateRandomItem(Rarity rarity, uint level, int amount)
     {
         var roundedLevel = level.RoundOff();
         var name = nameGenerator.GenerateRandomItemName(rarity);
         var worth = GenerateItemWorth(rarity, roundedLevel);
 
-        return new Item(name.name, name.descr, rarity, worth, roundedLevel);
+        return new Item(name.name, name.descr, rarity, worth, roundedLevel, amount);
     }
 
     private int GenerateItemWorth(Rarity rarity, uint level)

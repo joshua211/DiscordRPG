@@ -41,11 +41,10 @@ public class AdventureResultCalculatedSubscriber : EventSubscriber<AdventureResu
             if (domainEvent.ItemResult.ItemsGained.Any())
             {
                 sb.AppendLine("In the dungeon you found the following items:");
-                foreach (var grouping in domainEvent.ItemResult.ItemsGained.GroupBy(i => i.GetItemCode()))
+                foreach (var item in domainEvent.ItemResult.ItemsGained)
                 {
-                    var item = grouping.FirstOrDefault();
-                    if (grouping.Count() > 1)
-                        sb.AppendLine($" - _{item} x {grouping.Count()}_");
+                    if (item.Amount > 1)
+                        sb.AppendLine($" - _{item} x {item.Amount}_");
                     else
                         sb.AppendLine($" - _{item}_");
                 }
