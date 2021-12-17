@@ -43,7 +43,7 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
 
             await guild.CreateApplicationCommandAsync(command.Build());
         }
-        catch (ApplicationCommandException e)
+        catch (HttpException e)
         {
             logger.Here().Error(e, "Failed to install command {Name}", CommandName);
         }

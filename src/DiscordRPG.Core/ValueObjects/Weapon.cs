@@ -10,7 +10,7 @@ public class Weapon : Equipment
         int damageValue, EquipmentCategory equipmentCategory, uint level) : base(name, description, rarity, armor,
         magicArmor,
         strength, vitality, agility, intelligence,
-        luck, worth, equipmentCategory, level)
+        luck, worth, equipmentCategory, EquipmentPosition.Weapon, level)
     {
         DamageAttribute = damageAttribute;
         DamageType = damageType;
@@ -23,6 +23,6 @@ public class Weapon : Equipment
 
     public override string ToString()
     {
-        return $"[{Rarity.ToString()} Weapon] {Name} (Lvl: {Level}, $:{Worth})";
+        return $"[{Rarity.ToString()} Weapon] {Name} (Lvl: {Level} | {Worth}$)";
     }
 }

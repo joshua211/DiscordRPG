@@ -14,6 +14,7 @@ public class EncounterGenerator : GeneratorBase, IEncounterGenerator
 
     public Encounter CreateDungeonEncounter(Dungeon dungeon)
     {
+        //TODO scale with rarity
         var health = dungeon.DungeonLevel * random.Next(8, 12);
         var dmg = dungeon.DungeonLevel * random.Next(5, 10);
         var armor = dungeon.DungeonLevel * random.Next(5, 10);

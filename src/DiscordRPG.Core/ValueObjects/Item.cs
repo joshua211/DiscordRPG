@@ -1,9 +1,12 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using System.Text.RegularExpressions;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace DiscordRPG.Core.ValueObjects;
 
 public class Item
 {
+    private static readonly Regex WhitespaceRegex = new Regex(@"\s+");
+
     [BsonConstructor]
     public Item(string name, string description, Rarity rarity, int worth, uint level)
     {
@@ -22,8 +25,8 @@ public class Item
 
     public override string ToString()
     {
-        return $"[{Rarity.ToString()} {GetType().Name}] {Name} (Lvl: {Level}, $:{Worth})";
+        return $"[{Rarity.ToString()} {GetType().Name}] {Name} (Lvl: {Level} | {Worth}$)";
     }
 
-    public string GetItemCode() => $"{(int) Rarity}-{Name}{Level}";
+    public string GetItemCode() => $"{Rarity}-{WhitespaceRegex.Replace(Name, "")}{Level}|{Worth}";
 }

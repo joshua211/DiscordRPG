@@ -3,13 +3,11 @@ using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Client.Commands.Base;
-using DiscordRPG.Client.Handlers;
 using DiscordRPG.Common.Extensions;
 using Serilog;
 
 namespace DiscordRPG.Client.Commands;
 
-[RequireChannelName(ServerHandler.GuildHallName)]
 [RequireGuild]
 [RequireCharacter]
 public class GetCharacter : CommandBase

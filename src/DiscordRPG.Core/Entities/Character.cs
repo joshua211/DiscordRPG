@@ -61,6 +61,14 @@ public class Character : Entity
         }
     }
 
+    public void UpdateEquipment(EquipmentInfo equipmentInfo)
+    {
+        if (equipmentInfo is null)
+            throw new ArgumentException(nameof(equipmentInfo));
+
+        this.Equipment = equipmentInfo;
+    }
+
     #region Attributes
 
     public int Stength

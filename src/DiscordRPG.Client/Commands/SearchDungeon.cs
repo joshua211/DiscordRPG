@@ -41,7 +41,7 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
 
             await guild.CreateApplicationCommandAsync(command.Build());
         }
-        catch (ApplicationCommandException e)
+        catch (HttpException e)
         {
             logger.Here().Error(e, "Failed to install command {Name}", CommandName);
         }
@@ -95,7 +95,6 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
 
     private async Task HandleSearchDungeon(SocketMessageComponent component, SearchDungeonDialog dialog)
     {
-        //TODO proper duration
         var result = await activityService.QueueActivityAsync(dialog.Character.ID, dialog.Duration,
             ActivityType.SearchDungeon, new ActivityData
             {

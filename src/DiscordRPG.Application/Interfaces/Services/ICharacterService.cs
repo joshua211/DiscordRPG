@@ -19,4 +19,8 @@ public interface ICharacterService
     Task<Result> RestoreWoundsFromRestAsync(Identity charId, ActivityDuration activityDuration,
         TransactionContext parentContext = null,
         CancellationToken token = default);
+
+    Task<Result> UpdateEquipmentAsync(Identity identity, EquipmentInfo equipmentInfo,
+        TransactionContext parentContext = null,
+        CancellationToken token = default);
 }

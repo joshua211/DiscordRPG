@@ -5,7 +5,6 @@ using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Dialogs;
-using DiscordRPG.Client.Handlers;
 using DiscordRPG.Common.Extensions;
 using DiscordRPG.Core.Enums;
 using DiscordRPG.Core.ValueObjects;
@@ -13,7 +12,6 @@ using Serilog;
 
 namespace DiscordRPG.Client.Commands;
 
-[RequireChannelName(ServerHandler.GuildHallName)]
 [RequireCharacter]
 [RequireGuild]
 public class ShowInventory : DialogCommandBase<InventoryDialog>
@@ -85,7 +83,7 @@ public class ShowInventory : DialogCommandBase<InventoryDialog>
     private async Task HandleCategory(SocketMessageComponent component, InventoryDialog dialog, string category)
     {
         dialog.CurrentCategory = category;
-
+//TODO multiple rings
         var task = category switch
         {
             "items" => ShowItems(component, dialog),

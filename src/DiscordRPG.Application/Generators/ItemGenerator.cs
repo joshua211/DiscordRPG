@@ -19,7 +19,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         var level = dungeon.DungeonLevel;
 
         var selectorBuilder = new DynamicRandomSelector<int>();
-        selectorBuilder.Add(0, 3);
+        selectorBuilder.Add(0, 5);
         selectorBuilder.Add(1, 1);
         selectorBuilder.Add(2, 1);
         var selector = selectorBuilder.Build();
@@ -79,6 +79,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         var lck = GenerateRandomStat(rarity, level);
         var armor = GenerateRandomArmor(rarity, level);
         var category = GenerateRandomEquipmentCategory();
+        var position = GetPositionFromCategory(category);
         var name = nameGenerator.GenerateRandomEquipmentName(rarity, category, aspect);
         var worth = GenerateEquipmentWorth(rarity, level, str + vit + vit + agi + intel + lck + armor);
 
@@ -86,12 +87,15 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         switch (randomArmor)
         {
             case 0:
-                return new Equipment(name, "", rarity, armor, 0, str, vit, agi, intel, lck, worth, category, level);
+                return new Equipment(name, "", rarity, armor, 0, str, vit, agi, intel, lck, worth, category, position,
+                    level);
             case 1:
                 return new Equipment(name, "", rarity, armor / 2, armor / 2, str, vit, agi, intel, lck, worth, category,
+                    position,
                     level);
             case 2:
-                return new Equipment(name, "", rarity, 0, armor, str, vit, agi, intel, lck, worth, category, level);
+                return new Equipment(name, "", rarity, 0, armor, str, vit, agi, intel, lck, worth, category, position,
+                    level);
             default:
                 return null;
         }
@@ -123,6 +127,16 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         var arr = Enum.GetValues<EquipmentCategory>();
         return arr[random.Next(5)];
     }
+
+    private static EquipmentPosition GetPositionFromCategory(EquipmentCategory category) => category switch
+    {
+        EquipmentCategory.Amulet => EquipmentPosition.Amulet,
+        EquipmentCategory.Armor => EquipmentPosition.Armor,
+        EquipmentCategory.Helmet => EquipmentPosition.Helmet,
+        EquipmentCategory.Pants => EquipmentPosition.Pants,
+        EquipmentCategory.Ring => EquipmentPosition.Ring,
+        _ => EquipmentPosition.Weapon
+    };
 
     private EquipmentCategory GenerateRandomWeaponCategory()
     {

@@ -35,7 +35,7 @@ public class CharacterService : ApplicationService, ICharacterService
         {
             var character = new Character(userId, guildId, name, classId, raceId,
                 new Level(1, 0, experienceCurve.GetRequiredExperienceForLevel(1)),
-                new EquipmentInfo(Equip.StarterWeapon, null, Equip.StarterArmor, Equip.StarterLeg, null, null, null),
+                new EquipmentInfo(Equip.StarterWeapon, null, Equip.StarterArmor, Equip.StarterLeg, null, null),
                 new List<Item>(), new List<Wound>(), 10);
             character.ClassService = classService;
             character.RaceService = raceService;
@@ -130,6 +130,30 @@ public class CharacterService : ApplicationService, ICharacterService
         {
             TransactionError(ctx, e);
             return Result<Character>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Result> UpdateEquipmentAsync(Identity identity, EquipmentInfo equipmentInfo,
+        TransactionContext parentContext = null,
+        CancellationToken token = default)
+    {
+        using var ctx = TransactionBegin(parentContext);
+        try
+        {
+            var command = new UpdateEquipmentCommand(identity, equipmentInfo);
+            var result = await PublishAsync(ctx, command, token);
+            if (!result.WasSuccessful)
+            {
+                TransactionError(ctx, result.ErrorMessage);
+                return Result.Failure("Failed to update character equipment");
+            }
+
+            return Result.Success();
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result.Failure(e.Message);
         }
     }
 
