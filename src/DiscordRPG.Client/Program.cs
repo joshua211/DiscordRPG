@@ -89,6 +89,7 @@ public class Program
             .Build();
         //Common
         services.AddSingleton(Config);
+        services.AddSingleton<IHostEnvironment>(HostEnvironment);
         services.AddSingleton<ILogger>(Log.Logger);
 
         //Database Settings

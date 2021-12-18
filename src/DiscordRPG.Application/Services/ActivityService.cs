@@ -6,6 +6,7 @@ using DiscordRPG.Common;
 using DiscordRPG.Core.Commands.Activities;
 using Hangfire;
 using MediatR;
+using Microsoft.Extensions.Hosting;
 
 namespace DiscordRPG.Application.Services;
 
@@ -13,12 +14,14 @@ public class ActivityService : ApplicationService, IActivityService
 {
     private readonly IChannelManager channelManager;
     private readonly IGuildService guildService;
+    private readonly IHostEnvironment hostEnvironment;
 
     public ActivityService(IMediator mediator, ILogger logger, IGuildService guildService,
-        IChannelManager channelManager) : base(mediator, logger)
+        IChannelManager channelManager, IHostEnvironment hostEnvironment) : base(mediator, logger)
     {
         this.guildService = guildService;
         this.channelManager = channelManager;
+        this.hostEnvironment = hostEnvironment;
     }
 
     public async Task<Result> QueueActivityAsync(Identity charId, ActivityDuration duration, ActivityType type,
@@ -29,8 +32,12 @@ public class ActivityService : ApplicationService, IActivityService
         using var ctx = TransactionBegin(parentContext);
         try
         {
-            //TODO var timespan = TimeSpan.FromMinutes((int) duration);
-            var timespan = TimeSpan.FromSeconds(1);
+            TimeSpan timespan;
+            if (hostEnvironment.IsDevelopment())
+                timespan = TimeSpan.FromSeconds(1);
+            else
+                timespan = TimeSpan.FromMinutes((int)duration);
+
             var activity = new Activity(charId, DateTime.Now, duration, type, data);
             var jobId = BackgroundJob.Schedule<ActivityWorker>(x => x.ExecuteActivityAsync(activity.ID), timespan);
             activity.JobId = jobId;
