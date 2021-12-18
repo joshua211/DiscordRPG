@@ -14,6 +14,7 @@ using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Serilog;
@@ -23,27 +24,47 @@ namespace DiscordRPG.Client;
 
 public class Program
 {
+    public static IHostEnvironment HostEnvironment;
+
+    private static LoggerConfiguration loggerConfig;
     public static IConfigurationRoot Config { get; private set; }
 
     public static void Main(string[] args)
     {
-        Serilog.Log.Logger = new LoggerConfiguration()
+        HostEnvironment = new HostingEnvironment();
+        var env = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+        HostEnvironment.EnvironmentName = string.IsNullOrEmpty(env) ? "Production" : env;
+
+        var template = "[{Timestamp:dd.MM HH:mm:ss} {Level}][{SourceContext:l}.{Method}] {Message}{NewLine}{Exception}";
+        loggerConfig = new LoggerConfiguration()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
             .MinimumLevel.Override("Hangfire", LogEventLevel.Warning)
             .MinimumLevel.Debug()
             .CoreLogging()
             .Enrich.FromLogContext()
-            .WriteTo.Console(
-                outputTemplate:
-                "[{Timestamp:dd.MM HH:mm:ss} {Level}][{SourceContext:l}.{Method}] {Message}{NewLine}{Exception}")
-            .CreateLogger();
+            .WriteTo.Console(outputTemplate: template);
 
-        new Program().MainAsync().GetAwaiter().GetResult();
+        if (HostEnvironment.IsProduction())
+        {
+            loggerConfig.WriteTo.File("./Logs/Log.log", outputTemplate: template);
+        }
+
+        Log.Logger = loggerConfig.CreateBootstrapLogger();
+        try
+        {
+            Log.Information("Starting Application in {Env} environment", HostEnvironment.EnvironmentName);
+            new Program().MainAsync().GetAwaiter().GetResult();
+        }
+        catch (Exception e)
+        {
+            Log.Fatal(e, "Fatal Application Error");
+        }
     }
 
     public async Task MainAsync()
     {
-        var host = new HostBuilder().ConfigureServices(collection => ConfigureServices(collection)).Build();
+        var host = Host.CreateDefaultBuilder()
+            .ConfigureServices(collection => ConfigureServices(collection)).Build();
         var serviceProvider = host.Services;
         var client = serviceProvider.GetService<DiscordSocketClient>();
         client.Log += LogClientMessage;
@@ -62,7 +83,9 @@ public class Program
 
     private IServiceProvider ConfigureServices(IServiceCollection services)
     {
-        Config = new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory).AddJsonFile("appsettings.json", false)
+        Config = new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", true)
+            .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")}.json", optional: true)
             .Build();
         //Common
         services.AddSingleton(Config);
