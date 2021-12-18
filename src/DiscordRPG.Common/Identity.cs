@@ -19,4 +19,22 @@ public class Identity
     {
         return Value;
     }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is Identity id)
+            return Value.Equals(id.Value);
+
+        return false;
+    }
+
+    protected bool Equals(Identity other)
+    {
+        return Value == other.Value;
+    }
+
+    public override int GetHashCode()
+    {
+        return Value.GetHashCode();
+    }
 }

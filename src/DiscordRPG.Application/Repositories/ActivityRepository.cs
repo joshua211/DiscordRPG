@@ -29,7 +29,7 @@ public class ActivityRepository : IRepository<Activity>
     {
         logger.Here().Verbose("Updating Character {@Activity}", entity);
         entity.LastModified = DateTime.UtcNow;
-        var result = await activities.ReplaceOneAsync(e => e.ID == entity.ID, entity,
+        var result = await activities.ReplaceOneAsync(e => e.ID.Value == entity.ID.Value, entity,
             cancellationToken: cancellationToken);
         logger.Here().Verbose("Updated {Count} Activities", result.ModifiedCount);
     }
@@ -37,14 +37,14 @@ public class ActivityRepository : IRepository<Activity>
     public async Task DeleteAsync(Identity id, CancellationToken cancellationToken)
     {
         logger.Here().Verbose("Deleting Activity {Act}", id);
-        var result = await activities.DeleteOneAsync(c => c.ID == id, cancellationToken);
+        var result = await activities.DeleteOneAsync(c => c.ID.Value == id.Value, cancellationToken);
         logger.Here().Verbose("Deleted {Count} Activities", result.DeletedCount);
     }
 
     public async Task<Activity> GetAsync(Identity id, CancellationToken cancellationToken)
     {
         logger.Here().Verbose("Getting Activity {Id}", id);
-        var result = await activities.FindAsync(e => e.ID == id, cancellationToken: cancellationToken);
+        var result = await activities.FindAsync(e => e.ID.Value == id.Value, cancellationToken: cancellationToken);
 
         var entity = await result.FirstOrDefaultAsync(cancellationToken: cancellationToken);
 

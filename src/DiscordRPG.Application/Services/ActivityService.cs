@@ -34,9 +34,9 @@ public class ActivityService : ApplicationService, IActivityService
         {
             TimeSpan timespan;
             if (hostEnvironment.IsDevelopment())
-                timespan = TimeSpan.FromSeconds(1);
+                timespan = TimeSpan.FromSeconds(10);
             else
-                timespan = TimeSpan.FromMinutes((int)duration);
+                timespan = TimeSpan.FromMinutes((int) duration);
 
             var activity = new Activity(charId, DateTime.Now, duration, type, data);
             var jobId = BackgroundJob.Schedule<ActivityWorker>(x => x.ExecuteActivityAsync(activity.ID), timespan);

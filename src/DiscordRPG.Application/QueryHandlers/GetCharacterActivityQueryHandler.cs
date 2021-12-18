@@ -16,7 +16,7 @@ public class GetCharacterActivityQueryHandler : QueryHandler<GetCharacterActivit
         CancellationToken cancellationToken = default)
     {
         logger.Here().Debug("Handling Query {Query}", request.GetType().Name);
-        var result = await repository.FindAsync(a => a.CharId == request.CharId, cancellationToken);
+        var result = await repository.FindAsync(a => a.CharId.Value == request.CharId, cancellationToken);
 
         return result.FirstOrDefault();
     }
