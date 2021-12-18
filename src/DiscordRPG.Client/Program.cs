@@ -26,8 +26,18 @@ public class Program
 {
     public static IHostEnvironment HostEnvironment;
 
-    private static LoggerConfiguration loggerConfig;
+    private static string template =
+        "[{Timestamp:dd.MM HH:mm:ss} {Level}][{SourceContext:l}.{Method}] {Message}{NewLine}{Exception}";
+
     public static IConfigurationRoot Config { get; private set; }
+
+    private static LoggerConfiguration GetLoggerConfiguration() => new LoggerConfiguration()
+        .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+        .MinimumLevel.Override("Hangfire", LogEventLevel.Warning)
+        .MinimumLevel.Debug()
+        .CoreLogging()
+        .Enrich.FromLogContext()
+        .WriteTo.Console(outputTemplate: template);
 
     public static void Main(string[] args)
     {
@@ -35,21 +45,9 @@ public class Program
         var env = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
         HostEnvironment.EnvironmentName = string.IsNullOrEmpty(env) ? "Production" : env;
 
-        var template = "[{Timestamp:dd.MM HH:mm:ss} {Level}][{SourceContext:l}.{Method}] {Message}{NewLine}{Exception}";
-        loggerConfig = new LoggerConfiguration()
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-            .MinimumLevel.Override("Hangfire", LogEventLevel.Warning)
-            .MinimumLevel.Debug()
-            .CoreLogging()
-            .Enrich.FromLogContext()
-            .WriteTo.Console(outputTemplate: template);
+        var config = GetLoggerConfiguration();
+        Log.Logger = config.CreateBootstrapLogger();
 
-        if (HostEnvironment.IsProduction())
-        {
-            loggerConfig.WriteTo.File("./Logs/Log.log", outputTemplate: template);
-        }
-
-        Log.Logger = loggerConfig.CreateBootstrapLogger();
         try
         {
             Log.Information("Starting Application in {Env} environment", HostEnvironment.EnvironmentName);
@@ -63,8 +61,9 @@ public class Program
 
     public async Task MainAsync()
     {
-        var host = Host.CreateDefaultBuilder()
+        var host = Host.CreateDefaultBuilder().UseSerilog()
             .ConfigureServices(collection => ConfigureServices(collection)).Build();
+
         var serviceProvider = host.Services;
         var client = serviceProvider.GetService<DiscordSocketClient>();
         client.Log += LogClientMessage;
@@ -87,15 +86,25 @@ public class Program
             .AddJsonFile("appsettings.json", true)
             .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")}.json", optional: true)
             .Build();
-        //Common
-        services.AddSingleton(Config);
-        services.AddSingleton<IHostEnvironment>(HostEnvironment);
-        services.AddSingleton<ILogger>(Log.Logger);
 
         //Database Settings
         services.Configure<DatabaseSettings>(Config.GetSection(nameof(DatabaseSettings)));
         services.AddSingleton<IDatabaseSettings>(sp =>
             sp.GetRequiredService<IOptions<DatabaseSettings>>().Value);
+
+        //Common
+        var loggerConfig = GetLoggerConfiguration();
+        /*if (HostEnvironment.IsProduction())*/
+        {
+            var dbSettings = services.BuildServiceProvider().GetService<IDatabaseSettings>();
+            loggerConfig.WriteTo.MongoDB($"{dbSettings.ConnectionString}/{dbSettings.DiagnosticDatabaseName}",
+                dbSettings.DiagnosticLogCollectionName, LogEventLevel.Debug);
+        }
+        Log.Logger = loggerConfig.CreateLogger();
+
+        services.AddSingleton(Config);
+        services.AddSingleton<IHostEnvironment>(HostEnvironment);
+        services.AddSingleton<ILogger>(Log.Logger);
 
         //Services
         var client = new DiscordSocketClient(new DiscordSocketConfig()

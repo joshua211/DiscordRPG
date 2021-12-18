@@ -10,6 +10,7 @@ public class DatabaseSettings : IDatabaseSettings
     public string DungeonCollectionName { get; set; }
     public string DiagnosticDatabaseName { get; set; }
     public string DiagnosticEventCollectionName { get; set; }
+    public string DiagnosticLogCollectionName { get; set; }
 }
 
 public interface IDatabaseSettings
@@ -22,4 +23,5 @@ public interface IDatabaseSettings
     public string DungeonCollectionName { get; set; }
     public string DiagnosticDatabaseName { get; set; }
     public string DiagnosticEventCollectionName { get; set; }
+    public string DiagnosticLogCollectionName { get; set; }
 }
