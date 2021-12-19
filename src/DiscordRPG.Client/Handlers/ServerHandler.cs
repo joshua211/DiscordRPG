@@ -36,7 +36,7 @@ public class ServerHandler : IHandler
         client.LeftGuild += CleanServer;
 
         RecurringJob.AddOrUpdate<CleaningWorker>("DungeonCleaner", x => x.RemoveExhaustedAndUnusedDungeons(),
-            "0 0 * * *");
+            "0 * * * *");
         RecurringJob.AddOrUpdate<DiagnosticsWorker>("Diagnostics", subscriber => subscriber.FlushAsync(),
             "* * * * *");
 
