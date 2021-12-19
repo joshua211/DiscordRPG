@@ -16,7 +16,7 @@ public class GetDungeonByChannelIdQueryHandler : QueryHandler<GetDungeonByChanne
         CancellationToken cancellationToken = default)
     {
         logger.Here().Debug("Handling Query {Query}", request.GetType().Name);
-        return (await repository.FindAsync(d => d.DungeonChannelId == request.ChannelId, cancellationToken))
+        return (await repository.FindAsync(d => d.DungeonChannelId.Value == request.ChannelId.Value, cancellationToken))
             .FirstOrDefault()!;
     }
 }

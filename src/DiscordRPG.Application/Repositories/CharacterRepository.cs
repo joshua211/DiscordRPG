@@ -34,7 +34,7 @@ public class CharacterRepository : IRepository<Character>
     {
         logger.Here().Verbose("Updating Character {@Character}", entity);
         entity.LastModified = DateTime.UtcNow;
-        var result = await characters.ReplaceOneAsync(g => g.ID == entity.ID, entity,
+        var result = await characters.ReplaceOneAsync(g => g.ID.Value == entity.ID.Value, entity,
             cancellationToken: cancellationToken);
         logger.Verbose("Updated {Count} Characters", result.ModifiedCount);
     }
@@ -42,14 +42,14 @@ public class CharacterRepository : IRepository<Character>
     public async Task DeleteAsync(Identity id, CancellationToken cancellationToken)
     {
         logger.Here().Verbose("Deleting Character {Dd}", id);
-        var result = await characters.DeleteOneAsync(c => c.ID == id, cancellationToken);
+        var result = await characters.DeleteOneAsync(c => c.ID.Value == id.Value, cancellationToken);
         logger.Here().Verbose("Deleted {Count} characters", result.DeletedCount);
     }
 
     public async Task<Character> GetAsync(Identity id, CancellationToken cancellationToken)
     {
         logger.Here().Verbose("Getting Character {Id}", id);
-        var result = await characters.FindAsync(g => g.ID == id, cancellationToken: cancellationToken);
+        var result = await characters.FindAsync(g => g.ID.Value == id.Value, cancellationToken: cancellationToken);
 
         var entity = await result.FirstOrDefaultAsync(cancellationToken: cancellationToken);
         entity.ClassService = classService;

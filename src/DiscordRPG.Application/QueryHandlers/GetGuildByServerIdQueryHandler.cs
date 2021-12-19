@@ -16,7 +16,7 @@ public class GetGuildByServerIdQueryHandler : QueryHandler<GetGuildByServerIdQue
         CancellationToken cancellationToken = default)
     {
         logger.Here().Debug("Handling Query {Query}", request.GetType().Name);
-        return (await guildRepository.FindAsync(g => g.ServerId == request.GuildId, cancellationToken))
+        return (await guildRepository.FindAsync(g => g.ServerId.Value == request.GuildId.Value, cancellationToken))
             .FirstOrDefault();
     }
 }

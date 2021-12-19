@@ -24,7 +24,7 @@ public class DeleteGuildCommandHandler : CommandHandler<DeleteGuildCommand>
         {
             logger.Here().Debug("Handling {Name}", request.GetType().Name);
 
-            var guild = (await guildRepository.FindAsync(g => g.ServerId == request.Id, cancellationToken))
+            var guild = (await guildRepository.FindAsync(g => g.ServerId.Value == request.Id.Value, cancellationToken))
                 .FirstOrDefault();
             if (guild is null)
                 return ExecutionResult.Success();

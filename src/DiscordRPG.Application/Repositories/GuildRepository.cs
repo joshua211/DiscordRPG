@@ -28,7 +28,7 @@ public class GuildRepository : IRepository<Guild>
     {
         logger.Here().Verbose("Updating guild {@guild}", entity);
         entity.LastModified = DateTime.UtcNow;
-        var result = await guilds.ReplaceOneAsync(g => g.ID == entity.ID, entity,
+        var result = await guilds.ReplaceOneAsync(g => g.ID.Value == entity.ID.Value, entity,
             cancellationToken: cancellationToken);
         logger.Here().Verbose("Updated {Count} guilds", result.ModifiedCount);
     }
@@ -36,14 +36,14 @@ public class GuildRepository : IRepository<Guild>
     public async Task DeleteAsync(Identity id, CancellationToken cancellationToken)
     {
         logger.Here().Verbose("Deleting guild {Dd}", id);
-        var result = await guilds.DeleteOneAsync(g => g.ID == id, cancellationToken);
+        var result = await guilds.DeleteOneAsync(g => g.ID.Value == id.Value, cancellationToken);
         logger.Here().Verbose("Deleted {Count} guilds", result.DeletedCount);
     }
 
     public async Task<Guild> GetAsync(Identity id, CancellationToken cancellationToken)
     {
         logger.Here().Verbose("Getting Guild {Id}", id);
-        var result = await guilds.FindAsync(g => g.ID == id, cancellationToken: cancellationToken);
+        var result = await guilds.FindAsync(g => g.ID.Value == id.Value, cancellationToken: cancellationToken);
         var guild = await result.FirstOrDefaultAsync(cancellationToken: cancellationToken);
         logger.Here().Verbose("Found guild: {@Guild}", guild);
 

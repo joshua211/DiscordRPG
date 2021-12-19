@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System.Reflection;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordRPG.Application;
@@ -34,6 +35,7 @@ public class Program
     private static LoggerConfiguration GetLoggerConfiguration() => new LoggerConfiguration()
         .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
         .MinimumLevel.Override("Hangfire", LogEventLevel.Warning)
+        .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Warning)
         .MinimumLevel.Debug()
         .CoreLogging()
         .Enrich.FromLogContext()
@@ -50,7 +52,10 @@ public class Program
 
         try
         {
-            Log.Information("Starting Application in {Env} environment", HostEnvironment.EnvironmentName);
+            Log.Information("Starting Application in {Env} environment on version {Version}",
+                HostEnvironment.EnvironmentName, Assembly.GetEntryAssembly()
+                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                    .InformationalVersion);
             new Program().MainAsync().GetAwaiter().GetResult();
         }
         catch (Exception e)

@@ -28,7 +28,7 @@ public class DungeonRepository : IRepository<Dungeon>
     {
         logger.Here().Verbose("Updating dungeon {@entity}", entity);
         entity.LastModified = DateTime.UtcNow;
-        var result = await dungeons.ReplaceOneAsync(d => d.ID == entity.ID, entity,
+        var result = await dungeons.ReplaceOneAsync(d => d.ID.Value == entity.ID.Value, entity,
             cancellationToken: cancellationToken);
         logger.Here().Verbose("Updated {Count} dungeons", result.ModifiedCount);
     }
@@ -36,14 +36,14 @@ public class DungeonRepository : IRepository<Dungeon>
     public async Task DeleteAsync(Identity id, CancellationToken cancellationToken)
     {
         logger.Here().Verbose("Deleting dungeon with id {Id}", id);
-        var result = await dungeons.DeleteOneAsync(d => d.ID == id, cancellationToken);
+        var result = await dungeons.DeleteOneAsync(d => d.ID.Value == id.Value, cancellationToken);
         logger.Here().Verbose("Deleted {Count} dungeons", result.DeletedCount);
     }
 
     public async Task<Dungeon> GetAsync(Identity id, CancellationToken cancellationToken)
     {
         logger.Here().Verbose("Getting dungeon with id {Id}", id);
-        var cursor = await dungeons.FindAsync(d => d.ID == id, cancellationToken: cancellationToken);
+        var cursor = await dungeons.FindAsync(d => d.ID.Value == id.Value, cancellationToken: cancellationToken);
         var dungeon = await cursor.FirstOrDefaultAsync(cancellationToken);
         logger.Here().Verbose("Found dungeon {@Dungeon}", dungeon);
 
