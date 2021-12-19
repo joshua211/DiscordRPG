@@ -60,7 +60,8 @@ public class ShowActivity : DialogCommandBase<ShowActivityDialog>
 
     private static Embed GetActivityAsEmbed(Activity dialogActivity)
     {
-        var timeLeft = dialogActivity.StartTime +
+        //TODO fix on production
+        var timeLeft = dialogActivity.StartTime.ToUniversalTime() +
                        TimeSpan.FromSeconds((int) dialogActivity.Duration) -
                        DateTime.UtcNow;
 
