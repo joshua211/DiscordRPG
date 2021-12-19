@@ -77,7 +77,7 @@ public class ShowActivity : DialogCommandBase<ShowActivityDialog>
             .WithTitle(title)
             .WithDescription($"You are currently {title}")
             .AddField("Start Time", dialogActivity.StartTime.ToString("dd.MM.yyyy HH:mm:ss"))
-            .AddField("Minutes left", timeLeft.Minutes).Build();
+            .AddField("Minutes left", timeLeft.TotalMinutes).Build();
     }
 
     protected override Task HandleSelection(SocketMessageComponent component, string id, ShowActivityDialog dialog)
