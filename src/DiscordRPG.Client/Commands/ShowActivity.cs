@@ -61,12 +61,11 @@ public class ShowActivity : DialogCommandBase<ShowActivityDialog>
     private static Embed GetActivityAsEmbed(Activity dialogActivity)
     {
         //TODO fix on production
-        var timeLeft = dialogActivity.StartTime.ToUniversalTime() +
-                       TimeSpan.FromSeconds((int) dialogActivity.Duration) -
+        var timeLeft = dialogActivity.StartTime +
+                       TimeSpan.FromMinutes((int) dialogActivity.Duration) -
                        DateTime.UtcNow;
 
         var title = dialogActivity.Type switch
-
         {
             ActivityType.Dungeon => "Exploring a dungeon",
             ActivityType.Rest => "Resting",

@@ -9,7 +9,7 @@ public abstract class DomainEvent : INotification
 {
     public DomainEvent()
     {
-        DateOccurred = DateTime.Now;
+        DateOccurred = DateTime.UtcNow;
         EventId = Guid.NewGuid();
         EventVersion =
             Attribute.GetCustomAttribute(GetType(), typeof(EventVersionAttribute)) is not EventVersionAttribute attr

@@ -99,13 +99,14 @@ public class Program
 
         //Common
         var loggerConfig = GetLoggerConfiguration();
-        /*if (HostEnvironment.IsProduction())*/
+        if (HostEnvironment.IsProduction())
         {
             var dbSettings = services.BuildServiceProvider().GetService<IDatabaseSettings>();
             var mongoClient = new MongoClient(dbSettings.ConnectionString);
             var collection = mongoClient.GetDatabase(dbSettings.DiagnosticDatabaseName);
             loggerConfig.WriteTo.MongoDB(collection, LogEventLevel.Debug, dbSettings.DiagnosticLogCollectionName);
         }
+
         Log.Logger = loggerConfig.CreateLogger();
 
         services.AddSingleton(Config);

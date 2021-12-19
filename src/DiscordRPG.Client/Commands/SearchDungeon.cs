@@ -51,7 +51,6 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
         SearchDungeonDialog dialog)
     {
         var user = command.User as SocketGuildUser;
-
         var character = context.Character;
         dialog.Character = character;
         dialog.ServerId = user.Guild.Id;
