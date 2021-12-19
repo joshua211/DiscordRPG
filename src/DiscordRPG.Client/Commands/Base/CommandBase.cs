@@ -48,6 +48,9 @@ public abstract class CommandBase : IGuildCommand
         var requireNoActivity =
             (RequireNoCurrentActivityAttribute) Attribute.GetCustomAttribute(GetType(),
                 typeof(RequireNoCurrentActivityAttribute))!;
+        var requireActivity =
+            (RequireActivityAttribute) Attribute.GetCustomAttribute(GetType(),
+                typeof(RequireActivityAttribute))!;
         var requireDungeon =
             (RequireDungeonAttribute) Attribute.GetCustomAttribute(GetType(), typeof(RequireDungeonAttribute))!;
 
@@ -55,7 +58,8 @@ public abstract class CommandBase : IGuildCommand
         {
             if (command.Channel.Name != requireName.ChannelName)
             {
-                await command.RespondAsync($"This command can only be used in the {requireName.ChannelName} channel!");
+                await command.RespondAsync($"This command can only be used in the {requireName.ChannelName} channel!",
+                    ephemeral: true);
                 return;
             }
         }
@@ -67,7 +71,7 @@ public abstract class CommandBase : IGuildCommand
             var guildResult = await guildService.GetGuildWithDiscordIdAsync(channel.Guild.Id.ToString());
             if (!guildResult.WasSuccessful)
             {
-                await command.RespondAsync("No Guild was setup for this server!");
+                await command.RespondAsync("No Guild was setup for this server!", ephemeral: true);
                 return;
             }
 
@@ -80,7 +84,7 @@ public abstract class CommandBase : IGuildCommand
             var dungeonResult = await dungeonService.GetDungeonFromChannelIdAsync(command.Channel.Id.ToString());
             if (!dungeonResult.WasSuccessful)
             {
-                await command.RespondAsync("This command can only be used in a dungeon!");
+                await command.RespondAsync("This command can only be used in a dungeon!", ephemeral: true);
                 return;
             }
 
@@ -94,14 +98,14 @@ public abstract class CommandBase : IGuildCommand
             var charResult = await characterService.GetUsersCharacterAsync(user.Id.ToString(), guild.ID);
             if (!charResult.WasSuccessful)
             {
-                await command.RespondAsync("Please create a character first!");
+                await command.RespondAsync("Please create a character first!", ephemeral: true);
                 return;
             }
 
             character = charResult.Value;
         }
 
-        Activity activity = null;
+
         if (requireNoActivity is not null)
         {
             var currentActivityResult =
@@ -111,9 +115,24 @@ public abstract class CommandBase : IGuildCommand
                 var timeLeft = ((currentActivityResult.Value.StartTime +
                                  TimeSpan.FromSeconds((int) currentActivityResult.Value.Duration)) -
                                 DateTime.UtcNow);
-                await command.RespondAsync($"You're already on an adventure, try again in {timeLeft.Minutes} minutes!");
+                await command.RespondAsync($"You're already on an adventure, try again in {timeLeft.Minutes} minutes!",
+                    ephemeral: true);
                 return;
             }
+        }
+
+        Activity activity = null;
+        if (requireActivity is not null)
+        {
+            var currentActivityResult =
+                await activityService.GetCharacterActivityAsync(character.ID);
+            if (!currentActivityResult.WasSuccessful)
+            {
+                await command.RespondAsync($"You are currently not doing anything", ephemeral: true);
+                return;
+            }
+
+            activity = currentActivityResult.Value;
         }
 
         await HandleAsync(command, new GuildCommandContext(character, activity, dungeon, guild));

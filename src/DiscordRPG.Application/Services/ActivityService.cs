@@ -106,4 +106,34 @@ public class ActivityService : ApplicationService, IActivityService
             return Result<Activity>.Failure(e.Message);
         }
     }
+
+    public async Task<Result> StopActivityAsync(Activity dialogActivity, TransactionContext parentContext = null,
+        CancellationToken token = default)
+    {
+        using var ctx = TransactionBegin(parentContext);
+        try
+        {
+            var cmd = new DeleteActivityCommand(dialogActivity.ID);
+            var result = await PublishAsync(ctx, cmd, token);
+            if (!result.WasSuccessful)
+            {
+                TransactionError(ctx, result.ErrorMessage);
+
+                return Result.Failure("Something went wrong while trying to stop the activity");
+            }
+
+            if (BackgroundJob.Delete(dialogActivity.JobId))
+                return Result.Success();
+
+            TransactionError(ctx, "Failed to delete background job with ID {Id} for activity {ActId}",
+                dialogActivity.JobId, dialogActivity.ID);
+
+            return Result.Failure("Something went wrong while trying to stop the activity");
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result.Failure(e.Message);
+        }
+    }
 }

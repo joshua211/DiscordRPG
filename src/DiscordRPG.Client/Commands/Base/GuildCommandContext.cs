@@ -13,7 +13,7 @@ public class GuildCommandContext
     }
 
     public Character? Character { get; private set; }
-    public Activity? Activity { get; private set; }
+    public Activity Activity { get; private set; }
     public Dungeon? Dungeon { get; private set; }
     public Guild? Guild { get; private set; }
 }
