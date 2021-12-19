@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using System.Reflection;
+using Discord.Commands;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Handlers;
 
@@ -36,5 +37,14 @@ public class SettingsModule : ModuleBase<SocketCommandContext>
     {
         await serverHandler.InstallGuildCommands(Context.Guild);
         await ReplyAsync("Installed commands");
+    }
+
+    [Command("version")]
+    public async Task Version()
+    {
+        var version = Assembly.GetEntryAssembly()
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            .InformationalVersion;
+        await ReplyAsync($"Game Version: {version}");
     }
 }

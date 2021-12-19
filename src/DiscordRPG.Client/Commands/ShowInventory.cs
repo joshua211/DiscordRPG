@@ -115,6 +115,9 @@ public class ShowInventory : DialogCommandBase<InventoryDialog>
                 $"[{item.Rarity.ToString()}] {item.Name} (Lvl: {item.Level} | {item.Worth}$) x {group.Count()}");
         }
 
+        if (sb.Length == 0)
+            sb.AppendLine("Nothing to show here");
+
         var messageComponent = GetDialogComponent(dialog);
 
         await component.UpdateAsync(properties =>
@@ -149,6 +152,9 @@ public class ShowInventory : DialogCommandBase<InventoryDialog>
             sb.Append(')');
             sb.Append('\n');
         }
+
+        if (sb.Length == 0)
+            sb.AppendLine("Nothing to show here");
 
         var messageComponent = GetDialogComponent(dialog);
 
