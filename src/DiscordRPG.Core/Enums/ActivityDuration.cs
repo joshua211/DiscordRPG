@@ -24,14 +24,14 @@ public enum ActivityDuration
     Medium = 180,
 
     /// <summary>
-    /// 12 Hours
+    /// 8 Hours
     /// 75% health
     /// </summary>
-    Long = 720,
+    Long = 480,
 
     /// <summary>
-    /// 24 Hours
+    /// 12 Hours
     /// 100% health
     /// </summary>
-    ExtraLong = 1440
+    ExtraLong = 720
 }

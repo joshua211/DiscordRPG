@@ -6,6 +6,7 @@ using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Common.Extensions;
 using DiscordRPG.Core.Entities;
+using DiscordRPG.Core.ValueObjects;
 using Serilog;
 using ActivityType = DiscordRPG.Core.Enums.ActivityType;
 
@@ -48,7 +49,7 @@ public class ShowActivity : DialogCommandBase<ShowActivityDialog>
         dialog.Character = context.Character;
 
 
-        var embed = GetActivityAsEmbed(dialog.Activity);
+        var embed = await GetActivityAsEmbedAsync(dialog.Activity);
 
         var component = new ComponentBuilder()
             .WithButton("Stop activity", CommandName + ".stop", ButtonStyle.Danger)
@@ -58,26 +59,47 @@ public class ShowActivity : DialogCommandBase<ShowActivityDialog>
         await command.RespondAsync(embed: embed, component: component, ephemeral: true);
     }
 
-    private static Embed GetActivityAsEmbed(Activity dialogActivity)
+    private async Task<Embed> GetActivityAsEmbedAsync(Activity dialogActivity)
     {
-        //TODO fix on production
         var timeLeft = dialogActivity.StartTime +
                        TimeSpan.FromMinutes((int) dialogActivity.Duration) -
                        DateTime.UtcNow;
 
-        var title = dialogActivity.Type switch
+        switch (dialogActivity.Type)
         {
-            ActivityType.Dungeon => "Exploring a dungeon",
-            ActivityType.Rest => "Resting",
-            ActivityType.SearchDungeon => "Searching for a dungeon",
-            _ => "???"
-        };
+            case ActivityType.Dungeon:
+                var dungeon =
+                    await dungeonService.GetDungeonFromChannelIdAsync(
+                        new DiscordId(dialogActivity.Data.ThreadId.ToString()));
+                var description = "You are currently explore a dungeon!";
+                if (dungeon.WasSuccessful)
+                    description =
+                        $"You are currently exploring the {dungeon.Value.Rarity.ToString()} dungeon {dungeon.Value.Name} (Lvl: {dungeon.Value.DungeonLevel})";
 
-        return new EmbedBuilder()
-            .WithTitle(title)
-            .WithDescription($"You are currently {title}")
-            .AddField("Start Time", dialogActivity.StartTime.ToString("dd.MM.yyyy HH:mm:ss"))
-            .AddField("Minutes left", timeLeft.TotalMinutes).Build();
+                return new EmbedBuilder()
+                    .WithTitle("Exploring a dungeon")
+                    .WithDescription(description)
+                    .AddField("Start Time", dialogActivity.StartTime.ToString("dd.MM.yyyy HH:mm:ss"))
+                    .AddField("Minutes left", (int) timeLeft.TotalMinutes).Build();
+            case ActivityType.Rest:
+                return new EmbedBuilder()
+                    .WithTitle("Resting")
+                    .WithDescription("You are currently resting!")
+                    .AddField("Start Time", dialogActivity.StartTime.ToString("dd.MM.yyyy HH:mm:ss"))
+                    .AddField("Minutes left", (int) timeLeft.TotalMinutes).Build();
+            case ActivityType.SearchDungeon:
+                return new EmbedBuilder()
+                    .WithTitle("Searching for a dungeon")
+                    .WithDescription("You are currently searching for a dungeon")
+                    .AddField("Start Time", dialogActivity.StartTime.ToString("dd.MM.yyyy HH:mm:ss"))
+                    .AddField("Minutes left", (int) timeLeft.TotalMinutes).Build();
+            default:
+                return new EmbedBuilder()
+                    .WithTitle("???")
+                    .WithDescription("???")
+                    .AddField("Start Time", dialogActivity.StartTime.ToString("dd.MM.yyyy HH:mm:ss"))
+                    .AddField("Minutes left", (int) timeLeft.TotalMinutes).Build();
+        }
     }
 
     protected override Task HandleSelection(SocketMessageComponent component, string id, ShowActivityDialog dialog)

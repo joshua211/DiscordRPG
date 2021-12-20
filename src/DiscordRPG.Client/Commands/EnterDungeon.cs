@@ -101,6 +101,7 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
         var result = await activityService.QueueActivityAsync(dialog.CharId, dialog.Duration,
             ActivityType.Dungeon, new ActivityData
             {
+                DungeonId = dialog.Dungeon.ID,
                 ThreadId = dialog.Dungeon.DungeonChannelId,
             });
 
