@@ -12,6 +12,7 @@
 *appsettings.d*.json
 *appsettings.json
 /deploy
+*.env
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
