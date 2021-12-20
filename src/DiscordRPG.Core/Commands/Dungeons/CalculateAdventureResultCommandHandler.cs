@@ -33,6 +33,8 @@ public class CalculateAdventureResultCommandHandler : CommandHandler<CalculateAd
                 adventureService.CalculateAdventureResult(request.Character, request.Dungeon, request.Duration);
 
             var character = request.Character;
+            var woundsBefore = request.Character.Wounds.DeepCopy<List<Wound>>();
+
             var woundResult = progressService.ApplyWounds(ref character, result.Wounds);
             var expResult = progressService.ApplyExperience(ref character, result.Experience);
             var itemResult = progressService.ApplyItems(ref character, result.Items);
@@ -50,7 +52,7 @@ public class CalculateAdventureResultCommandHandler : CommandHandler<CalculateAd
 
             await PublishAsync(
                 new AdventureResultCalculated(character, request.Dungeon, expResult, itemResult, woundResult,
-                    result.Encounters),
+                    result.Encounters, woundsBefore),
                 cancellationToken);
 
             return ExecutionResult.Success();

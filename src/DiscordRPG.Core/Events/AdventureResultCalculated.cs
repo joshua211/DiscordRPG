@@ -7,7 +7,8 @@ namespace DiscordRPG.Core.Events;
 public class AdventureResultCalculated : DomainEvent
 {
     public AdventureResultCalculated(Character character, Dungeon dungeon, ApplyExperienceResult experienceResult,
-        ApplyItemsResult itemResult, ApplyWoundsResult woundsResult, List<Encounter> encounters)
+        ApplyItemsResult itemResult, ApplyWoundsResult woundsResult, List<Encounter> encounters,
+        List<Wound> woundsBefore)
     {
         Character = character;
         Dungeon = dungeon;
