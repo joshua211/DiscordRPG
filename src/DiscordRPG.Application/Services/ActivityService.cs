@@ -136,4 +136,22 @@ public class ActivityService : ApplicationService, IActivityService
             return Result.Failure(e.Message);
         }
     }
+
+    public async Task<Result<IEnumerable<Activity>>> GetAllActivitiesAsync(TransactionContext parentContext = null,
+        CancellationToken token = default)
+    {
+        using var ctx = TransactionBegin(parentContext);
+        try
+        {
+            var query = new GetAllActivitiesQuery();
+            var result = await ProcessAsync(ctx, query, token);
+
+            return Result<IEnumerable<Activity>>.Success(result);
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result<IEnumerable<Activity>>.Failure(e.Message);
+        }
+    }
 }

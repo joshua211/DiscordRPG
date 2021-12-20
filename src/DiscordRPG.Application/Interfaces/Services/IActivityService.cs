@@ -17,4 +17,7 @@ public interface IActivityService
 
     Task<Result> StopActivityAsync(Activity dialogActivity, TransactionContext parentContext = null,
         CancellationToken token = default);
+
+    Task<Result<IEnumerable<Activity>>> GetAllActivitiesAsync(TransactionContext parentContext = null,
+        CancellationToken token = default);
 }
