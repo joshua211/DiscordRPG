@@ -23,6 +23,12 @@ public class DungeonGenerator : GeneratorBase, IDungeonGenerator
         var rarity = rarityGenerator.GenerateRarityFromActivityDuration(duration);
         var aspect = aspectGenerator.GetRandomAspect(rarity);
 
+        return GenerateRandomDungeon(serverId, threadId, charLevel, aspect, rarity);
+    }
+
+    public Dungeon GenerateRandomDungeon(DiscordId serverId, DiscordId threadId, uint charLevel, Aspect aspect,
+        Rarity rarity)
+    {
         var explorations = (byte) random.Next(3, 15);
         var selector = new DynamicRandomSelector<uint>();
         selector.Add(charLevel, 2);

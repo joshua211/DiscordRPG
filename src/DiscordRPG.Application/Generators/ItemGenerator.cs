@@ -49,26 +49,29 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         }
     }
 
-    private Weapon GenerateRandomWeapon(Rarity rarity, uint level, Aspect aspect)
+    public Weapon GenerateRandomWeapon(Rarity rarity, uint level, Aspect aspect)
     {
-        var str = GenerateRandomStat(rarity, level);
-        var vit = GenerateRandomStat(rarity, level);
-        var agi = GenerateRandomStat(rarity, level);
-        var intel = GenerateRandomStat(rarity, level);
-        var lck = GenerateRandomStat(rarity, level);
-
         var cat = GenerateRandomWeaponCategory();
-        var name = nameGenerator.GenerateRandomEquipmentName(rarity, cat, aspect);
-        var charAttr = GenerateRandomCharAttribute();
-        var dmgType = GenerateRandomDamageType();
-        var dmgValue = GenerateRandomDamageValue(rarity, level);
-        var worth = GenerateEquipmentWorth(rarity, level, str + vit + vit + agi + intel + lck + dmgValue);
 
-        return new Weapon(name, "", rarity, 0, 0, str, vit, agi, intel, lck, worth, charAttr, dmgType, dmgValue, cat,
-            level);
+        return GenerateWeapon(rarity, level, aspect, cat);
     }
 
-    private Equipment GenerateRandomEquipment(Rarity rarity, uint level, Aspect aspect)
+    public Equipment GenerateRandomEquipment(Rarity rarity, uint level, Aspect aspect)
+    {
+        var category = GenerateRandomEquipmentCategory();
+        return GenerateEquipment(rarity, level, aspect, category);
+    }
+
+    public Item GenerateRandomItem(Rarity rarity, uint level, int amount)
+    {
+        var roundedLevel = level.RoundOff();
+        var name = nameGenerator.GenerateRandomItemName(rarity);
+        var worth = GenerateItemWorth(rarity, roundedLevel);
+
+        return new Item(name.name, name.descr, rarity, worth, roundedLevel, amount);
+    }
+
+    public Equipment GenerateEquipment(Rarity rarity, uint level, Aspect aspect, EquipmentCategory category)
     {
         var str = GenerateRandomStat(rarity, level);
         var vit = GenerateRandomStat(rarity, level);
@@ -76,7 +79,6 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         var intel = GenerateRandomStat(rarity, level);
         var lck = GenerateRandomStat(rarity, level);
         var armor = GenerateRandomArmor(rarity, level);
-        var category = GenerateRandomEquipmentCategory();
         var position = GetPositionFromCategory(category);
         var name = nameGenerator.GenerateRandomEquipmentName(rarity, category, aspect);
         var worth = GenerateEquipmentWorth(rarity, level, str + vit + vit + agi + intel + lck + armor);
@@ -99,13 +101,23 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         }
     }
 
-    private Item GenerateRandomItem(Rarity rarity, uint level, int amount)
+    public Weapon GenerateWeapon(Rarity rarity, uint level, Aspect aspect, EquipmentCategory category)
     {
-        var roundedLevel = level.RoundOff();
-        var name = nameGenerator.GenerateRandomItemName(rarity);
-        var worth = GenerateItemWorth(rarity, roundedLevel);
+        var str = GenerateRandomStat(rarity, level);
+        var vit = GenerateRandomStat(rarity, level);
+        var agi = GenerateRandomStat(rarity, level);
+        var intel = GenerateRandomStat(rarity, level);
+        var lck = GenerateRandomStat(rarity, level);
 
-        return new Item(name.name, name.descr, rarity, worth, roundedLevel, amount);
+        var name = nameGenerator.GenerateRandomEquipmentName(rarity, category, aspect);
+        var charAttr = GenerateRandomCharAttribute();
+        var dmgType = GenerateRandomDamageType();
+        var dmgValue = GenerateRandomDamageValue(rarity, level);
+        var worth = GenerateEquipmentWorth(rarity, level, str + vit + vit + agi + intel + lck + dmgValue);
+
+        return new Weapon(name, "", rarity, 0, 0, str, vit, agi, intel, lck, worth, charAttr, dmgType, dmgValue,
+            category,
+            level);
     }
 
     private int GenerateItemWorth(Rarity rarity, uint level)
