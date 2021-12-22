@@ -33,52 +33,60 @@ namespace DiscordRPG.DiagnosticConsole
             BsonClassMap.RegisterClassMap<AdventureResultCalculated>();
             BsonClassMap.RegisterClassMap<Equipment>();
             BsonClassMap.RegisterClassMap<Weapon>();
-
-            var services = new ServiceCollection();
-            var config = new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", false)
-                .Build();
-
-            services.Configure<DatabaseSettings>(config.GetSection(nameof(DatabaseSettings)));
-            services.AddSingleton<IDatabaseSettings>(sp =>
-                sp.GetRequiredService<IOptions<DatabaseSettings>>().Value);
-            var dbSettings = services.BuildServiceProvider().GetService<IDatabaseSettings>();
-            var mongoClient = new MongoClient(dbSettings.ConnectionString);
-            services
-                .AddSingleton<IMongoClient>(mongoClient)
-                .AddSingleton<ILiveLogImporter, LiveLogImporter>()
-                .AddTransient<IHistoryLogImporter, HistoryLogImporter>()
-                .AddTransient<IEventImporter, EventImporter>()
-                .AddTransient<IItemGenerator, ItemGenerator>()
-                .AddTransient<IDungeonGenerator, DungeonGenerator>()
-                .AddTransient<INameGenerator, NameGenerator>()
-                .AddTransient<IItemGenerator, ItemGenerator>()
-                .AddTransient<IWoundGenerator, WoundGenerator>()
-                .AddTransient<IAspectGenerator, AspectGenerator>()
-                .AddTransient<IExperienceGenerator, ExperienceGenerator>()
-                .AddTransient<IEncounterGenerator, EncounterGenerator>()
-                .AddTransient<IRarityGenerator, RarityGenerator>()
-                .AddTransient<IAdventureResultService, AdventureResultService>()
-                .AddTransient<IExperienceCurve, ExperienceCurve>()
-                .AddSingleton<IClassService, Classes>()
-                .AddSingleton<IRaceService, Races>()
-                .AddSingleton<INameGenerator, NameGenerator>()
-                .AddSingleton<ConsoleState>()
-                .AddSingleton(Logger.None);
-
-            var commandTypes = Assembly.GetEntryAssembly().ExportedTypes
-                .Where(t => t.GetInterfaces().Contains(typeof(ICommand)));
-
-            foreach (var t in commandTypes)
+            try
             {
-                services.AddTransient(typeof(ICommand), t);
+                var services = new ServiceCollection();
+
+                var config = new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory)
+                    .AddJsonFile("appsettings.json", false)
+                    .Build();
+
+                services.Configure<DatabaseSettings>(config.GetSection(nameof(DatabaseSettings)));
+                services.AddSingleton<IDatabaseSettings>(sp =>
+                    sp.GetRequiredService<IOptions<DatabaseSettings>>().Value);
+                var dbSettings = services.BuildServiceProvider().GetService<IDatabaseSettings>();
+                var mongoClient = new MongoClient(dbSettings.ConnectionString);
+                services
+                    .AddSingleton<IMongoClient>(mongoClient)
+                    .AddSingleton<ILiveLogImporter, LiveLogImporter>()
+                    .AddTransient<IHistoryLogImporter, HistoryLogImporter>()
+                    .AddTransient<IEventImporter, EventImporter>()
+                    .AddTransient<IItemGenerator, ItemGenerator>()
+                    .AddTransient<IDungeonGenerator, DungeonGenerator>()
+                    .AddTransient<INameGenerator, NameGenerator>()
+                    .AddTransient<IItemGenerator, ItemGenerator>()
+                    .AddTransient<IWoundGenerator, WoundGenerator>()
+                    .AddTransient<IAspectGenerator, AspectGenerator>()
+                    .AddTransient<IExperienceGenerator, ExperienceGenerator>()
+                    .AddTransient<IEncounterGenerator, EncounterGenerator>()
+                    .AddTransient<IRarityGenerator, RarityGenerator>()
+                    .AddTransient<IAdventureResultService, AdventureResultService>()
+                    .AddTransient<IExperienceCurve, ExperienceCurve>()
+                    .AddSingleton<IClassService, Classes>()
+                    .AddSingleton<IRaceService, Races>()
+                    .AddSingleton<INameGenerator, NameGenerator>()
+                    .AddSingleton<ConsoleState>()
+                    .AddSingleton(Logger.None);
+
+                var commandTypes = Assembly.GetEntryAssembly().ExportedTypes
+                    .Where(t => t.GetInterfaces().Contains(typeof(ICommand)));
+
+                foreach (var t in commandTypes)
+                {
+                    services.AddTransient(typeof(ICommand), t);
+                }
+
+                var provider = services.BuildServiceProvider();
+                var commands = provider.GetServices<ICommand>();
+
+                var entry = commands.First(c => c.CommandName == "entry");
+                await entry.ExecuteAsync(commands);
             }
-
-            var provider = services.BuildServiceProvider();
-            var commands = provider.GetServices<ICommand>();
-
-            var entry = commands.First(c => c.CommandName == "entry");
-            await entry.ExecuteAsync(commands);
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Console.ReadLine();
+            }
         }
     }
 }

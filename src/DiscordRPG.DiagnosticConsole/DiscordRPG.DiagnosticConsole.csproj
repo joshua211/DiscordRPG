@@ -21,9 +21,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="./appsettings.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
+        <None Include="appsettings.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+            <ExcludeFromSingleFile>false</ExcludeFromSingleFile>
+        </None>
     </ItemGroup>
 
     <ItemGroup>
