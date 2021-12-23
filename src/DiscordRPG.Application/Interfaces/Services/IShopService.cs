@@ -15,6 +15,9 @@ public interface IShopService
         TransactionContext parentContext = null,
         CancellationToken cancellationToken = default);
 
+    Task<Result<Character>> SellItemAsync(Character character, Item item, TransactionContext parentContext = null,
+        CancellationToken cancellationToken = default);
+
     Task<Result<Shop>> UpdateWaresAsync(Shop shop, Character character, List<Equipment> newEquipment,
         TransactionContext parentContext = null,
         CancellationToken cancellationToken = default);

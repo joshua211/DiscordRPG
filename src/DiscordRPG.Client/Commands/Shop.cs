@@ -183,8 +183,6 @@ public class Shop : DialogCommandBase<ShopDialog>
             .WithButton("Cancel", CommandName + ".cancel", ButtonStyle.Secondary);
 
         return componentBuilder.Build();
-
-        ;
     }
 
     private IEnumerable<Embed> GetDisplayEmbeds(ShopDialog dialog)

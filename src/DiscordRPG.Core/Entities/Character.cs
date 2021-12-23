@@ -75,6 +75,12 @@ public class Character : Entity
         Inventory.Add(item);
     }
 
+    public void SellItem(Item item)
+    {
+        Inventory.Remove(item);
+        Money += (int) (item.Worth * 0.7);
+    }
+
     #region Attributes
 
     public int Stength

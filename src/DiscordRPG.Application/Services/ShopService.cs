@@ -114,6 +114,31 @@ public class ShopService : ApplicationService, IShopService
         }
     }
 
+    public async Task<Result<Character>> SellItemAsync(Character character, Item item,
+        TransactionContext parentContext = null,
+        CancellationToken cancellationToken = default)
+    {
+        using var ctx = TransactionBegin(parentContext);
+        try
+        {
+            var cmd = new SellItemCommand(character, item);
+            var result = await PublishAsync(ctx, cmd, cancellationToken);
+            if (!result.WasSuccessful)
+            {
+                TransactionError(ctx, result.ErrorMessage);
+                return Result<Character>.Failure(
+                    "Something went wrong while trying to buy the item, please try again");
+            }
+
+            return Result<Character>.Success(character);
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result<Character>.Failure(e.Message);
+        }
+    }
+
     public async Task<Result<Shop>> UpdateWaresAsync(Shop shop, Character character, List<Equipment> newEquipment,
         TransactionContext parentContext = null,
         CancellationToken cancellationToken = default)
