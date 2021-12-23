@@ -10,11 +10,12 @@ public class ShopWorker
     private readonly ICharacterService characterService;
     private readonly IGuildService guildService;
     private readonly IItemGenerator itemGenerator;
+    private readonly ILogger logger;
     private readonly IRarityGenerator rarityGenerator;
     private readonly IShopService shopService;
 
     public ShopWorker(IShopService shopService, IItemGenerator itemGenerator, ICharacterService characterService,
-        IGuildService guildService, IRarityGenerator rarityGenerator, IAspectGenerator aspectGenerator)
+        IGuildService guildService, IRarityGenerator rarityGenerator, IAspectGenerator aspectGenerator, ILogger logger)
     {
         this.shopService = shopService;
         this.itemGenerator = itemGenerator;
@@ -22,6 +23,7 @@ public class ShopWorker
         this.guildService = guildService;
         this.rarityGenerator = rarityGenerator;
         this.aspectGenerator = aspectGenerator;
+        this.logger = logger;
     }
 
     public async Task UpdateShopsAsync()
@@ -29,18 +31,26 @@ public class ShopWorker
         var guilds = await guildService.GetAllGuildsAsync();
         foreach (var guild in guilds.Value)
         {
-            var characters = await characterService.GetAllCharactersInGuild(guild.ID);
-            var shop =
-                await shopService.GetGuildShopAsync(guild.ID);
-            var tasks = new List<Task>();
-            foreach (var character in characters.Value)
-            {
-                var equip = GetNewEquip(character);
-                tasks.Add(shopService.UpdateWaresAsync(shop.Value.ID, character.ID, equip.ToList()));
-            }
-
-            await Task.WhenAll(tasks);
+            logger.Information("Updating shop for Guild {Id}", guild.ID);
+            await UpdateGuildShopAsync(guild);
         }
+    }
+
+    public async Task UpdateGuildShopAsync(Guild guild)
+    {
+        var characters = await characterService.GetAllCharactersInGuild(guild.ID);
+        var shop =
+            await shopService.GetGuildShopAsync(guild.ID);
+        var tasks = new List<Task>();
+        foreach (var character in characters.Value)
+        {
+            logger.Here().Debug("Updating character shop for character {Id}", character.ID);
+            var equip = GetNewEquip(character);
+            logger.Here().Verbose("New Equip: {@Equip}", equip);
+            tasks.Add(shopService.UpdateWaresAsync(shop.Value, character, equip.ToList()));
+        }
+
+        await Task.WhenAll(tasks);
     }
 
     private IEnumerable<Equipment> GetNewEquip(Character character)

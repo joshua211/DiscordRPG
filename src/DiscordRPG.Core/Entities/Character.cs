@@ -69,6 +69,12 @@ public class Character : Entity
         this.Equipment = equipmentInfo;
     }
 
+    public void BuyItem(Item item)
+    {
+        Money -= item.Worth;
+        Inventory.Add(item);
+    }
+
     #region Attributes
 
     public int Stength

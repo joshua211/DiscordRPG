@@ -1,4 +1,5 @@
-﻿using DiscordRPG.Core.DomainServices;
+﻿using DiscordRPG.Core.Commands.Shops;
+using DiscordRPG.Core.DomainServices;
 using DiscordRPG.Core.DomainServices.Progress;
 using DiscordRPG.Core.Entities;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,7 @@ public static class Core
     {
         return logger.Destructure.ByTransforming<Character>(c => new
         {
+            Id = c.ID,
             Name = c.CharacterName,
             Level = c.Level,
             Strength = c.Stength,
@@ -34,6 +36,15 @@ public static class Core
             Health = c.CurrentHealth,
             Armor = c.Armor,
             MArmor = c.MagicArmor
+        }).Destructure.ByTransforming<Shop>(s => new
+        {
+            Id = s.ID,
+            GuildId = s.GuildId,
+            Inventory = s.ItemsForSale.Select(i => new {CharacterId = i.CharId, ItemCount = i.Equipment.Count})
+        }).Destructure.ByTransforming<UpdateShopCommand>(u => new
+        {
+            Shop = u.Shop,
+            CharId = u.Character.ID
         });
     }
 }

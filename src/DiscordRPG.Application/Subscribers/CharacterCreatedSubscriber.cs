@@ -46,7 +46,7 @@ public class CharacterCreatedSubscriber : EventSubscriber<CharacterCreated>
         }
 
         var equip = GetStartingShopInventory();
-        await shopService.UpdateWaresAsync(shopResult.Value.ID, domainEvent.Character.ID, equip.ToList(),
+        await shopService.UpdateWaresAsync(shopResult.Value, domainEvent.Character, equip.ToList(),
             cancellationToken: cancellationToken);
     }
 

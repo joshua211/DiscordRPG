@@ -16,20 +16,16 @@ public class UpdateShopCommandHandler : CommandHandler<UpdateShopCommand>
         this.repository = repository;
     }
 
-    public override async Task<ExecutionResult> Handle(UpdateShopCommand request, CancellationToken cancellationToken)
+    public override async Task<ExecutionResult> Handle(UpdateShopCommand command, CancellationToken cancellationToken)
     {
-        logger.Here().Debug("Handling {Name}", request.GetType().Name);
+        logger.Here().Debug("Handling {Name}", command.GetType().Name);
         try
         {
-            var shop = await repository.GetAsync(request.ShopId, cancellationToken);
-            if (shop is null)
-                return ExecutionResult.Failure($"No Shop with ID {request.ShopId} found");
+            command.Shop.UpdateEquipment(command.Character.ID, command.Equipment);
 
-            shop.UpdateEquipment(request.CharId, request.Equipment);
+            await repository.UpdateAsync(command.Shop, cancellationToken);
 
-            await repository.UpdateAsync(shop, cancellationToken);
-
-            await PublishAsync(new ShopUpdated(shop), cancellationToken);
+            await PublishAsync(new ShopUpdated(command.Shop), cancellationToken);
 
             return ExecutionResult.Success();
         }

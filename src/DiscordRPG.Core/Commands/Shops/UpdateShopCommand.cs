@@ -1,15 +1,17 @@
-﻿namespace DiscordRPG.Core.Commands.Shops;
+﻿using DiscordRPG.Core.Entities;
+
+namespace DiscordRPG.Core.Commands.Shops;
 
 public class UpdateShopCommand : Command
 {
-    public UpdateShopCommand(Identity shopId, Identity charId, List<Equipment> equipment)
+    public UpdateShopCommand(List<Equipment> equipment, Shop shop, Character character)
     {
-        ShopId = shopId;
-        CharId = charId;
         Equipment = equipment;
+        Shop = shop;
+        Character = character;
     }
 
     public List<Equipment> Equipment { get; private set; }
-    public Identity ShopId { get; private set; }
-    public Identity CharId { get; }
+    public Shop Shop { get; private set; }
+    public Character Character { get; private set; }
 }

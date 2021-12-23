@@ -20,7 +20,7 @@ public class Shop : Entity
             if (inv is null)
                 ItemsForSale.Add(new ShopInventory(charId, value));
             else
-                inv = new ShopInventory(charId, value);
+                ItemsForSale[ItemsForSale.IndexOf(inv)] = new ShopInventory(charId, value);
         }
     }
 

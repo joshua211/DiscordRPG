@@ -11,11 +11,11 @@ public interface IShopService
     Task<Result> CreateGuildShopAsync(Identity guildId, TransactionContext parentContext = null,
         CancellationToken cancellationToken = default);
 
-    Task<Result<Shop>> BuyEquipAsync(Identity shopId, Identity characterId, Equipment equipment,
+    Task<Result<(Shop, Character)>> BuyEquipAsync(Shop shop, Character character, Equipment equipment,
         TransactionContext parentContext = null,
         CancellationToken cancellationToken = default);
 
-    Task<Result<Shop>> UpdateWaresAsync(Identity shopId, Identity charId, List<Equipment> newEquipment,
+    Task<Result<Shop>> UpdateWaresAsync(Shop shop, Character character, List<Equipment> newEquipment,
         TransactionContext parentContext = null,
         CancellationToken cancellationToken = default);
 }

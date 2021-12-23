@@ -36,6 +36,7 @@ public static class Application
             .AddTransient<IAspectGenerator, AspectGenerator>()
             .AddTransient<IExperienceGenerator, ExperienceGenerator>()
             .AddTransient<IEncounterGenerator, EncounterGenerator>()
+            .AddTransient<ShopWorker>()
             .AddSingleton<IClassService, Classes>()
             .AddSingleton<IRaceService, Races>()
             .AddSingleton<INameGenerator, NameGenerator>()

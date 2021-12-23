@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Client.Commands.Base;
+using DiscordRPG.Client.Commands.Helpers;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Common.Extensions;
 using DiscordRPG.Core.Enums;
@@ -97,7 +98,7 @@ public class Equip : DialogCommandBase<EquipDialog>
     private async Task SelectEquip(SocketSlashCommand command, EquipDialog dialog, EquipmentPosition position)
     {
         var equipment = dialog.Character.Equipment.CurrentEquipment[position];
-        var embed = GetEquipAsEmbed(equipment);
+        var embed = EmbedHelper.GetEquipAsEmbed(equipment);
 
         var messageComponent = GetEquipmentSelectionMenu(dialog, equipment, position);
 
@@ -107,7 +108,7 @@ public class Equip : DialogCommandBase<EquipDialog>
     private async Task SelectWeapon(SocketSlashCommand command, EquipDialog dialog)
     {
         var weapon = dialog.Character.Equipment.Weapon;
-        var embed = GetWeaponAsEmbed(weapon);
+        var embed = EmbedHelper.GetEquipAsEmbed(weapon);
 
         var messageComponent = GetWeaponSelectionMenu(dialog, weapon);
 
@@ -131,7 +132,7 @@ public class Equip : DialogCommandBase<EquipDialog>
 
         await component.UpdateAsync(properties =>
         {
-            properties.Embed = GetWeaponAsEmbed(item);
+            properties.Embed = EmbedHelper.GetEquipAsEmbed(item);
             properties.Components = GetWeaponSelectionMenu(dialog, item);
         });
     }
@@ -164,7 +165,7 @@ public class Equip : DialogCommandBase<EquipDialog>
 
         await component.UpdateAsync(properties =>
         {
-            properties.Embed = GetEquipAsEmbed(item);
+            properties.Embed = EmbedHelper.GetEquipAsEmbed(item);
             properties.Components = GetEquipmentSelectionMenu(dialog, item);
         });
     }
@@ -292,45 +293,6 @@ public class Equip : DialogCommandBase<EquipDialog>
         return messageComponentBuilder
             .WithButton("Equip", CommandName + ".equip-weapon", disabled: dialog.CurrentItem == null)
             .WithButton("Close", CommandName + ".close", ButtonStyle.Secondary)
-            .Build();
-    }
-
-    private static Embed GetEquipAsEmbed(Equipment? equipment)
-    {
-        if (equipment is null)
-            return new EmbedBuilder().WithColor(Color.DarkGrey).WithDescription("Nothing equipped").Build();
-
-        return new EmbedBuilder()
-            .WithColor(Color.DarkBlue)
-            .WithTitle(equipment.Name + $" (Lvl {equipment.Level})")
-            .WithDescription(equipment.Description)
-            .AddField("Armor", equipment.Armor, true)
-            .AddField("Magic Armor", equipment.MagicArmor, true)
-            .AddField("Worth", equipment.Worth + "$")
-            .AddField("STR", equipment.Strength, true)
-            .AddField("VIT", equipment.Vitality, true)
-            .AddField("\u200B", "\u200B", true)
-            .AddField("AGI", equipment.Agility, true)
-            .AddField("INT", equipment.Intelligence, true)
-            .AddField("\u200B", "\u200B", true)
-            .Build();
-    }
-
-    private static Embed GetWeaponAsEmbed(Weapon weapon)
-    {
-        return new EmbedBuilder()
-            .WithColor(Color.DarkBlue)
-            .WithTitle(weapon.Name + $" (Lvl {weapon.Level})")
-            .WithDescription(weapon.Description)
-            .AddField("Damage", $"{weapon.DamageValue} {weapon.DamageType}")
-            .AddField("Attribute", weapon.DamageAttribute.ToString())
-            .AddField("Worth", weapon.Worth + "$")
-            .AddField("STR", weapon.Strength, true)
-            .AddField("VIT", weapon.Vitality, true)
-            .AddField("\u200B", "\u200B", true)
-            .AddField("AGI", weapon.Agility, true)
-            .AddField("INT", weapon.Intelligence, true)
-            .AddField("\u200B", "\u200B", true)
             .Build();
     }
 }
