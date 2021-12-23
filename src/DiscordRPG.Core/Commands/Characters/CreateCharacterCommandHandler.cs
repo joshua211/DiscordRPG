@@ -27,11 +27,6 @@ public class CreateCharacterCommandHandler : CommandHandler<CreateCharacterComma
             logger.Here().Debug("Handling {Name}", command.GetType().Name);
 
             await characterRepository.SaveAsync(command.Character, cancellationToken);
-//TODO do this in an event
-            var guild = await guildRepository.GetAsync(command.Character.GuildId, cancellationToken);
-            guild.Characters.Add(command.Character.ID);
-            await guildRepository.UpdateAsync(guild, cancellationToken);
-
             await PublishAsync(new CharacterCreated(command.Character), cancellationToken);
 
             return ExecutionResult.Success();

@@ -3,7 +3,6 @@ using DiscordRPG.Application.Queries;
 using DiscordRPG.Common;
 using DiscordRPG.Core.Commands.Guilds;
 using MediatR;
-using Serilog;
 
 namespace DiscordRPG.Application.Services;
 
@@ -69,7 +68,7 @@ public class GuildService : ApplicationService, IGuildService
         using var ctx = TransactionBegin(parentContext);
         try
         {
-            var guild = new Guild(serverId, guildName, guildHallId, dungeonHallId, new List<Identity>());
+            var guild = new Guild(serverId, guildName, guildHallId, dungeonHallId);
             var cmd = new CreateGuildCommand(guild);
 
             var result = await PublishAsync(ctx, cmd, token);
@@ -110,5 +109,11 @@ public class GuildService : ApplicationService, IGuildService
             TransactionError(ctx, e);
             return Result.Failure(e.Message);
         }
+    }
+
+    public Task<Result<IEnumerable<Guild>>> GetAllGuildsAsync(TransactionContext parentContext = null,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 }

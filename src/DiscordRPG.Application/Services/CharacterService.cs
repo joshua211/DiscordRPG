@@ -157,6 +157,25 @@ public class CharacterService : ApplicationService, ICharacterService
         }
     }
 
+    public async Task<Result<IEnumerable<Character>>> GetAllCharactersInGuild(Identity guildId,
+        TransactionContext parentContext = null,
+        CancellationToken cancellationToken = default)
+    {
+        using var ctx = TransactionBegin(parentContext);
+        try
+        {
+            var query = new GetAllCharactersInGuildQuery(guildId);
+            var result = await ProcessAsync(ctx, query, cancellationToken);
+
+            return Result<IEnumerable<Character>>.Success(result);
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result<IEnumerable<Character>>.Failure(e.Message);
+        }
+    }
+
     private float GetRecoveryAmountFromRest(ActivityDuration duration) => duration switch
     {
         ActivityDuration.Quick => 0.05f,

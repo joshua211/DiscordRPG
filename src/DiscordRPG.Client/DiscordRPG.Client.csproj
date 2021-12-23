@@ -9,7 +9,7 @@
 
     <PropertyGroup>
         <VersionSuffix>$([System.DateTime]::UtcNow.ToString(ddMM)).$([System.DateTime]::UtcNow.ToString(HHmm))</VersionSuffix>
-        <Version>0.1.$(VersionSuffix)</Version>
+        <Version>0.2.$(VersionSuffix)</Version>
     </PropertyGroup>
 
     <ItemGroup>
