@@ -1,4 +1,5 @@
-﻿using DiscordRPG.Core.DomainServices;
+﻿using System.Text.Json.Serialization;
+using DiscordRPG.Core.DomainServices;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace DiscordRPG.Core.Entities;
@@ -41,7 +42,7 @@ public class Character : Entity
 
     [BsonIgnore] public Race CharacterRace { get; set; }
 
-    [BsonIgnore] public IClassService ClassService
+    [BsonIgnore] [JsonIgnore] public IClassService ClassService
     {
         get => classService;
         set
@@ -51,7 +52,7 @@ public class Character : Entity
         }
     }
 
-    [BsonIgnore] public IRaceService RaceService
+    [BsonIgnore] [JsonIgnore] public IRaceService RaceService
     {
         get => raceService;
         set
@@ -67,6 +68,26 @@ public class Character : Entity
             throw new ArgumentException(nameof(equipmentInfo));
 
         this.Equipment = equipmentInfo;
+    }
+
+    public void BuyItem(Item item)
+    {
+        Money -= item.Worth;
+        Inventory.Add(item);
+    }
+
+    public void SellItem(Item item)
+    {
+        if (item is Equipment equipment)
+        {
+            Inventory.Remove(equipment);
+            Money += (int) (item.Worth * 0.7);
+        }
+        else
+        {
+            Inventory.Remove(item);
+            Money += (int) (item.Worth * item.Amount * 0.7);
+        }
     }
 
     #region Attributes

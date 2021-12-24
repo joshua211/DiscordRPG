@@ -3,4 +3,5 @@
 public interface IRarityGenerator
 {
     Rarity GenerateRarityFromActivityDuration(ActivityDuration duration);
+    Rarity GenerateShopRarity();
 }

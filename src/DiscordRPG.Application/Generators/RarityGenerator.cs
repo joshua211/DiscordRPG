@@ -61,4 +61,15 @@ public class RarityGenerator : GeneratorBase, IRarityGenerator
 
         return selector.SelectRandomItem();
     }
+
+    public Rarity GenerateShopRarity()
+    {
+        var selector = new DynamicRandomSelector<Rarity>();
+        selector.Add(Rarity.Common, 10);
+        selector.Add(Rarity.Uncommon, 7);
+        selector.Add(Rarity.Rare, 3);
+        selector.Add(Rarity.Unique, 1);
+
+        return selector.Build().SelectRandomItem();
+    }
 }

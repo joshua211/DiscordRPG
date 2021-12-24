@@ -29,11 +29,6 @@ public class DeleteGuildCommandHandler : CommandHandler<DeleteGuildCommand>
             if (guild is null)
                 return ExecutionResult.Success();
 
-            foreach (var charId in guild.Characters)
-            {
-                await characterRepository.DeleteAsync(charId, cancellationToken);
-            }
-
             await guildRepository.DeleteAsync(guild.ID, cancellationToken);
             await PublishAsync(new GuildDeleted(guild), cancellationToken: cancellationToken);
 

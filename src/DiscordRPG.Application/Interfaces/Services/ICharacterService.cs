@@ -23,4 +23,8 @@ public interface ICharacterService
     Task<Result> UpdateEquipmentAsync(Identity identity, EquipmentInfo equipmentInfo,
         TransactionContext parentContext = null,
         CancellationToken token = default);
+
+    Task<Result<IEnumerable<Character>>> GetAllCharactersInGuild(Identity guildId,
+        TransactionContext parentContext = null,
+        CancellationToken cancellationToken = default);
 }

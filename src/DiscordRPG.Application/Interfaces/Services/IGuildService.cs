@@ -18,4 +18,7 @@ public interface IGuildService
 
     Task<Result> DeleteGuildAsync(DiscordId serverId, TransactionContext parentContext = null,
         CancellationToken cancellationToken = default);
+
+    Task<Result<IEnumerable<Guild>>> GetAllGuildsAsync(TransactionContext parentContext = null,
+        CancellationToken cancellationToken = default);
 }

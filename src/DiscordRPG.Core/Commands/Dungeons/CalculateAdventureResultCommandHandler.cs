@@ -32,6 +32,7 @@ public class CalculateAdventureResultCommandHandler : CommandHandler<CalculateAd
             var result =
                 adventureService.CalculateAdventureResult(request.Character, request.Dungeon, request.Duration);
 
+            var charBefore = request.Character.DeepCopy<Character>();
             var character = request.Character;
             var woundsBefore = request.Character.Wounds.DeepCopy<List<Wound>>();
 
@@ -43,7 +44,7 @@ public class CalculateAdventureResultCommandHandler : CommandHandler<CalculateAd
             {
                 logger.Here().Debug("Character {ID} has died from {Wound}", character.ID, woundResult.FinalWound);
                 await characterRepository.DeleteAsync(character.ID, cancellationToken);
-                await PublishAsync(new CharacterDied(character, woundResult.FinalWound!), cancellationToken);
+                await PublishAsync(new CharacterDied(charBefore, woundResult.FinalWound!), cancellationToken);
             }
             else
             {
