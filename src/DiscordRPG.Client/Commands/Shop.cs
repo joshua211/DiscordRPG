@@ -6,6 +6,7 @@ using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Commands.Helpers;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Common.Extensions;
+using DiscordRPG.Core.ValueObjects;
 using Serilog;
 
 namespace DiscordRPG.Client.Commands;
@@ -64,12 +65,14 @@ public class Shop : DialogCommandBase<ShopDialog>
                 await HandleBuy(command, dialog);
                 break;
             case "sell":
+                await HandleSell(command, dialog);
                 break;
         }
     }
 
     private async Task HandleBuy(SocketSlashCommand command, ShopDialog dialog)
     {
+        dialog.IsBuying = true;
         var shopResult = await shopService.GetGuildShopAsync(dialog.GuildId);
         if (!shopResult.WasSuccessful)
         {
@@ -97,6 +100,11 @@ public class Shop : DialogCommandBase<ShopDialog>
 
     private async Task HandleSell(SocketSlashCommand command, ShopDialog dialog)
     {
+        dialog.IsBuying = false;
+        var menu = GetMenu(dialog);
+        var embeds = GetDisplayEmbeds(dialog);
+
+        await command.RespondAsync(ephemeral: true, component: menu, embeds: embeds.ToArray());
     }
 
     protected override Task HandleSelection(SocketMessageComponent component, string id, ShopDialog dialog) => id switch
@@ -107,8 +115,16 @@ public class Shop : DialogCommandBase<ShopDialog>
     private async Task HandleInspectItem(SocketMessageComponent component, ShopDialog dialog)
     {
         var id = component.Data.Values.FirstOrDefault();
-        var equip = dialog.PlayerShop.FirstOrDefault(e => e.GetItemCode() == id);
-        dialog.SelectedEquip = equip;
+        if (dialog.IsBuying)
+        {
+            var equip = dialog.PlayerShop.FirstOrDefault(e => e.GetItemCode() == id);
+            dialog.SelectedItem = equip;
+        }
+        else
+        {
+            var item = dialog.Character.Inventory.FirstOrDefault(i => i.GetItemCode() == id);
+            dialog.SelectedItem = item;
+        }
 
         var menu = GetMenu(dialog);
 
@@ -123,8 +139,35 @@ public class Shop : DialogCommandBase<ShopDialog>
     protected override Task HandleButton(SocketMessageComponent component, string id, ShopDialog dialog) => id switch
     {
         "buy" => HandleBuyEquip(component, dialog),
+        "sell" => HandleSellItem(component, dialog),
         "cancel" => HandleCancel(component, dialog)
     };
+
+    private async Task HandleSellItem(SocketMessageComponent component, ShopDialog dialog)
+    {
+        var result = await shopService.SellItemAsync(dialog.Character, dialog.SelectedItem);
+        if (!result.WasSuccessful)
+        {
+            await component.UpdateAsync(properties =>
+            {
+                properties.Components = null;
+                properties.Embeds = null;
+                properties.Content = result.ErrorMessage;
+            });
+            EndDialog(dialog.UserId);
+
+            return;
+        }
+
+        dialog.Character = result.Value;
+        dialog.SelectedItem = null;
+
+        await component.UpdateAsync(properties =>
+        {
+            properties.Embeds = GetDisplayEmbeds(dialog).ToArray();
+            properties.Components = GetMenu(dialog);
+        });
+    }
 
     private async Task HandleCancel(SocketMessageComponent component, ShopDialog dialog)
     {
@@ -139,7 +182,8 @@ public class Shop : DialogCommandBase<ShopDialog>
 
     private async Task HandleBuyEquip(SocketMessageComponent component, ShopDialog dialog)
     {
-        var result = await shopService.BuyEquipAsync(dialog.GuildShop, dialog.Character, dialog.SelectedEquip);
+        var result =
+            await shopService.BuyEquipAsync(dialog.GuildShop, dialog.Character, (Equipment) dialog.SelectedItem);
         if (!result.WasSuccessful)
         {
             await component.UpdateAsync(properties =>
@@ -156,7 +200,7 @@ public class Shop : DialogCommandBase<ShopDialog>
         var newPlayerShop = result.Value.Item1[dialog.Character.ID];
         dialog.PlayerShop = newPlayerShop;
         dialog.Character = result.Value.Item2;
-        dialog.SelectedEquip = null;
+        dialog.SelectedItem = null;
 
         await component.UpdateAsync(properties =>
         {
@@ -169,17 +213,34 @@ public class Shop : DialogCommandBase<ShopDialog>
     {
         var selectionBuilder = new SelectMenuBuilder();
         selectionBuilder.WithCustomId(CommandName + ".inspect");
-        foreach (var equipment in dialog.PlayerShop)
+        List<Item> tradeableItems;
+        if (dialog.IsBuying)
         {
-            selectionBuilder.AddOption(equipment.ToString(), equipment.GetItemCode());
+            tradeableItems = dialog.PlayerShop.Select(e => e as Item).ToList();
+            foreach (var equipment in tradeableItems)
+            {
+                selectionBuilder.AddOption(equipment.ToString(), equipment.GetItemCode());
+            }
+        }
+        else
+        {
+            tradeableItems = dialog.Character.Inventory
+                .Where(i => !dialog.Character.Equipment.CurrentEquipment.Values.Contains(i)).ToList();
+            foreach (var item in dialog.Character.Inventory)
+            {
+                selectionBuilder.AddOption(item.ToString(), item.GetItemCode());
+            }
         }
 
         var componentBuilder = new ComponentBuilder();
-        if (dialog.PlayerShop.Any())
+        if (tradeableItems.Any())
             componentBuilder.WithSelectMenu(selectionBuilder);
 
+        var label = dialog.IsBuying ? "Buy" : "Sell";
+        var id = dialog.IsBuying ? ".buy" : ".sell";
+
         componentBuilder
-            .WithButton("Buy", CommandName + ".buy", disabled: dialog.SelectedEquip is null)
+            .WithButton(label, CommandName + id, disabled: dialog.SelectedItem is null)
             .WithButton("Cancel", CommandName + ".cancel", ButtonStyle.Secondary);
 
         return componentBuilder.Build();
@@ -189,7 +250,9 @@ public class Shop : DialogCommandBase<ShopDialog>
     {
         yield return EmbedHelper.GetMoneyAsEmbed(dialog.Character.Money);
 
-        if (dialog.SelectedEquip is not null)
-            yield return EmbedHelper.GetEquipAsEmbed(dialog.SelectedEquip);
+        if (dialog.SelectedItem is null)
+            yield break;
+
+        yield return EmbedHelper.GetItemAsEmbed(dialog.SelectedItem, dialog.IsBuying ? 1 : 0.7f);
     }
 }

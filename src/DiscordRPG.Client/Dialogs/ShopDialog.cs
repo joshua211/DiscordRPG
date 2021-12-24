@@ -14,10 +14,10 @@ public class ShopDialog : Dialog
     {
     }
 
+    public bool IsBuying { get; set; }
     public Identity GuildId { get; set; }
     public Character Character { get; set; }
     public List<Equipment> PlayerShop { get; set; }
-    public Equipment SelectedEquip { get; set; }
-    public Identity ShopId { get; set; }
+    public Item SelectedItem { get; set; }
     public Shop GuildShop { get; set; }
 }

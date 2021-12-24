@@ -98,7 +98,7 @@ public class Equip : DialogCommandBase<EquipDialog>
     private async Task SelectEquip(SocketSlashCommand command, EquipDialog dialog, EquipmentPosition position)
     {
         var equipment = dialog.Character.Equipment.CurrentEquipment[position];
-        var embed = EmbedHelper.GetEquipAsEmbed(equipment);
+        var embed = EmbedHelper.GetItemAsEmbed(equipment);
 
         var messageComponent = GetEquipmentSelectionMenu(dialog, equipment, position);
 
@@ -108,7 +108,7 @@ public class Equip : DialogCommandBase<EquipDialog>
     private async Task SelectWeapon(SocketSlashCommand command, EquipDialog dialog)
     {
         var weapon = dialog.Character.Equipment.Weapon;
-        var embed = EmbedHelper.GetEquipAsEmbed(weapon);
+        var embed = EmbedHelper.GetItemAsEmbed(weapon);
 
         var messageComponent = GetWeaponSelectionMenu(dialog, weapon);
 
@@ -132,7 +132,7 @@ public class Equip : DialogCommandBase<EquipDialog>
 
         await component.UpdateAsync(properties =>
         {
-            properties.Embed = EmbedHelper.GetEquipAsEmbed(item);
+            properties.Embed = EmbedHelper.GetItemAsEmbed(item);
             properties.Components = GetWeaponSelectionMenu(dialog, item);
         });
     }
@@ -165,7 +165,7 @@ public class Equip : DialogCommandBase<EquipDialog>
 
         await component.UpdateAsync(properties =>
         {
-            properties.Embed = EmbedHelper.GetEquipAsEmbed(item);
+            properties.Embed = EmbedHelper.GetItemAsEmbed(item);
             properties.Components = GetEquipmentSelectionMenu(dialog, item);
         });
     }

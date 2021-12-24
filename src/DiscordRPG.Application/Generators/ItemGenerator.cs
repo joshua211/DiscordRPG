@@ -15,6 +15,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
 
     public IEnumerable<Item> GenerateItems(Dungeon dungeon)
     {
+        var items = new List<Item>();
         var totalNum = GetNumOfItems();
         var level = dungeon.DungeonLevel;
 
@@ -27,26 +28,29 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         for (int i = 0; i < totalNum; i++)
         {
             var rarity = GetItemRarityFromDungeonRarity(dungeon.Rarity);
-            var equipType = selector.SelectRandomItem();
-            switch (equipType)
+            var itemType = selector.SelectRandomItem();
+            switch (itemType)
             {
                 case 0:
 
                     var num = GetNumOfItems(true);
-                    yield return GenerateRandomItem(rarity, level, num);
-
+                    var genItem = GenerateRandomItem(rarity, level, num);
+                    var existing = items.FirstOrDefault(i => i.GetItemCode() == genItem.GetItemCode());
+                    if (existing is null)
+                        items.Add(genItem);
+                    else
+                        existing.Amount += genItem.Amount;
                     break;
-
                 case 1:
-                    yield return GenerateRandomEquipment(rarity, level, dungeon.DungeonAspect);
-
+                    items.Add(GenerateRandomEquipment(rarity, level, dungeon.DungeonAspect));
                     break;
                 case 2:
-                    yield return GenerateRandomWeapon(rarity, level, dungeon.DungeonAspect);
-
+                    items.Add(GenerateRandomWeapon(rarity, level, dungeon.DungeonAspect));
                     break;
             }
         }
+
+        return items;
     }
 
     public Weapon GenerateRandomWeapon(Rarity rarity, uint level, Aspect aspect)
