@@ -18,8 +18,8 @@ public class EventCommand : ICommand
                 .AddChoices(new[]
                 {
                     GetDungeonsFromEventsCommand.Command,
-                    "ev characters",
-                    "ev adventure results",
+                    GetCharacterFromEventsCommand.Command,
+                    GetActivitiesFromEventsCommand.Command,
                     "back"
                 }));
             if (choice == "back")
