@@ -17,14 +17,36 @@ public class DebugModule
         private readonly IGuildService guildService;
         private readonly ILogger logger;
         private readonly IRarityGenerator rarityGenerator;
+        private readonly IShopService shopService;
         private readonly ShopWorker shopWorker;
 
-        public Test(IRarityGenerator rarityGenerator, ILogger logger, ShopWorker shopWorker, IGuildService guildService)
+        public Test(IRarityGenerator rarityGenerator, ILogger logger, ShopWorker shopWorker, IGuildService guildService,
+            IShopService shopService)
         {
             this.rarityGenerator = rarityGenerator;
             this.shopWorker = shopWorker;
             this.guildService = guildService;
+            this.shopService = shopService;
             this.logger = logger.WithContext<DebugModule>();
+        }
+
+        [Command("force-shopCreation")]
+        public async Task ForceShopCreation()
+        {
+            var guild = await guildService.GetGuildWithDiscordIdAsync(Context.Guild.Id.ToString());
+            if (!guild.WasSuccessful)
+                logger.Here().Warning("No guild found");
+
+            var createShopResult =
+                await shopService.CreateGuildShopAsync(guild.Value.ID);
+            if (!createShopResult.WasSuccessful)
+            {
+                logger.Here().Error(createShopResult.ErrorMessage);
+                await ReplyAsync("Something went wrong: " + createShopResult.ErrorMessage);
+                return;
+            }
+
+            await ReplyAsync("Created shop");
         }
 
         [Command("force-shopUpdate")]

@@ -51,6 +51,7 @@ namespace DiscordRPG.DiagnosticConsole
                     .AddSingleton<ILiveLogImporter, LiveLogImporter>()
                     .AddTransient<IHistoryLogImporter, HistoryLogImporter>()
                     .AddTransient<IEventImporter, EventImporter>()
+                    .AddTransient<ICharacterImporter, CharacterImporter>()
                     .AddTransient<IItemGenerator, ItemGenerator>()
                     .AddTransient<IDungeonGenerator, DungeonGenerator>()
                     .AddTransient<INameGenerator, NameGenerator>()

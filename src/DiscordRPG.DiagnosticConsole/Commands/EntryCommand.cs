@@ -1,4 +1,7 @@
-﻿using Spectre.Console;
+﻿using DiscordRPG.DiagnosticConsole.Commands.Logging;
+using DiscordRPG.DiagnosticConsole.Commands.Simulation;
+using DiscordRPG.DiagnosticConsole.Commands.Tools;
+using Spectre.Console;
 
 namespace DiscordRPG.DiagnosticConsole.Commands;
 
@@ -17,8 +20,9 @@ public class EntryCommand : ICommand
                 .Title("Command")
                 .AddChoices(new[]
                 {
-                    "logs",
-                    "simulation",
+                    LogsCommand.Command,
+                    SimulationCommand.Command,
+                    FixInventoryCommand.Command,
                     "close"
                 }));
             if (choice == "close")
