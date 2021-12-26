@@ -72,7 +72,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         var name = nameGenerator.GenerateRandomItemName(rarity);
         var worth = GenerateItemWorth(rarity, roundedLevel);
 
-        return new Item(name.name, name.descr, rarity, worth, roundedLevel, amount);
+        return new Item(name.name, name.descr, rarity, worth, roundedLevel, amount, false);
     }
 
     public Equipment GenerateEquipment(Rarity rarity, uint level, Aspect aspect, EquipmentCategory category)
@@ -122,6 +122,14 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         return new Weapon(name, "", rarity, 0, 0, str, vit, agi, intel, lck, worth, charAttr, dmgType, dmgValue,
             category,
             level);
+    }
+
+    public Item GetHealthPotion(Rarity rarity, uint level)
+    {
+        var name = nameGenerator.GenerateHealthPotionName(rarity);
+        var worth = GenerateItemWorth(rarity, level);
+        return new Item(name, "A potion that can instantly restore some of your health", rarity, worth,
+            level, 1, true);
     }
 
     private int GenerateItemWorth(Rarity rarity, uint level)
