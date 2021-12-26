@@ -226,7 +226,7 @@ public class Shop : DialogCommandBase<ShopDialog>
         {
             tradeableItems = dialog.Character.Inventory
                 .Where(i => !dialog.Character.Equipment.CurrentEquipment.Values.Contains(i)).ToList();
-            foreach (var item in dialog.Character.Inventory)
+            foreach (var item in tradeableItems)
             {
                 selectionBuilder.AddOption(item.ToString(), item.GetItemCode());
             }
