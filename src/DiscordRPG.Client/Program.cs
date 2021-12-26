@@ -125,6 +125,7 @@ public class Program
         services.AddSingleton<ServerHandler>();
         services.AddSingleton<IHandler>(x => x.GetRequiredService<ApplicationCommandHandler>());
         services.AddSingleton<IHandler>(x => x.GetRequiredService<ServerHandler>());
+        services.AddSingleton<IHandler, WorkerHandler>();
         services.AddSingleton<IHandler, MessageCommandHandler>();
         services.AddSingleton(new CommandService());
         services.AddCore();
