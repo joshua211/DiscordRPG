@@ -37,6 +37,22 @@ public class AdventureResultService : IAdventureResultService
             exp += experienceGenerator.GenerateExperienceFromEncounter(encounter);
         }
 
+        var itemsToRemove = new List<Item>();
+        var existing = new List<Item>();
+        foreach (var item in items)
+        {
+            if (existing.All(i => i.GetItemCode() != item.GetItemCode()))
+                existing.Add(item);
+            else
+            {
+                var existingItem = items.First(i => i.GetItemCode() == item.GetItemCode());
+                existingItem.Amount += item.Amount;
+                itemsToRemove.Add(item);
+            }
+        }
+
+        itemsToRemove.ForEach(i => items.Remove(i));
+
         return new AdventureResult(wounds, items, exp, encounters);
     }
 

@@ -116,7 +116,7 @@ public abstract class CommandBase : IGuildCommand
                                  TimeSpan.FromMinutes((int) currentActivityResult.Value.Duration)) -
                                 DateTime.UtcNow);
                 await command.RespondAsync(
-                    $"You're already on an adventure, try again in {timeLeft.TotalMinutes} minutes!",
+                    $"You're already on an adventure, try again in {(int) timeLeft.TotalMinutes} minutes!",
                     ephemeral: true);
                 return;
             }
