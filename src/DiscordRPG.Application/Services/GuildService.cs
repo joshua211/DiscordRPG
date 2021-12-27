@@ -111,9 +111,21 @@ public class GuildService : ApplicationService, IGuildService
         }
     }
 
-    public Task<Result<IEnumerable<Guild>>> GetAllGuildsAsync(TransactionContext parentContext = null,
+    public async Task<Result<IEnumerable<Guild>>> GetAllGuildsAsync(TransactionContext parentContext = null,
         CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        using var ctx = TransactionBegin(parentContext);
+        try
+        {
+            var query = new GetAllGuildsQuery();
+            var result = await ProcessAsync(ctx, query, cancellationToken);
+
+            return Result<IEnumerable<Guild>>.Success(result);
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result<IEnumerable<Guild>>.Failure(e.Message);
+        }
     }
 }
