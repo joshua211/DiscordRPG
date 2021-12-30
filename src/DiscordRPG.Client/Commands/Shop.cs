@@ -57,6 +57,7 @@ public class Shop : DialogCommandBase<ShopDialog>
     {
         dialog.Character = context.Character;
         dialog.GuildId = context.Guild.ID;
+        dialog.CurrentPage = 1;
 
         var data = command.Data.Options.FirstOrDefault().Value as string;
         switch (data)
@@ -140,8 +141,23 @@ public class Shop : DialogCommandBase<ShopDialog>
     {
         "buy" => HandleBuyEquip(component, dialog),
         "sell" => HandleSellItem(component, dialog),
-        "cancel" => HandleCancel(component, dialog)
+        "cancel" => HandleCancel(component, dialog),
+        "prev-page" => HandleChangePage(component, dialog, dialog.CurrentPage - 1),
+        "next-page" => HandleChangePage(component, dialog, dialog.CurrentPage + 1)
     };
+
+    private async Task HandleChangePage(SocketMessageComponent component, ShopDialog dialog, int newPage)
+    {
+        dialog.CurrentPage = newPage;
+        var menu = GetMenu(dialog);
+        var embeds = GetDisplayEmbeds(dialog);
+
+        await component.UpdateAsync(properties =>
+        {
+            properties.Components = menu;
+            properties.Embeds = embeds.ToArray();
+        });
+    }
 
     private async Task HandleSellItem(SocketMessageComponent component, ShopDialog dialog)
     {
@@ -213,35 +229,44 @@ public class Shop : DialogCommandBase<ShopDialog>
     {
         var selectionBuilder = new SelectMenuBuilder();
         selectionBuilder.WithCustomId(CommandName + ".inspect");
-        List<Item> tradeableItems;
+
+        List<Item> tradableItems;
         if (dialog.IsBuying)
         {
-            tradeableItems = dialog.PlayerShop.Select(e => e as Item).ToList();
-            foreach (var equipment in tradeableItems)
+            tradableItems = dialog.PlayerShop.Select(e => e as Item).ToList();
+            foreach (var equipment in tradableItems)
             {
                 selectionBuilder.AddOption(equipment.ToString(), equipment.GetItemCode());
             }
         }
         else
         {
-            tradeableItems = dialog.Character.Inventory
-                .Where(i => !dialog.Character.Equipment.CurrentEquipment.Values.Contains(i)).ToList();
-            foreach (var item in tradeableItems)
+            tradableItems = dialog.Character.Inventory
+                .Where(i => !dialog.Character.Equipment.CurrentEquipment.Values.Contains(i))
+                .Skip((dialog.CurrentPage - 1) * 10)
+                .Take(10)
+                .ToList();
+            foreach (var item in tradableItems)
             {
                 selectionBuilder.AddOption(item.ToString(), item.GetItemCode());
             }
         }
 
         var componentBuilder = new ComponentBuilder();
-        if (tradeableItems.Any())
-            componentBuilder.WithSelectMenu(selectionBuilder);
+        if (tradableItems.Any())
+            componentBuilder.WithSelectMenu(selectionBuilder, row: 0);
 
         var label = dialog.IsBuying ? "Buy" : "Sell";
         var id = dialog.IsBuying ? ".buy" : ".sell";
 
+        if (!dialog.IsBuying)
+            componentBuilder
+                .WithButton("<", CommandName + ".prev-page", ButtonStyle.Secondary, disabled: dialog.CurrentPage <= 1)
+                .WithButton(">", CommandName + ".next-page", ButtonStyle.Secondary);
+
         componentBuilder
-            .WithButton(label, CommandName + id, disabled: dialog.SelectedItem is null)
-            .WithButton("Cancel", CommandName + ".cancel", ButtonStyle.Secondary);
+            .WithButton(label, CommandName + id, disabled: dialog.SelectedItem is null, row: 2)
+            .WithButton("Cancel", CommandName + ".cancel", ButtonStyle.Secondary, row: 2);
 
         return componentBuilder.Build();
     }

@@ -20,4 +20,5 @@ public class ShopDialog : Dialog
     public List<Equipment> PlayerShop { get; set; }
     public Item SelectedItem { get; set; }
     public Shop GuildShop { get; set; }
+    public int CurrentPage { get; set; }
 }

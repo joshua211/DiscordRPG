@@ -48,9 +48,9 @@ public class ProgressService : IProgressService
         {
             var existing = character.Inventory.FirstOrDefault(i => i.GetItemCode() == item.GetItemCode());
             if (existing is not null)
-                existing.Amount++;
-
-            character.Inventory.Add(item);
+                existing.Amount += item.Amount;
+            else
+                character.Inventory.Add(item);
         }
 
         return new ApplyItemsResult(items);
