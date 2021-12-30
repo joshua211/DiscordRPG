@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <VersionSuffix>$([System.DateTime]::UtcNow.ToString(ddMM)).$([System.DateTime]::UtcNow.ToString(HHmm))</VersionSuffix>
+        <VersionSuffix>$([System.DateTime]::UtcNow.ToString(MMdd)).$([System.DateTime]::UtcNow.ToString(HHmm))</VersionSuffix>
         <Version>0.2.$(VersionSuffix)</Version>
     </PropertyGroup>
 
