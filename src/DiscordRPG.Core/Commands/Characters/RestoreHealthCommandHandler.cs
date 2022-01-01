@@ -21,8 +21,7 @@ public class RestoreHealthCommandHandler : CommandHandler<RestoreHealthCommand>
         logger.Here().Debug("Handling {Name}", request.GetType().Name);
         try
         {
-            var maxHealth = request.Character.MaxHealth;
-            var amountToHeal = (int) (maxHealth * request.AmountInPercent);
+            var amountToHeal = request.Amount;
             logger.Here().Verbose("Healing {Amount} damage to character {@Character}", amountToHeal, request.Character);
 
             while (amountToHeal > 0)

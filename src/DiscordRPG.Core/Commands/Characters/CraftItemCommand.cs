@@ -2,14 +2,14 @@
 
 namespace DiscordRPG.Core.Commands.Characters;
 
-public class RestoreHealthCommand : Command
+public class CraftItemCommand : Command
 {
-    public RestoreHealthCommand(Character character, int amount)
+    public CraftItemCommand(Character character, Recipe recipe)
     {
         Character = character;
-        Amount = amount;
+        Recipe = recipe;
     }
 
     public Character Character { get; private set; }
-    public int Amount { get; private set; }
+    public Recipe Recipe { get; private set; }
 }
