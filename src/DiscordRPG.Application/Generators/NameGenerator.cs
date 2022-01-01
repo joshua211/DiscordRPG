@@ -111,7 +111,7 @@ public class NameGenerator : GeneratorBase, INameGenerator
         return $"{prefix} {noun}";
     }
 
-    public string GenerateHealthPotionName(Rarity rarity)
+    public string GenerateHealthPotionName(Rarity rarity, uint level)
     {
         var roman = rarity switch
         {
@@ -123,6 +123,6 @@ public class NameGenerator : GeneratorBase, INameGenerator
             Rarity.Mythic => "VI",
             Rarity.Divine => "VII",
         };
-        return $"Health Potion {roman}";
+        return $"Health Potion {roman} (Lvl. {level})";
     }
 }

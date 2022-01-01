@@ -4,6 +4,7 @@ using DiscordRPG.Application.Queries;
 using DiscordRPG.Common;
 using DiscordRPG.Core.Commands.Characters;
 using DiscordRPG.Core.DomainServices;
+using DiscordRPG.Core.DomainServices.Generators;
 using DiscordRPG.Core.DomainServices.Progress;
 using MediatR;
 
@@ -14,15 +15,18 @@ public class CharacterService : ApplicationService, ICharacterService
     private readonly IClassService classService;
     private readonly IExperienceCurve experienceCurve;
     private readonly IGuildService guildService;
+    private readonly IItemGenerator itemGenerator;
     private readonly IRaceService raceService;
 
     public CharacterService(ILogger logger, IMediator mediator, IGuildService guildService, IRaceService raceService,
-        IClassService classService, IExperienceCurve experienceCurve) : base(mediator, logger)
+        IClassService classService, IExperienceCurve experienceCurve, IItemGenerator itemGenerator) : base(mediator,
+        logger)
     {
         this.guildService = guildService;
         this.raceService = raceService;
         this.classService = classService;
         this.experienceCurve = experienceCurve;
+        this.itemGenerator = itemGenerator;
     }
 
     public async Task<Result<Character>> CreateCharacterAsync(DiscordId userId, Identity guildId, string name,
@@ -173,6 +177,34 @@ public class CharacterService : ApplicationService, ICharacterService
         {
             TransactionError(ctx, e);
             return Result<IEnumerable<Character>>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Result> CraftItemAsync(Character character, Recipe recipe,
+        TransactionContext parentContext = null,
+        CancellationToken cancellationToken = default)
+    {
+        using var ctx = TransactionBegin(parentContext);
+        try
+        {
+            recipe.Item ??= itemGenerator.GenerateFromRecipe(recipe);
+
+            var cmd = new CraftItemCommand(character, recipe);
+            var result = await PublishAsync(ctx, cmd, cancellationToken);
+
+            if (!result.WasSuccessful)
+            {
+                TransactionError(ctx, result.ErrorMessage);
+
+                return Result.Failure(result.ErrorMessage);
+            }
+
+            return Result.Success();
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result.Failure(e.Message);
         }
     }
 

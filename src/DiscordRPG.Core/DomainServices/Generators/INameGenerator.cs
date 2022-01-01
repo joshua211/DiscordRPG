@@ -6,5 +6,5 @@ public interface INameGenerator
     string GenerateWoundName();
     (string name, string descr) GenerateRandomItemName(Rarity rarity);
     string GenerateRandomEquipmentName(Rarity rarity, EquipmentCategory category, Aspect aspect);
-    string GenerateHealthPotionName(Rarity rarity);
+    string GenerateHealthPotionName(Rarity rarity, uint level);
 }

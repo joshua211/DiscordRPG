@@ -126,10 +126,18 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
 
     public Item GetHealthPotion(Rarity rarity, uint level)
     {
-        var name = nameGenerator.GenerateHealthPotionName(rarity);
+        var name = nameGenerator.GenerateHealthPotionName(rarity, level);
         var worth = GenerateItemWorth(rarity, level);
         return new Item(name, "A potion that can instantly restore some of your health", rarity, worth,
             level, 1, true);
+    }
+
+    public Item GenerateFromRecipe(Recipe recipe)
+    {
+        var aspect = new Aspect("", new[] {"Crafted"});
+        return (int) recipe.EquipmentCategory.Value > 4
+            ? GenerateWeapon(recipe.Rarity, recipe.Level, aspect, recipe.EquipmentCategory.Value)
+            : GenerateEquipment(recipe.Rarity, recipe.Level, aspect, recipe.EquipmentCategory.Value);
     }
 
     private int GenerateItemWorth(Rarity rarity, uint level)
