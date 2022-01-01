@@ -110,4 +110,19 @@ public class NameGenerator : GeneratorBase, INameGenerator
 
         return $"{prefix} {noun}";
     }
+
+    public string GenerateHealthPotionName(Rarity rarity, uint level)
+    {
+        var roman = rarity switch
+        {
+            Rarity.Common => "I",
+            Rarity.Uncommon => "II",
+            Rarity.Rare => "III",
+            Rarity.Unique => "IV",
+            Rarity.Legendary => "V",
+            Rarity.Mythic => "VI",
+            Rarity.Divine => "VII",
+        };
+        return $"Health Potion {roman} (Lvl. {level})";
+    }
 }

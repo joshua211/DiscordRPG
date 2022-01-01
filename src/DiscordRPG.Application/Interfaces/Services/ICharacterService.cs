@@ -27,4 +27,11 @@ public interface ICharacterService
     Task<Result<IEnumerable<Character>>> GetAllCharactersInGuild(Identity guildId,
         TransactionContext parentContext = null,
         CancellationToken cancellationToken = default);
+
+    Task<Result> CraftItemAsync(Character character, Recipe recipe,
+        TransactionContext parentContext = null,
+        CancellationToken cancellationToken = default);
+
+    Task<Result> UseItemAsync(Character character, Item item, TransactionContext parentContext = null,
+        CancellationToken cancellationToken = default);
 }

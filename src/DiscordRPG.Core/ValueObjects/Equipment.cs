@@ -9,7 +9,7 @@ public class Equipment : Item
         int vitality, int agility, int intelligence, int luck, int worth, EquipmentCategory equipmentCategory,
         EquipmentPosition position,
         uint level) : base(
-        name, description, rarity, worth, level, 1)
+        name, description, rarity, worth, level, 1, false)
     {
         Armor = armor;
         MagicArmor = magicArmor;

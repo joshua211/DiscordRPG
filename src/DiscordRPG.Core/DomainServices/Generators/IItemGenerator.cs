@@ -10,4 +10,6 @@ public interface IItemGenerator
     public Item GenerateRandomItem(Rarity rarity, uint level, int amount);
     Equipment GenerateEquipment(Rarity rarity, uint level, Aspect aspect, EquipmentCategory category);
     Weapon GenerateWeapon(Rarity rarity, uint level, Aspect aspect, EquipmentCategory category);
+    Item GetHealthPotion(Rarity rarity, uint level);
+    Item GenerateFromRecipe(Recipe recipe);
 }

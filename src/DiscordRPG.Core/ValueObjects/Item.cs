@@ -8,7 +8,7 @@ public class Item
     private static readonly Regex WhitespaceRegex = new Regex(@"\s+");
 
     [BsonConstructor]
-    public Item(string name, string description, Rarity rarity, int worth, uint level, int amount)
+    public Item(string name, string description, Rarity rarity, int worth, uint level, int amount, bool isUsable)
     {
         Name = name;
         Description = description;
@@ -16,6 +16,7 @@ public class Item
         Worth = worth;
         Level = level;
         Amount = amount;
+        IsUsable = isUsable;
     }
 
     public string Name { get; init; }
@@ -24,6 +25,7 @@ public class Item
     public Rarity Rarity { get; init; }
     public int Worth { get; private set; }
     public uint Level { get; private set; }
+    public bool IsUsable { get; private set; }
 
     public override string ToString()
     {

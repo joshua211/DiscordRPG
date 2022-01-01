@@ -32,6 +32,7 @@ public static class Application
             .AddTransient<IDungeonGenerator, DungeonGenerator>()
             .AddTransient<INameGenerator, NameGenerator>()
             .AddTransient<IItemGenerator, ItemGenerator>()
+            .AddTransient<RecipeGenerator>()
             .AddTransient<IWoundGenerator, WoundGenerator>()
             .AddTransient<IAspectGenerator, AspectGenerator>()
             .AddTransient<IExperienceGenerator, ExperienceGenerator>()
