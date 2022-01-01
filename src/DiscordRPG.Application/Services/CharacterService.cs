@@ -121,7 +121,10 @@ public class CharacterService : ApplicationService, ICharacterService
             }
 
             var amount = GetRecoveryAmountFromRest(activityDuration);
-            var command = new RestoreHealthCommand(characterResult.Value, amount);
+            var maxHealth = characterResult.Value.MaxHealth;
+            var amountToHeal = (int) (maxHealth * amount);
+
+            var command = new RestoreHealthCommand(characterResult.Value, amountToHeal);
             var result = await PublishAsync(ctx, command, token);
             if (!result.WasSuccessful)
             {
@@ -196,6 +199,49 @@ public class CharacterService : ApplicationService, ICharacterService
             {
                 TransactionError(ctx, result.ErrorMessage);
 
+                return Result.Failure(result.ErrorMessage);
+            }
+
+            return Result.Success();
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result.Failure(e.Message);
+        }
+    }
+
+    public async Task<Result> UseItemAsync(Character character, Item item, TransactionContext parentContext = null,
+        CancellationToken cancellationToken = default)
+    {
+        using var ctx = TransactionBegin(parentContext);
+        try
+        {
+            Command command = null;
+            if (item.Name.Contains("Health Potion"))
+            {
+                var hpAmount = (int) Math.Round(item.Level * 10 * (1 + (int) item.Rarity * 0.2f));
+                command = new RestoreHealthCommand(character, hpAmount);
+            }
+
+            if (command is null)
+            {
+                TransactionError(ctx, "No Command found to handle the item {@Item}", item);
+                return Result.Failure("No usage found for this item");
+            }
+
+            var result = await PublishAsync(ctx, command, cancellationToken);
+            if (!result.WasSuccessful)
+            {
+                TransactionError(ctx, result.ErrorMessage);
+                return Result.Failure(result.ErrorMessage);
+            }
+
+            var removeItemCmd = new RemoveItemCommand(item.GetItemCode(), 1, character);
+            result = await PublishAsync(ctx, removeItemCmd, cancellationToken);
+            if (!result.WasSuccessful)
+            {
+                TransactionError(ctx, result.ErrorMessage);
                 return Result.Failure(result.ErrorMessage);
             }
 

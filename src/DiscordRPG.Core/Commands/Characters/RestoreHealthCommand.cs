@@ -4,12 +4,12 @@ namespace DiscordRPG.Core.Commands.Characters;
 
 public class RestoreHealthCommand : Command
 {
-    public RestoreHealthCommand(Character character, float amountInPercent)
+    public RestoreHealthCommand(Character character, int amount)
     {
         Character = character;
-        AmountInPercent = amountInPercent;
+        Amount = amount;
     }
 
     public Character Character { get; private set; }
-    public float AmountInPercent { get; private set; }
+    public int Amount { get; private set; }
 }

@@ -31,4 +31,7 @@ public interface ICharacterService
     Task<Result> CraftItemAsync(Character character, Recipe recipe,
         TransactionContext parentContext = null,
         CancellationToken cancellationToken = default);
+
+    Task<Result> UseItemAsync(Character character, Item item, TransactionContext parentContext = null,
+        CancellationToken cancellationToken = default);
 }

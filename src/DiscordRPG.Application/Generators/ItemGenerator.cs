@@ -128,7 +128,9 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
     {
         var name = nameGenerator.GenerateHealthPotionName(rarity, level);
         var worth = GenerateItemWorth(rarity, level);
-        return new Item(name, "A potion that can instantly restore some of your health", rarity, worth,
+        return new Item(name,
+            $"A potion that can restore  {Math.Round(level * 10 * (1 + (int) rarity * 0.2f))} health points", rarity,
+            worth,
             level, 1, true);
     }
 
