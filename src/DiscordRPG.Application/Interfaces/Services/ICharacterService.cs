@@ -34,4 +34,7 @@ public interface ICharacterService
 
     Task<Result> UseItemAsync(Character character, Item item, TransactionContext parentContext = null,
         CancellationToken cancellationToken = default);
+
+    Task<Result> DeleteAsync(Identity characterId, TransactionContext parentContext = null,
+        CancellationToken cancellationToken = default);
 }
