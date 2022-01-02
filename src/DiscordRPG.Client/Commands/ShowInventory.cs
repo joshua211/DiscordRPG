@@ -83,7 +83,7 @@ public class ShowInventory : DialogCommandBase<InventoryDialog>
     private async Task HandleCategory(SocketMessageComponent component, InventoryDialog dialog, string category)
     {
         dialog.CurrentCategory = category;
-//TODO multiple rings
+
         var task = category switch
         {
             "items" => ShowItems(component, dialog),
@@ -101,18 +101,17 @@ public class ShowInventory : DialogCommandBase<InventoryDialog>
 
     private async Task ShowItems(SocketMessageComponent component, InventoryDialog dialog)
     {
-        var items = dialog.Character.Inventory.Where(i => i is not Equipment).GroupBy(i => i.GetItemCode());
+        var items = dialog.Character.Inventory.Where(i => i is not Equipment);
 
         dialog.MaxPagesOfCurrentCategory = items.Count() / 10;
         if (items.Count() % 10 != 0)
             dialog.MaxPagesOfCurrentCategory++;
 
         var sb = new StringBuilder();
-        foreach (var group in items.Skip((dialog.CurrentPage - 1) * 10).Take(10))
+        foreach (var item in items.Skip((dialog.CurrentPage - 1) * 10).Take(10))
         {
-            var item = group.First();
             sb.AppendLine(
-                $"[{item.Rarity.ToString()}] {item.Name} (Lvl: {item.Level} | {item.Worth}$) x {group.Count()}");
+                $"[{item.Rarity.ToString()}] {item.Name} (Lvl: {item.Level} | {item.Worth}$) x {item.Amount}");
         }
 
         if (sb.Length == 0)
