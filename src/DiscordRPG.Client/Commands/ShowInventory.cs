@@ -101,7 +101,8 @@ public class ShowInventory : DialogCommandBase<InventoryDialog>
 
     private async Task ShowItems(SocketMessageComponent component, InventoryDialog dialog)
     {
-        var items = dialog.Character.Inventory.Where(i => i is not Equipment);
+        var items = dialog.Character.Inventory.Where(i => i is not Equipment).OrderByDescending(i => i.Level);
+        ;
 
         dialog.MaxPagesOfCurrentCategory = items.Count() / 10;
         if (items.Count() % 10 != 0)
@@ -128,7 +129,7 @@ public class ShowInventory : DialogCommandBase<InventoryDialog>
 
     private async Task ShowWeapons(SocketMessageComponent component, InventoryDialog dialog)
     {
-        var items = dialog.Character.Inventory.Where(i => i is Weapon);
+        var items = dialog.Character.Inventory.Where(i => i is Weapon).OrderByDescending(i => i.Level);
 
         dialog.MaxPagesOfCurrentCategory = items.Count() / 10;
         if (items.Count() % 10 != 0)
@@ -168,7 +169,8 @@ public class ShowInventory : DialogCommandBase<InventoryDialog>
         EquipmentCategory category)
     {
         var items = dialog.Character.Inventory.Where(i =>
-            i is Equipment equipment && equipment.EquipmentCategory == category);
+            i is Equipment equipment && equipment.EquipmentCategory == category).OrderByDescending(i => i.Level);
+        ;
 
         dialog.MaxPagesOfCurrentCategory = items.Count() / 10;
         if (items.Count() % 10 != 0)

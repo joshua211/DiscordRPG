@@ -1,5 +1,4 @@
-﻿using DiscordRPG.Application.Extensions;
-using DiscordRPG.Core.DomainServices.Generators;
+﻿using DiscordRPG.Core.DomainServices.Generators;
 using DiscordRPG.WeightedRandom;
 
 namespace DiscordRPG.Application.Generators;

@@ -148,7 +148,7 @@ public class Crafting : DialogCommandBase<CraftingDialog>
         builder.AddField("Rarity", dialog.SelectedRecipe.Rarity);
         foreach (var (ingredientName, amount) in dialog.SelectedRecipe.Ingredients)
         {
-            builder.AddField(ingredientName, amount, true);
+            builder.AddField($"[{dialog.SelectedRecipe.Rarity.ToString()}] {ingredientName}", amount, true);
         }
 
         return new[] {builder.Build()};

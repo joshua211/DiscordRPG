@@ -20,16 +20,14 @@ public class CraftItemCommandHandler : CommandHandler<CraftItemCommand>
         try
         {
             logger.Here().Debug("Handling {Name}", command.GetType().Name);
-            foreach (var (name, amount) in command.Recipe.Ingredients)
-            {
-                var item = command.Character.Inventory.FirstOrDefault(i => i.Name == name);
-                if (item is null || item.Amount < amount)
-                    return ExecutionResult.Failure($"Not enough {name}");
-            }
+            if (!command.Recipe.IsCraftableWith(command.Character.Inventory))
+                return ExecutionResult.Failure($"Not enough ingredients");
 
             foreach (var (name, amount) in command.Recipe.Ingredients)
             {
-                var item = command.Character.Inventory.First(i => i.Name == name);
+                var item = command.Character.Inventory.First(i =>
+                    i.Name == name && i.Rarity == command.Recipe.Rarity &&
+                    i.Level.RoundOff() == command.Recipe.Level.RoundOff());
                 if (item.Amount == amount)
                     command.Character.Inventory.Remove(item);
                 else

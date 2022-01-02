@@ -21,15 +21,15 @@ public class RecipeGenerator : GeneratorBase
             if (rarity == Rarity.Divine)
                 yield break;
 
-            for (uint i = 1; i <= maxLevel; i++)
+            for (uint level = 1; level <= maxLevel; level = (level + 10).RoundOff())
             {
-                yield return new Recipe(rarity, i, nameGenerator.GenerateHealthPotionName(rarity, i),
-                    $"A potion that can restore  {Math.Round(i * 10 * (1 + (int) rarity * 0.2f))} health points",
-                    itemGenerator.GetHealthPotion(rarity, i),
+                yield return new Recipe(rarity, level, nameGenerator.GenerateHealthPotionName(rarity, level),
+                    $"A potion that can restore  {Math.Round(level * 10 * (1 + (int) rarity * 0.2f))} health points",
+                    itemGenerator.GetHealthPotion(rarity, level),
                     new List<(string ingredientName, int amount)>()
                     {
-                        (Items.ItemNamesByRarity[rarity][2].name, (int) rarity % 2 == 0 ? 10 : 20),
-                        (Items.ItemNamesByRarity[rarity][3].name, (int) rarity % 2 == 0 ? 10 : 20)
+                        (Items.ItemNamesByRarity[rarity][2].name, 10),
+                        (Items.ItemNamesByRarity[rarity][3].name, 10)
                     });
             }
         }

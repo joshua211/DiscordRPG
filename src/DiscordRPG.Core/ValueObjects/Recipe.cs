@@ -1,4 +1,6 @@
-﻿namespace DiscordRPG.Core.ValueObjects;
+﻿using DiscordRPG.Common.Extensions;
+
+namespace DiscordRPG.Core.ValueObjects;
 
 public class Recipe
 {
@@ -26,7 +28,8 @@ public class Recipe
     {
         foreach (var (name, amount) in Ingredients)
         {
-            var existing = items.FirstOrDefault(i => i.Name == name);
+            var existing = items.FirstOrDefault(i =>
+                i.Name == name && i.Rarity == Rarity && i.Level.RoundOff() == Level.RoundOff());
             if (existing is null || existing.Amount < amount)
                 return false;
         }

@@ -1,4 +1,4 @@
-﻿namespace DiscordRPG.Application.Extensions;
+﻿namespace DiscordRPG.Common.Extensions;
 
 public static class IntExtensions
 {
