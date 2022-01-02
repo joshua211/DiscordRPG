@@ -2,6 +2,8 @@
 using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces;
 using DiscordRPG.Application.Interfaces.Services;
+using Polly;
+using Polly.Retry;
 
 namespace DiscordRPG.Application.Services;
 
@@ -10,12 +12,24 @@ public class ChannelManager : IChannelManager
     private readonly DiscordSocketClient client;
     private readonly IGuildService guildService;
     private readonly ILogger logger;
+    private readonly AsyncRetryPolicy policy;
 
     public ChannelManager(DiscordSocketClient client, IGuildService guildService, ILogger logger)
     {
         this.client = client;
         this.guildService = guildService;
         this.logger = logger.WithContext(GetType());
+        policy = Policy.Handle<Exception>().WaitAndRetryAsync(new[]
+            {
+                TimeSpan.FromSeconds(1),
+                TimeSpan.FromSeconds(2),
+                TimeSpan.FromSeconds(3)
+            },
+            (exception, timeSpan, retryCount, context) =>
+            {
+                logger.Here().Warning("Discord Interaction failed {Count} times: {Message}", retryCount,
+                    exception.Message);
+            });
     }
 
     public async Task<DiscordId> CreateDungeonThreadAsync(DiscordId guildId, string dungeonName)
@@ -28,13 +42,18 @@ public class ChannelManager : IChannelManager
             return null;
         }
 
-        var socketGuild = client.GetGuild(guildId);
-        var dungeonChannel = socketGuild.GetTextChannel(result.Value.DungeonHallId);
-        var thread = await dungeonChannel.CreateThreadAsync(dungeonName);
+        await policy.ExecuteAsync(async () =>
+        {
+            var socketGuild = client.GetGuild(guildId);
+            var dungeonChannel = socketGuild.GetTextChannel(result.Value.DungeonHallId);
+            var thread = await dungeonChannel.CreateThreadAsync(dungeonName);
 
-        logger.Here().Debug("Created dungeon channel {Name}", dungeonName);
+            logger.Here().Debug("Created dungeon channel {Name}", dungeonName);
 
-        return new DiscordId(thread.Id.ToString());
+            return new DiscordId(thread.Id.ToString());
+        });
+
+        return new DiscordId("error");
     }
 
     public async Task SendToGuildHallAsync(DiscordId guildId, string text, Embed embed = null)
@@ -47,9 +66,12 @@ public class ChannelManager : IChannelManager
             return;
         }
 
-        var channel = client.GetChannel(result.Value.GuildHallId) as SocketTextChannel;
-        if (channel is not null)
-            await channel.SendMessageAsync(text, embed: embed);
+        await policy.ExecuteAsync(async () =>
+        {
+            var channel = client.GetChannel(result.Value.GuildHallId) as SocketTextChannel;
+            if (channel is not null)
+                await channel.SendMessageAsync(text, embed: embed);
+        });
     }
 
     public async Task SendToDungeonHallAsync(DiscordId guildId, string text)
@@ -62,9 +84,12 @@ public class ChannelManager : IChannelManager
             return;
         }
 
-        var channel = client.GetChannel(result.Value.DungeonHallId) as SocketTextChannel;
-        if (channel is not null)
-            await channel.SendMessageAsync(text);
+        await policy.ExecuteAsync(async () =>
+        {
+            var channel = client.GetChannel(result.Value.DungeonHallId) as SocketTextChannel;
+            if (channel is not null)
+                await channel.SendMessageAsync(text);
+        });
     }
 
     public async Task SendToChannelAsync(DiscordId channelId, string text, Embed embed = null)
@@ -77,7 +102,7 @@ public class ChannelManager : IChannelManager
             return;
         }
 
-        await channel.SendMessageAsync(text, embed: embed);
+        await policy.ExecuteAsync(async () => { await channel.SendMessageAsync(text, embed: embed); });
     }
 
     public async Task DeleteDungeonThreadAsync(DiscordId threadId)
@@ -86,8 +111,11 @@ public class ChannelManager : IChannelManager
         {
             logger.Here().Debug("Deleting thread {Id}", threadId);
 
-            var channel = client.GetChannel(threadId) as IGuildChannel;
-            await channel.DeleteAsync();
+            await policy.ExecuteAsync(async () =>
+            {
+                var channel = client.GetChannel(threadId) as IGuildChannel;
+                await channel.DeleteAsync();
+            });
         }
         catch (Exception)
         {
@@ -100,8 +128,11 @@ public class ChannelManager : IChannelManager
         try
         {
             logger.Here().Debug("Updating Thread {Id} name to {Name}", threadId, name);
-            var channel = client.GetChannel(threadId) as SocketGuildChannel;
-            await channel.ModifyAsync(properties => properties.Name = name);
+            await policy.ExecuteAsync(async () =>
+            {
+                var channel = client.GetChannel(threadId) as SocketGuildChannel;
+                await channel.ModifyAsync(properties => properties.Name = name);
+            });
         }
         catch (Exception e)
         {
@@ -114,9 +145,12 @@ public class ChannelManager : IChannelManager
         try
         {
             logger.Here().Debug("Adding user {UserId} to thread {ThreadId}", userId, threadId);
-            var thread = client.GetChannel(threadId) as SocketThreadChannel;
-            var user = thread.Guild.GetUser(userId);
-            await thread.AddUserAsync(user);
+            await policy.ExecuteAsync(async () =>
+            {
+                var thread = client.GetChannel(threadId) as SocketThreadChannel;
+                var user = thread.Guild.GetUser(userId);
+                await thread.AddUserAsync(user);
+            });
         }
         catch (Exception e)
         {
