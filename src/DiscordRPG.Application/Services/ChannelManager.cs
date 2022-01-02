@@ -27,7 +27,7 @@ public class ChannelManager : IChannelManager
             },
             (exception, timeSpan, retryCount, context) =>
             {
-                logger.Here().Warning("Discord Interaction failed {Count} times: {Message}", retryCount,
+                logger.Warning("Discord Interaction failed {Count} times: {Message}", retryCount,
                     exception.Message);
             });
     }
@@ -42,7 +42,7 @@ public class ChannelManager : IChannelManager
             return null;
         }
 
-        await policy.ExecuteAsync(async () =>
+        return await policy.ExecuteAsync(async () =>
         {
             var socketGuild = client.GetGuild(guildId);
             var dungeonChannel = socketGuild.GetTextChannel(result.Value.DungeonHallId);
@@ -52,8 +52,6 @@ public class ChannelManager : IChannelManager
 
             return new DiscordId(thread.Id.ToString());
         });
-
-        return new DiscordId("error");
     }
 
     public async Task SendToGuildHallAsync(DiscordId guildId, string text, Embed embed = null)
