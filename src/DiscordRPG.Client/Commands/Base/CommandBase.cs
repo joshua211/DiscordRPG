@@ -36,7 +36,6 @@ public abstract class CommandBase : IGuildCommand
 
     public abstract Task InstallAsync(SocketGuild guild);
 
-    //TODO maybe handle this in parallel?
     public async Task HandleAsync(SocketSlashCommand command)
     {
         var requireName =
