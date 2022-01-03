@@ -19,6 +19,7 @@ public class SimulationCommand : ICommand
                 {
                     GenerateCommand.Command,
                     EventCommand.Command,
+                    DungeonClearingSimulation.Command,
                     "back"
                 }));
             if (choice == "back")
