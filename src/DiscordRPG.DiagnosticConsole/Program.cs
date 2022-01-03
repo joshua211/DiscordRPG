@@ -53,6 +53,7 @@ namespace DiscordRPG.DiagnosticConsole
                     .AddTransient<IEventImporter, EventImporter>()
                     .AddTransient<ICharacterImporter, CharacterImporter>()
                     .AddTransient<IItemGenerator, ItemGenerator>()
+                    .AddTransient<IWorthCalculator, WorthCalculator>()
                     .AddTransient<IDungeonGenerator, DungeonGenerator>()
                     .AddTransient<INameGenerator, NameGenerator>()
                     .AddTransient<IItemGenerator, ItemGenerator>()

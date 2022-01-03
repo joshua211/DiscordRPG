@@ -6,10 +6,12 @@ namespace DiscordRPG.Application.Generators;
 public class ItemGenerator : GeneratorBase, IItemGenerator
 {
     private readonly INameGenerator nameGenerator;
+    private IWorthCalculator worthCalculator;
 
-    public ItemGenerator(INameGenerator nameGenerator)
+    public ItemGenerator(INameGenerator nameGenerator, IWorthCalculator worthCalculator)
     {
         this.nameGenerator = nameGenerator;
+        this.worthCalculator = worthCalculator;
     }
 
     public IEnumerable<Item> GenerateItems(Dungeon dungeon)
@@ -68,57 +70,52 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
     public Item GenerateRandomItem(Rarity rarity, uint level, int amount)
     {
         var roundedLevel = level.RoundOff();
-        var name = nameGenerator.GenerateRandomItemName(rarity);
-        var worth = GenerateItemWorth(rarity, roundedLevel);
+        var (name, descr) = nameGenerator.GenerateRandomItemName(rarity);
+        var worth = worthCalculator.GetItemWorth(rarity, roundedLevel);
 
-        return new Item(name.name, name.descr, rarity, worth, roundedLevel, amount, false);
+        return new Item(name, descr, rarity, worth, roundedLevel, amount, false);
     }
 
     public Equipment GenerateEquipment(Rarity rarity, uint level, Aspect aspect, EquipmentCategory category)
     {
-        var str = GenerateRandomStat(rarity, level);
-        var vit = GenerateRandomStat(rarity, level);
-        var agi = GenerateRandomStat(rarity, level);
-        var intel = GenerateRandomStat(rarity, level);
-        var lck = GenerateRandomStat(rarity, level);
-        var armor = GenerateRandomArmor(rarity, level);
+        var totalWorth = worthCalculator.GetItemWorth(rarity, level);
+        int statWorth;
+        int armorWorth;
+        if (category is EquipmentCategory.Amulet or EquipmentCategory.Ring)
+        {
+            statWorth = totalWorth;
+            armorWorth = 0;
+        }
+        else
+        {
+            statWorth = (int) (totalWorth * 0.5f);
+            armorWorth = (int) (totalWorth * 0.5f);
+        }
+
+        statWorth = statWorth < 10 ? 10 : statWorth;
+
+        var (s, v, a, i, l) = GenerateRandomStats(statWorth);
+        var (armor, marmor) = GenerateRandomArmor(armorWorth);
         var position = GetPositionFromCategory(category);
         var name = nameGenerator.GenerateRandomEquipmentName(rarity, category, aspect);
-        var worth = GenerateEquipmentWorth(rarity, level, str + vit + vit + agi + intel + lck + armor);
 
-        var randomArmor = random.Next(3);
-        switch (randomArmor)
-        {
-            case 0:
-                return new Equipment(name, "", rarity, armor, 0, str, vit, agi, intel, lck, worth, category, position,
-                    level);
-            case 1:
-                return new Equipment(name, "", rarity, armor / 2, armor / 2, str, vit, agi, intel, lck, worth, category,
-                    position,
-                    level);
-            case 2:
-                return new Equipment(name, "", rarity, 0, armor, str, vit, agi, intel, lck, worth, category, position,
-                    level);
-            default:
-                return null;
-        }
+        return new Equipment(name, "", rarity, armor, marmor, s, v, a, i, l, totalWorth, category, position, level);
     }
 
     public Weapon GenerateWeapon(Rarity rarity, uint level, Aspect aspect, EquipmentCategory category)
     {
-        var str = GenerateRandomStat(rarity, level);
-        var vit = GenerateRandomStat(rarity, level);
-        var agi = GenerateRandomStat(rarity, level);
-        var intel = GenerateRandomStat(rarity, level);
-        var lck = GenerateRandomStat(rarity, level);
+        var totalWorth = worthCalculator.GetItemWorth(rarity, level);
+        var statWorth = (int) (totalWorth * 0.3f);
+        statWorth = statWorth < 1 ? 1 : statWorth;
+        var (s, v, a, i, l) = GenerateRandomStats(statWorth);
+        var dmgWorth = (int) (totalWorth * 0.7f);
+        var dmgValue = GetDamageValue(dmgWorth);
 
         var name = nameGenerator.GenerateRandomEquipmentName(rarity, category, aspect);
-        var charAttr = GenerateRandomCharAttribute();
-        var dmgType = GenerateRandomDamageType();
-        var dmgValue = GenerateRandomDamageValue(rarity, level);
-        var worth = GenerateEquipmentWorth(rarity, level, str + vit + vit + agi + intel + lck + dmgValue);
+        var charAttr = GetScalingAttribute(category);
+        var dmgType = GetDamageType(category);
 
-        return new Weapon(name, "", rarity, 0, 0, str, vit, agi, intel, lck, worth, charAttr, dmgType, dmgValue,
+        return new Weapon(name, "", rarity, 0, 0, s, v, a, i, l, totalWorth, charAttr, dmgType, dmgValue,
             category,
             level);
     }
@@ -126,7 +123,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
     public Item GetHealthPotion(Rarity rarity, uint level)
     {
         var name = nameGenerator.GenerateHealthPotionName(rarity, level);
-        var worth = GenerateItemWorth(rarity, level);
+        var worth = worthCalculator.GetItemWorth(rarity, level);
         return new Item(name,
             $"A potion that can restore  {Math.Round(level * 10 * (1 + (int) rarity * 0.2f))} health points", rarity,
             worth,
@@ -141,17 +138,33 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
             : GenerateEquipment(recipe.Rarity, recipe.Level, aspect, recipe.EquipmentCategory.Value);
     }
 
-    private int GenerateItemWorth(Rarity rarity, uint level)
+    private int GetDamageValue(int availableWorth) => availableWorth / 3;
+
+    private DamageType GetDamageType(EquipmentCategory category) => category switch
     {
-        return (int) (((int) rarity + 1) * level * 10);
-    }
+        EquipmentCategory.Sword => DamageType.Physical,
+        EquipmentCategory.Bow => DamageType.Physical,
+        EquipmentCategory.Dagger => DamageType.Physical,
+        EquipmentCategory.Spear => DamageType.Physical,
+        EquipmentCategory.Mace => DamageType.Physical,
+        EquipmentCategory.Scepter => DamageType.Magical,
+        EquipmentCategory.Staff => DamageType.Magical,
+        EquipmentCategory.Wand => DamageType.Magical,
+        EquipmentCategory.Flail => DamageType.Magical
+    };
 
-    private int GenerateRandomDamageValue(Rarity rarity, uint level) =>
-        (int) (13 * level * ((int) rarity + 1) * (random.NextDouble() + 0.1));
-
-    private DamageType GenerateRandomDamageType() => Enum.GetValues<DamageType>()[random.Next(2)];
-
-    private CharacterAttribute GenerateRandomCharAttribute() => Enum.GetValues<CharacterAttribute>()[random.Next(4)];
+    private CharacterAttribute GetScalingAttribute(EquipmentCategory category) => category switch
+    {
+        EquipmentCategory.Sword => CharacterAttribute.Strength,
+        EquipmentCategory.Bow => CharacterAttribute.Strength,
+        EquipmentCategory.Dagger => CharacterAttribute.Strength,
+        EquipmentCategory.Spear => CharacterAttribute.Strength,
+        EquipmentCategory.Mace => CharacterAttribute.Strength,
+        EquipmentCategory.Scepter => CharacterAttribute.Intelligence,
+        EquipmentCategory.Staff => CharacterAttribute.Intelligence,
+        EquipmentCategory.Wand => CharacterAttribute.Intelligence,
+        EquipmentCategory.Flail => CharacterAttribute.Intelligence
+    };
 
     private EquipmentCategory GenerateRandomEquipmentCategory()
     {
@@ -172,18 +185,62 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
     private EquipmentCategory GenerateRandomWeaponCategory()
     {
         var arr = Enum.GetValues<EquipmentCategory>();
-        return arr[random.Next(5, 11)];
+        return arr[random.Next(5, 13)];
     }
 
-    private int GenerateRandomArmor(Rarity rarity, uint level) =>
-        (int) (10 * level * ((int) rarity + 1) * (random.NextDouble() + 0.1));
+    private (int armor, int marmor) GenerateRandomArmor(int availableWorth)
+    {
+        var actualWorth = availableWorth / 2;
+        int armor = 0, marmor = 0;
+        var selectorBuilder = new DynamicRandomSelector<int>();
+        selectorBuilder.Add(1, 2);
+        selectorBuilder.Add(2, 1);
+        var selector = selectorBuilder.Build();
 
-    private int GenerateRandomStat(Rarity rarity, uint level) =>
-        (int) (1 * level * ((int) rarity + 1) * (random.NextDouble() + 0.1));
+        for (int i = 0; i < actualWorth; i++)
+        {
+            if (selector.SelectRandomItem() == 1)
+                armor++;
+            else
+                marmor++;
+        }
 
-    private int GenerateEquipmentWorth(Rarity rarity, uint level, int totalStats) =>
-        (int) (((int) rarity + 1) * level + (10 * totalStats));
+        return new(armor, marmor);
+    }
 
+    private (int str, int vit, int agi, int intel, int lck) GenerateRandomStats(int availableWorth)
+    {
+        var totalStatPoints = availableWorth / 10;
+        var str = 0;
+        var vit = 0;
+        var agi = 0;
+        var intel = 0;
+        var lck = 0;
+
+        for (int i = 0; i < totalStatPoints; i++)
+        {
+            switch (random.Next(0, 5))
+            {
+                case 0:
+                    str++;
+                    break;
+                case 1:
+                    vit++;
+                    break;
+                case 2:
+                    agi++;
+                    break;
+                case 3:
+                    intel++;
+                    break;
+                case 4:
+                    lck++;
+                    break;
+            }
+        }
+
+        return new(str, vit, agi, intel, lck);
+    }
 
     private int GetNumOfItems(bool isItem = false)
     {
