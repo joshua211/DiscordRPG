@@ -1,5 +1,5 @@
 ﻿using DiscordRPG.Core.DomainServices.Generators;
-using DiscordRPG.WeightedRandom;
+using Weighted_Randomizer;
 
 namespace DiscordRPG.Application.Generators;
 
@@ -30,11 +30,15 @@ public class DungeonGenerator : GeneratorBase, IDungeonGenerator
         Rarity rarity)
     {
         var explorations = (byte) random.Next(3, 15);
-        var selector = new DynamicRandomSelector<uint>();
-        selector.Add(charLevel, 1);
-        selector.Add(charLevel - 1, 1.5f);
-        selector.Add(charLevel - 2, 1);
-        var level = selector.Build().SelectRandomItem();
+        var randomizer = new DynamicWeightedRandomizer<uint>();
+        randomizer.Add(charLevel, 2);
+        if (charLevel >= 3)
+        {
+            randomizer.Add(charLevel - 1, 3);
+            randomizer.Add(charLevel - 2, 1);
+        }
+
+        var level = randomizer.NextWithReplacement();
         level = level <= 0 ? 1 : level;
 
         var name = aspect.DungeonPrefix + " " + nameGenerator.GenerateDungeonName(rarity);

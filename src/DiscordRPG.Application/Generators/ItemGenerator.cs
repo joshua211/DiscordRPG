@@ -1,5 +1,5 @@
 ﻿using DiscordRPG.Core.DomainServices.Generators;
-using DiscordRPG.WeightedRandom;
+using Weighted_Randomizer;
 
 namespace DiscordRPG.Application.Generators;
 
@@ -20,16 +20,15 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         var totalNum = GetNumOfItems();
         var level = dungeon.DungeonLevel;
 
-        var selectorBuilder = new DynamicRandomSelector<int>();
-        selectorBuilder.Add(0, 5);
-        selectorBuilder.Add(1, 1);
-        selectorBuilder.Add(2, 1);
-        var selector = selectorBuilder.Build();
+        var selector = new DynamicWeightedRandomizer<int>();
+        selector.Add(0, 5);
+        selector.Add(1, 1);
+        selector.Add(2, 1);
 
         for (int i = 0; i < totalNum; i++)
         {
             var rarity = GetItemRarityFromDungeonRarity(dungeon.Rarity);
-            var itemType = selector.SelectRandomItem();
+            var itemType = selector.NextWithReplacement();
             switch (itemType)
             {
                 case 0:
@@ -192,14 +191,15 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
     {
         var actualWorth = availableWorth / 2;
         int armor = 0, marmor = 0;
-        var selectorBuilder = new DynamicRandomSelector<int>();
-        selectorBuilder.Add(1, 2);
-        selectorBuilder.Add(2, 1);
-        var selector = selectorBuilder.Build();
+        var selector = new DynamicWeightedRandomizer<int>
+        {
+            {1, 1},
+            {2, 1}
+        };
 
         for (int i = 0; i < actualWorth; i++)
         {
-            if (selector.SelectRandomItem() == 1)
+            if (selector.NextWithReplacement() == 1)
                 armor++;
             else
                 marmor++;
@@ -244,74 +244,74 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
 
     private int GetNumOfItems(bool isItem = false)
     {
-        var selector = new DynamicRandomSelector<int>();
+        var selector = new DynamicWeightedRandomizer<int>();
         if (isItem)
         {
-            selector.Add(1, 0.5f);
-            selector.Add(2, 0.7f);
-            selector.Add(3, 1f);
-            selector.Add(4, 0.7f);
-            selector.Add(5, 0.5f);
+            selector.Add(1, 5);
+            selector.Add(2, 7);
+            selector.Add(3, 10);
+            selector.Add(4, 7);
+            selector.Add(5, 5);
         }
         else
         {
-            selector.Add(1, 1);
-            selector.Add(2, 0.5f);
-            selector.Add(3, 0.1f);
+            selector.Add(1, 10);
+            selector.Add(2, 5);
+            selector.Add(3, 1);
         }
 
-        return selector.Build().SelectRandomItem();
+        return selector.NextWithReplacement();
     }
 
     private Rarity GetItemRarityFromDungeonRarity(Rarity rarity)
     {
-        var selector = new DynamicRandomSelector<Rarity>();
+        var selector = new DynamicWeightedRandomizer<int>();
         switch (rarity)
         {
             case Rarity.Common:
-                selector.Add(Rarity.Common, 1);
+                selector.Add((int) Rarity.Common, 1);
                 break;
             case Rarity.Uncommon:
-                selector.Add(Rarity.Common, 1);
-                selector.Add(Rarity.Uncommon, 1);
+                selector.Add((int) Rarity.Common, 1);
+                selector.Add((int) Rarity.Uncommon, 1);
                 break;
             case Rarity.Rare:
-                selector.Add(Rarity.Common, 1);
-                selector.Add(Rarity.Uncommon, 1);
-                selector.Add(Rarity.Rare, 1);
+                selector.Add((int) Rarity.Common, 1);
+                selector.Add((int) Rarity.Uncommon, 1);
+                selector.Add((int) Rarity.Rare, 1);
                 break;
             case Rarity.Unique:
-                selector.Add(Rarity.Common, 1);
-                selector.Add(Rarity.Uncommon, 1);
-                selector.Add(Rarity.Rare, 1);
-                selector.Add(Rarity.Unique, 1);
+                selector.Add((int) Rarity.Common, 1);
+                selector.Add((int) Rarity.Uncommon, 1);
+                selector.Add((int) Rarity.Rare, 1);
+                selector.Add((int) Rarity.Unique, 1);
                 break;
             case Rarity.Legendary:
-                selector.Add(Rarity.Common, 1);
-                selector.Add(Rarity.Uncommon, 1);
-                selector.Add(Rarity.Rare, 1);
-                selector.Add(Rarity.Unique, 1);
-                selector.Add(Rarity.Legendary, 1);
+                selector.Add((int) Rarity.Common, 1);
+                selector.Add((int) Rarity.Uncommon, 1);
+                selector.Add((int) Rarity.Rare, 1);
+                selector.Add((int) Rarity.Unique, 1);
+                selector.Add((int) Rarity.Legendary, 1);
                 break;
             case Rarity.Mythic:
-                selector.Add(Rarity.Common, 1);
-                selector.Add(Rarity.Uncommon, 1);
-                selector.Add(Rarity.Rare, 1);
-                selector.Add(Rarity.Unique, 1);
-                selector.Add(Rarity.Legendary, 1);
-                selector.Add(Rarity.Mythic, 1);
+                selector.Add((int) Rarity.Common, 1);
+                selector.Add((int) Rarity.Uncommon, 1);
+                selector.Add((int) Rarity.Rare, 1);
+                selector.Add((int) Rarity.Unique, 1);
+                selector.Add((int) Rarity.Legendary, 1);
+                selector.Add((int) Rarity.Mythic, 1);
                 break;
             case Rarity.Divine:
-                selector.Add(Rarity.Common, 1);
-                selector.Add(Rarity.Uncommon, 1);
-                selector.Add(Rarity.Rare, 1);
-                selector.Add(Rarity.Unique, 1);
-                selector.Add(Rarity.Legendary, 1);
-                selector.Add(Rarity.Mythic, 1);
-                selector.Add(Rarity.Divine, 1);
+                selector.Add((int) Rarity.Common, 1);
+                selector.Add((int) Rarity.Uncommon, 1);
+                selector.Add((int) Rarity.Rare, 1);
+                selector.Add((int) Rarity.Unique, 1);
+                selector.Add((int) Rarity.Legendary, 1);
+                selector.Add((int) Rarity.Mythic, 1);
+                selector.Add((int) Rarity.Divine, 1);
                 break;
         }
 
-        return selector.Build().SelectRandomItem();
+        return (Rarity) selector.NextWithReplacement();
     }
 }

@@ -28,13 +28,13 @@ public class WoundGenerator : GeneratorBase, IWoundGenerator
         {
             var dmgToEncounter = (int) (character.TotalDamage.Value *
                                         (character.TotalDamage.DamageType == DamageType.Magical
-                                            ? (float) encounter.MagicArmor / (encounter.Level * 10)
-                                            : (float) encounter.Armor / (encounter.Level * 10)));
+                                            ? 1 - (float) encounter.MagicArmor / (encounter.Level * 10)
+                                            : 1 - (float) encounter.Armor / (encounter.Level * 10)));
             dmgToEncounter = dmgToEncounter < 1 ? 1 : randomizer.GetRandomized(dmgToEncounter, 0.2f);
 
             var dmgToChar = (int) (encounter.Damage.Value * (encounter.Damage.DamageType == DamageType.Magical
-                ? (float) character.MagicArmor / (character.Level.CurrentLevel * 10)
-                : (float) character.Armor / (character.Level.CurrentLevel * 10)));
+                ? 1 - (float) character.MagicArmor / (character.Level.CurrentLevel * 10)
+                : 1 - (float) character.Armor / (character.Level.CurrentLevel * 10)));
             dmgToChar = dmgToChar < 1 ? 1 : randomizer.GetRandomized(dmgToChar, 0.2f);
 
             if (charHasFirstStrike)

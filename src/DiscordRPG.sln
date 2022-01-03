@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordRPG.Application", "D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordRPG.Client", "DiscordRPG.Client\DiscordRPG.Client.csproj", "{4055D046-9FC0-41BD-AACD-E5974396CF97}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordRPG.WeightedRandom", "DiscordRPG.WeightedRandom\DiscordRPG.WeightedRandom.csproj", "{690ECED3-9C68-4752-84E3-359CEF2C7A5D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordRPG.DiagnosticConsole", "DiscordRPG.DiagnosticConsole\DiscordRPG.DiagnosticConsole.csproj", "{74F8E40A-DF3C-4C37-AD37-68C8EF434239}"
 EndProject
 Global
@@ -40,10 +38,6 @@ Global
 		{4055D046-9FC0-41BD-AACD-E5974396CF97}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4055D046-9FC0-41BD-AACD-E5974396CF97}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4055D046-9FC0-41BD-AACD-E5974396CF97}.Release|Any CPU.Build.0 = Release|Any CPU
-		{690ECED3-9C68-4752-84E3-359CEF2C7A5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{690ECED3-9C68-4752-84E3-359CEF2C7A5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{690ECED3-9C68-4752-84E3-359CEF2C7A5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{690ECED3-9C68-4752-84E3-359CEF2C7A5D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{74F8E40A-DF3C-4C37-AD37-68C8EF434239}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{74F8E40A-DF3C-4C37-AD37-68C8EF434239}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{74F8E40A-DF3C-4C37-AD37-68C8EF434239}.Release|Any CPU.ActiveCfg = Release|Any CPU

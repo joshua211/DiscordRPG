@@ -1,6 +1,6 @@
 ﻿using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Core.DomainServices.Generators;
-using DiscordRPG.WeightedRandom;
+using Weighted_Randomizer;
 
 namespace DiscordRPG.Application.Worker;
 
@@ -59,14 +59,14 @@ public class ShopWorker
         var level = character.Level.CurrentLevel;
         var rarity = rarityGenerator.GenerateShopRarity();
 
-        var selector = new DynamicRandomSelector<int>();
+        var selector = new DynamicWeightedRandomizer<int>();
         selector.Add(5, 6);
         selector.Add(6, 5);
         selector.Add(7, 4);
         selector.Add(8, 3);
         selector.Add(9, 2);
         selector.Add(10, 1);
-        var numOfItems = selector.Build().SelectRandomItem();
+        var numOfItems = selector.NextWithReplacement();
 
         for (int i = 0; i < numOfItems; i++)
         {

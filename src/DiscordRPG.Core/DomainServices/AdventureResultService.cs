@@ -1,6 +1,6 @@
 ﻿using DiscordRPG.Core.DomainServices.Generators;
 using DiscordRPG.Core.Entities;
-using DiscordRPG.WeightedRandom;
+using Weighted_Randomizer;
 
 namespace DiscordRPG.Core.DomainServices;
 
@@ -58,37 +58,37 @@ public class AdventureResultService : IAdventureResultService
 
     private int GetRandomNumberOfEncounters(ActivityDuration duration)
     {
-        var selector = new DynamicRandomSelector<int>();
+        var selector = new DynamicWeightedRandomizer<int>();
         switch (duration)
         {
             case ActivityDuration.Quick:
-                selector.Add(0, 0.3f);
-                selector.Add(1, 1);
+                selector.Add(0, 3);
+                selector.Add(1, 10);
                 break;
             case ActivityDuration.Short:
-                selector.Add(1, 1);
-                selector.Add(2, 0.7f);
-                selector.Add(3, 0.1f);
+                selector.Add(1, 10);
+                selector.Add(2, 7);
+                selector.Add(3, 1);
                 break;
             case ActivityDuration.Medium:
-                selector.Add(1, 0.4f);
-                selector.Add(2, 1f);
-                selector.Add(3, 0.5f);
-                selector.Add(4, 0.1f);
+                selector.Add(1, 4);
+                selector.Add(2, 10);
+                selector.Add(3, 5);
+                selector.Add(4, 1);
                 break;
             case ActivityDuration.Long:
-                selector.Add(2, 0.8f);
-                selector.Add(3, 1f);
-                selector.Add(4, 0.6f);
+                selector.Add(2, 8);
+                selector.Add(3, 10);
+                selector.Add(4, 6);
                 break;
             case ActivityDuration.ExtraLong:
-                selector.Add(2, 0.3f);
-                selector.Add(3, 0.8f);
-                selector.Add(4, 1f);
-                selector.Add(5, 0.3f);
+                selector.Add(2, 3);
+                selector.Add(3, 8);
+                selector.Add(4, 10);
+                selector.Add(5, 3);
                 break;
         }
 
-        return selector.Build().SelectRandomItem();
+        return selector.NextWithReplacement();
     }
 }
