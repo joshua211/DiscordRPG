@@ -2,10 +2,10 @@
 
 public class WorthCalculator : IWorthCalculator
 {
-    public int GetItemWorth(Rarity rarity, uint level) => (int) (level * 10 * (1 + ((int) rarity * 0.2f)));
+    public int CalculateWorth(Rarity rarity, uint level) => (int) (level * 10 * (1 + ((int) rarity * 0.2f)));
 }
 
 public interface IWorthCalculator
 {
-    int GetItemWorth(Rarity rarity, uint level);
+    int CalculateWorth(Rarity rarity, uint level);
 }

@@ -71,14 +71,14 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
     {
         var roundedLevel = level.RoundOff();
         var (name, descr) = nameGenerator.GenerateRandomItemName(rarity);
-        var worth = worthCalculator.GetItemWorth(rarity, roundedLevel);
+        var worth = worthCalculator.CalculateWorth(rarity, roundedLevel);
 
         return new Item(name, descr, rarity, worth, roundedLevel, amount, false);
     }
 
     public Equipment GenerateEquipment(Rarity rarity, uint level, Aspect aspect, EquipmentCategory category)
     {
-        var totalWorth = worthCalculator.GetItemWorth(rarity, level);
+        var totalWorth = worthCalculator.CalculateWorth(rarity, level);
         int statWorth;
         int armorWorth;
         if (category is EquipmentCategory.Amulet or EquipmentCategory.Ring)
@@ -104,7 +104,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
 
     public Weapon GenerateWeapon(Rarity rarity, uint level, Aspect aspect, EquipmentCategory category)
     {
-        var totalWorth = worthCalculator.GetItemWorth(rarity, level);
+        var totalWorth = worthCalculator.CalculateWorth(rarity, level);
         var statWorth = (int) (totalWorth * 0.3f);
         statWorth = statWorth < 1 ? 1 : statWorth;
         var (s, v, a, i, l) = GenerateRandomStats(statWorth);
@@ -123,7 +123,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
     public Item GetHealthPotion(Rarity rarity, uint level)
     {
         var name = nameGenerator.GenerateHealthPotionName(rarity, level);
-        var worth = worthCalculator.GetItemWorth(rarity, level);
+        var worth = worthCalculator.CalculateWorth(rarity, level);
         return new Item(name,
             $"A potion that can restore  {Math.Round(level * 10 * (1 + (int) rarity * 0.2f))} health points", rarity,
             worth,

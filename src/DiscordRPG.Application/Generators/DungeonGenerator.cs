@@ -31,11 +31,9 @@ public class DungeonGenerator : GeneratorBase, IDungeonGenerator
     {
         var explorations = (byte) random.Next(3, 15);
         var selector = new DynamicRandomSelector<uint>();
-        selector.Add(charLevel, 2);
+        selector.Add(charLevel, 1);
         selector.Add(charLevel - 1, 1.5f);
         selector.Add(charLevel - 2, 1);
-        selector.Add(charLevel + 1, 1.5f);
-        selector.Add(charLevel + 2, 1);
         var level = selector.Build().SelectRandomItem();
         level = level <= 0 ? 1 : level;
 
