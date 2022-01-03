@@ -16,15 +16,17 @@ public class EncounterGenerator : GeneratorBase, IEncounterGenerator
 
     public Encounter CreateDungeonEncounter(Dungeon dungeon)
     {
-        var worth = worthCalculator.CalculateWorth(dungeon.Rarity, dungeon.DungeonLevel) * 5;
+        var worth = worthCalculator.CalculateWorth(dungeon.Rarity, dungeon.DungeonLevel);
 
         var health = (int) (worth * (1 + random.Next(-1, 2) * 0.1f));
+        health = health < 50 ? 50 : health;
         var dmg = worth / 3;
         var armor = worth / 2;
         var dmgType = GetRandomDamageType();
+        var agi = worth / 5;
 
         Encounter encounter =
-            new Encounter(new Damage(dmgType, dmg), health, armor / 2, armor / 2, dungeon.DungeonLevel);
+            new Encounter(new Damage(dmgType, dmg), health, armor / 2, armor / 2, dungeon.DungeonLevel, agi);
 
         logger.Here().Verbose("Generated encounter {@Encounter} for dungeon Level {DungeonLevel}", encounter,
             dungeon.DungeonLevel);

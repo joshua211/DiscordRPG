@@ -34,6 +34,7 @@ public static class Application
             .AddTransient<IItemGenerator, ItemGenerator>()
             .AddTransient<IWorthCalculator, WorthCalculator>()
             .AddTransient<RecipeGenerator>()
+            .AddTransient<IRandomizer, Randomizer>()
             .AddTransient<IWoundGenerator, WoundGenerator>()
             .AddTransient<IAspectGenerator, AspectGenerator>()
             .AddTransient<IExperienceGenerator, ExperienceGenerator>()

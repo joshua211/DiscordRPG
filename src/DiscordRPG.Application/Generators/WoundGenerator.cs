@@ -7,10 +7,12 @@ public class WoundGenerator : GeneratorBase, IWoundGenerator
 {
     private readonly ILogger logger;
     private readonly INameGenerator nameGenerator;
+    private readonly IRandomizer randomizer;
 
-    public WoundGenerator(ILogger logger, INameGenerator nameGenerator)
+    public WoundGenerator(ILogger logger, INameGenerator nameGenerator, IRandomizer randomizer)
     {
         this.nameGenerator = nameGenerator;
+        this.randomizer = randomizer;
         this.logger = logger.WithContext(GetType());
     }
 
@@ -19,28 +21,42 @@ public class WoundGenerator : GeneratorBase, IWoundGenerator
         var wounds = new List<Wound>();
         var totalDmg = 0;
         var encounterHealth = encounter.Health;
+        var charHasFirstStrike = randomizer.GetRandomized(character.Agility, 0.1f) >
+                                 randomizer.GetRandomized(encounter.Agility, 0.1f);
+
         while (encounterHealth > 0 && character.CurrentHealth > totalDmg)
         {
-            var dmgToEncounter = character.TotalDamage.Value - (character.TotalDamage.DamageType == DamageType.Physical
-                ? encounter.Armor
-                : encounter.MagicArmor);
-            dmgToEncounter = dmgToEncounter <= 0 ? 1 : dmgToEncounter;
-            encounterHealth -= dmgToEncounter;
+            var dmgToEncounter = (int) (character.TotalDamage.Value *
+                                        (character.TotalDamage.DamageType == DamageType.Magical
+                                            ? (float) encounter.MagicArmor / (encounter.Level * 10)
+                                            : (float) encounter.Armor / (encounter.Level * 10)));
+            dmgToEncounter = dmgToEncounter < 1 ? 1 : randomizer.GetRandomized(dmgToEncounter, 0.2f);
 
-            if (encounterHealth <= 0)
-                continue;
+            var dmgToChar = (int) (encounter.Damage.Value * (encounter.Damage.DamageType == DamageType.Magical
+                ? (float) character.MagicArmor / (character.Level.CurrentLevel * 10)
+                : (float) character.Armor / (character.Level.CurrentLevel * 10)));
+            dmgToChar = dmgToChar < 1 ? 1 : randomizer.GetRandomized(dmgToChar, 0.2f);
 
-            var dmgToCharacter = encounter.Damage.Value - (encounter.Damage.DamageType == DamageType.Physical
-                ? character.Armor
-                : character.MagicArmor);
-            if (dmgToCharacter > 0)
+            if (charHasFirstStrike)
             {
-                wounds.Add(new Wound(nameGenerator.GenerateWoundName(), dmgToCharacter));
-                totalDmg += dmgToCharacter;
+                encounterHealth -= dmgToEncounter;
+                if (encounterHealth <= 0)
+                    continue;
+
+                wounds.Add(new Wound(nameGenerator.GenerateWoundName(), dmgToChar));
+                totalDmg += dmgToChar;
+            }
+            else
+            {
+                wounds.Add(new Wound(nameGenerator.GenerateWoundName(), dmgToChar));
+                totalDmg += dmgToChar;
+
+                encounterHealth -= dmgToEncounter;
+                if (encounterHealth <= 0)
+                    continue;
             }
 
-            if (totalDmg > character.CurrentHealth)
-                continue;
+            charHasFirstStrike = !charHasFirstStrike;
         }
 
         logger.Here().Verbose("Generated wounds {@Wounds} for encounter {@Encounter}", wounds, encounter);

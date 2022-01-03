@@ -57,6 +57,7 @@ namespace DiscordRPG.DiagnosticConsole
                     .AddTransient<IDungeonGenerator, DungeonGenerator>()
                     .AddTransient<INameGenerator, NameGenerator>()
                     .AddTransient<IItemGenerator, ItemGenerator>()
+                    .AddTransient<IRandomizer, Randomizer>()
                     .AddTransient<IWoundGenerator, WoundGenerator>()
                     .AddTransient<IAspectGenerator, AspectGenerator>()
                     .AddTransient<IExperienceGenerator, ExperienceGenerator>()
