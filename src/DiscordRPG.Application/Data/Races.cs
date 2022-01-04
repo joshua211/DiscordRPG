@@ -12,7 +12,7 @@ public class Races : IRaceService
     {
         this.logger = logger.WithContext(GetType());
         ;
-        races = new Dictionary<int, Race>() {{1, Human}, {2, Elf}};
+        races = new Dictionary<int, Race>() {{1, Human}, {2, Elf}, {3, Dwarf}};
     }
 
     public static Race Human => new Race("Human")
@@ -23,6 +23,16 @@ public class Races : IRaceService
         LuckModifier = 1f,
         StrengthModifier = 0.5f,
         VitalityModifier = 0.5f
+    };
+
+    public static Race Dwarf => new Race("Dwarf")
+    {
+        Description = "Another classic one",
+        AgilityModifier = 0.2f,
+        IntelligenceModifier = 0.3f,
+        LuckModifier = 0.5f,
+        StrengthModifier = 1f,
+        VitalityModifier = 1f
     };
 
     public static Race Elf => new Race("Elf")

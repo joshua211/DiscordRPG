@@ -44,25 +44,25 @@ public class NameGenerator : GeneratorBase, INameGenerator
             {
                 Rarity.Common, new List<string>()
                 {
-                    "Cave", "Forrest", "Village"
+                    "Cave", "Forest", "Village"
                 }
             },
             {
                 Rarity.Uncommon, new List<string>()
                 {
-                    "Cave", "Forrest", "Keep", "Hill", "Sect"
+                    "Cave", "Forest", "Keep", "Hill", "Sect"
                 }
             },
             {
                 Rarity.Rare, new List<string>()
                 {
-                    "Cave", "Forrest", "Castle", "Labyrinth"
+                    "Cave", "Forest", "Castle", "Labyrinth"
                 }
             },
             {
                 Rarity.Unique, new List<string>()
                 {
-                    "Cave", "Forrest", "Town", "Desert", "Jungle", "Peak", "Mountain"
+                    "Cave", "Forest", "Town", "Desert", "Jungle", "Peak", "Mountain"
                 }
             },
             {
