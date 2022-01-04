@@ -1,4 +1,5 @@
-﻿using DiscordRPG.Application.Interfaces;
+﻿using DiscordRPG.Application.Data;
+using DiscordRPG.Application.Interfaces;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Common;
 using DiscordRPG.Core.DomainServices.Generators;
@@ -52,7 +53,7 @@ public class CharacterCreatedSubscriber : EventSubscriber<CharacterCreated>
 
     private IEnumerable<Equipment> GetStartingShopInventory()
     {
-        var aspect = new Aspect("", new[] {"Ordinary"});
+        var aspect = Aspects.OrdinaryAspect;
         for (int i = 0; i < 6; i++)
         {
             yield return itemGenerator.GenerateRandomEquipment(Rarity.Common, 2, aspect);

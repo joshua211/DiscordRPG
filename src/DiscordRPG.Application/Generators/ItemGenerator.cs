@@ -1,4 +1,5 @@
-﻿using DiscordRPG.Core.DomainServices.Generators;
+﻿using DiscordRPG.Application.Data;
+using DiscordRPG.Core.DomainServices.Generators;
 using Weighted_Randomizer;
 
 namespace DiscordRPG.Application.Generators;
@@ -131,7 +132,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
 
     public Item GenerateFromRecipe(Recipe recipe)
     {
-        var aspect = new Aspect("", new[] {"Crafted"});
+        var aspect = Aspects.CraftedAspect;
         return (int) recipe.EquipmentCategory.Value > 4
             ? GenerateWeapon(recipe.Rarity, recipe.Level, aspect, recipe.EquipmentCategory.Value)
             : GenerateEquipment(recipe.Rarity, recipe.Level, aspect, recipe.EquipmentCategory.Value);

@@ -43,13 +43,19 @@ public class WoundGenerator : GeneratorBase, IWoundGenerator
                 if (encounterHealth <= 0)
                     continue;
 
-                wounds.Add(new Wound(nameGenerator.GenerateWoundName(), dmgToChar));
-                totalDmg += dmgToChar;
+                if (dmgToChar > 0)
+                {
+                    wounds.Add(new Wound(nameGenerator.GenerateWoundName(), dmgToChar));
+                    totalDmg += dmgToChar;
+                }
             }
             else
             {
-                wounds.Add(new Wound(nameGenerator.GenerateWoundName(), dmgToChar));
-                totalDmg += dmgToChar;
+                if (dmgToChar > 0)
+                {
+                    wounds.Add(new Wound(nameGenerator.GenerateWoundName(), dmgToChar));
+                    totalDmg += dmgToChar;
+                }
 
                 encounterHealth -= dmgToEncounter;
                 if (encounterHealth <= 0)

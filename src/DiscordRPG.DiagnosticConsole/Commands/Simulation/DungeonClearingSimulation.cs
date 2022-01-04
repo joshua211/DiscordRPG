@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using DiscordRPG.Application.Data;
 using DiscordRPG.Common;
 using DiscordRPG.Core.DomainServices;
 using DiscordRPG.Core.DomainServices.Generators;
@@ -81,7 +82,7 @@ public class DungeonClearingSimulation : ICommand
                     {
                         var dungeon =
                             dungeonGenerator.GenerateRandomDungeon(new DiscordId(""), new DiscordId(""), i,
-                                new Aspect("DEBUG", new[] {"DEBUG"}),
+                                Aspects.DebugAspect,
                                 r);
                         foreach (var duration in Enum.GetValues<ActivityDuration>())
                         {
@@ -132,7 +133,7 @@ public class DungeonClearingSimulation : ICommand
 
     private EquipmentInfo GetEquipment(Rarity rarity, uint level, EquipmentCategory weaponCategory)
     {
-        var aspect = new Aspect("DEBUG", new[] {"DEBUG"});
+        var aspect = Aspects.DebugAspect;
         var helmet =
             itemGenerator.GenerateEquipment(rarity, level, aspect, EquipmentCategory.Helmet);
         var armor = itemGenerator.GenerateEquipment(rarity, level, aspect,

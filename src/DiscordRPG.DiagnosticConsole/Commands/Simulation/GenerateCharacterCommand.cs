@@ -1,4 +1,5 @@
-﻿using DiscordRPG.Common;
+﻿using DiscordRPG.Application.Data;
+using DiscordRPG.Common;
 using DiscordRPG.Core.DomainServices;
 using DiscordRPG.Core.DomainServices.Generators;
 using DiscordRPG.Core.Entities;
@@ -76,7 +77,7 @@ public class GenerateCharacterCommand : ICommand
                             .AddChoices(EquipmentCategory.Sword, EquipmentCategory.Dagger, EquipmentCategory.Mace,
                                 EquipmentCategory.Scepter, EquipmentCategory.Spear, EquipmentCategory.Staff,
                                 EquipmentCategory.Bow));
-                        var aspect = new Aspect("DEBUG", new[] {"DEBUG"});
+                        var aspect = Aspects.DebugAspect;
 
                         var equipLevel = AnsiConsole.Prompt(new TextPrompt<uint>("Equip level: "));
 
