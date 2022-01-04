@@ -12,7 +12,7 @@ public class Races : IRaceService
     {
         this.logger = logger.WithContext(GetType());
         ;
-        races = new Dictionary<int, Race>() {{1, Human}, {2, Elf}, {3, Dwarf}};
+        races = new Dictionary<int, Race>() {{1, Human}, {2, Elf}, {3, Dwarf}, {4, Mias}};
     }
 
     public static Race Human => new Race("Human")
