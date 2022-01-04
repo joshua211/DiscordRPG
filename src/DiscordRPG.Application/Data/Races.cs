@@ -45,6 +45,16 @@ public class Races : IRaceService
         VitalityModifier = 0.5f
     };
 
+    public static Race Mias => new Race("Mi'as")
+    {
+        Description = "Legends say the founder of this race did something legendary once, who knows",
+        AgilityModifier = 0.4f,
+        IntelligenceModifier = 0.5f,
+        LuckModifier = 1f,
+        StrengthModifier = 0.3f,
+        VitalityModifier = 1f
+    };
+
     public Race GetRace(int id)
     {
         if (!races.TryGetValue(id, out var obj))
