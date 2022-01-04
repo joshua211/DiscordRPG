@@ -43,13 +43,13 @@ public class DungeonClearingSimulation : ICommand
             if (choice == "back")
                 continue;
 
-            var charClass = AnsiConsole.Prompt(new SelectionPrompt<int>().AddChoices(1, 2).UseConverter(i =>
+            var charClass = AnsiConsole.Prompt(new SelectionPrompt<int>().AddChoices(1, 2, 3, 4, 5).UseConverter(i =>
             {
                 var cl = classService.GetClass(i);
                 return cl.ClassName;
             }));
 
-            var charRace = AnsiConsole.Prompt(new SelectionPrompt<int>().AddChoices(1, 2).UseConverter(i =>
+            var charRace = AnsiConsole.Prompt(new SelectionPrompt<int>().AddChoices(1, 2, 3, 4).UseConverter(i =>
             {
                 var ra = raceService.GetRace(i);
                 return ra.RaceName;
