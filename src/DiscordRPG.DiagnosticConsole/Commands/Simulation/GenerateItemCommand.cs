@@ -1,6 +1,6 @@
-﻿using DiscordRPG.Core.DomainServices.Generators;
+﻿using DiscordRPG.Application.Data;
+using DiscordRPG.Core.DomainServices.Generators;
 using DiscordRPG.Core.Enums;
-using DiscordRPG.Core.ValueObjects;
 using DiscordRPG.DiagnosticConsole.Writers;
 using Spectre.Console;
 
@@ -41,7 +41,7 @@ public class GenerateItemCommand : ICommand
             var level = AnsiConsole.Prompt(new TextPrompt<uint>("Level: "));
 
 
-            var aspect = new Aspect("DEBUG", new[] {"DEBUG"});
+            var aspect = Aspects.DebugAspect;
             string choice;
             do
             {

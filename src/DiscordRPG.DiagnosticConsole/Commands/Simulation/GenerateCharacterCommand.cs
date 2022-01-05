@@ -1,4 +1,5 @@
-﻿using DiscordRPG.Common;
+﻿using DiscordRPG.Application.Data;
+using DiscordRPG.Common;
 using DiscordRPG.Core.DomainServices;
 using DiscordRPG.Core.DomainServices.Generators;
 using DiscordRPG.Core.Entities;
@@ -56,17 +57,19 @@ public class GenerateCharacterCommand : ICommand
                     {
                         AnsiConsole.Clear();
                         var level = AnsiConsole.Prompt(new TextPrompt<uint>("Level: "));
-                        var charClass = AnsiConsole.Prompt(new SelectionPrompt<int>().AddChoices(1, 2).UseConverter(i =>
-                        {
-                            var cl = classService.GetClass(i);
-                            return cl.ClassName;
-                        }));
+                        var charClass = AnsiConsole.Prompt(new SelectionPrompt<int>().AddChoices(1, 2, 3, 4, 5)
+                            .UseConverter(i =>
+                            {
+                                var cl = classService.GetClass(i);
+                                return cl.ClassName;
+                            }));
 
-                        var charRace = AnsiConsole.Prompt(new SelectionPrompt<int>().AddChoices(1, 2).UseConverter(i =>
-                        {
-                            var ra = raceService.GetRace(i);
-                            return ra.RaceName;
-                        }));
+                        var charRace = AnsiConsole.Prompt(new SelectionPrompt<int>().AddChoices(1, 2, 3, 4)
+                            .UseConverter(i =>
+                            {
+                                var ra = raceService.GetRace(i);
+                                return ra.RaceName;
+                            }));
 
                         var rarity = AnsiConsole.Prompt(new SelectionPrompt<Rarity>().Title("Equipment rarity")
                             .AddChoices(Rarity.Common,
@@ -76,7 +79,7 @@ public class GenerateCharacterCommand : ICommand
                             .AddChoices(EquipmentCategory.Sword, EquipmentCategory.Dagger, EquipmentCategory.Mace,
                                 EquipmentCategory.Scepter, EquipmentCategory.Spear, EquipmentCategory.Staff,
                                 EquipmentCategory.Bow));
-                        var aspect = new Aspect("DEBUG", new[] {"DEBUG"});
+                        var aspect = Aspects.DebugAspect;
 
                         var equipLevel = AnsiConsole.Prompt(new TextPrompt<uint>("Equip level: "));
 

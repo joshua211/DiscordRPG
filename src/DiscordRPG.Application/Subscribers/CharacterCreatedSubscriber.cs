@@ -1,4 +1,6 @@
-﻿using DiscordRPG.Application.Interfaces;
+﻿using Discord;
+using DiscordRPG.Application.Data;
+using DiscordRPG.Application.Interfaces;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Common;
 using DiscordRPG.Core.DomainServices.Generators;
@@ -34,8 +36,14 @@ public class CharacterCreatedSubscriber : EventSubscriber<CharacterCreated>
             return;
         }
 
-        await channelManager.SendToGuildHallAsync(guildResult.Value.ServerId,
-            $"{domainEvent.Character.CharacterName} joined the Guild!");
+        var embed = new EmbedBuilder()
+            .WithTitle("New Member!")
+            .WithColor(Color.Gold)
+            .WithDescription(
+                $"The {domainEvent.Character.CharacterRace.RaceName} {domainEvent.Character.CharacterClass.ClassName} {domainEvent.Character.CharacterName} has joined the guild!")
+            .Build();
+
+        await channelManager.SendToGuildHallAsync(guildResult.Value.ServerId, "", embed);
 
         var shopResult =
             await shopService.GetGuildShopAsync(guildResult.Value.ID, cancellationToken: cancellationToken);
@@ -52,7 +60,7 @@ public class CharacterCreatedSubscriber : EventSubscriber<CharacterCreated>
 
     private IEnumerable<Equipment> GetStartingShopInventory()
     {
-        var aspect = new Aspect("", new[] {"Ordinary"});
+        var aspect = Aspects.OrdinaryAspect;
         for (int i = 0; i < 6; i++)
         {
             yield return itemGenerator.GenerateRandomEquipment(Rarity.Common, 2, aspect);

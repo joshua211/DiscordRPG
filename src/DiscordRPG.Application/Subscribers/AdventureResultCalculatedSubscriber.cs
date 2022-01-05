@@ -27,7 +27,11 @@ public class AdventureResultCalculatedSubscriber : EventSubscriber<AdventureResu
         {
             sb.AppendLine(
                 $"<@{character.UserId}> it seems like you were no match for the level {dungeon.DungeonLevel} dungeon **{dungeon.Name}**");
-            sb.AppendLine($"Sadly, you have died due to a {domainEvent.WoundsResult.FinalWound}");
+            if (domainEvent.HasFailed)
+                sb.AppendLine(
+                    $"You've managed to survive, but are heavily wounded and lost everything you found in this dungeon");
+            else
+                sb.AppendLine($"Sadly, you have died due to a {domainEvent.WoundsResult.FinalWound}");
         }
         else
         {

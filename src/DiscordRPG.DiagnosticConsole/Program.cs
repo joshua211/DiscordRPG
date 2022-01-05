@@ -9,6 +9,7 @@ using DiscordRPG.Core.DomainServices.Progress;
 using DiscordRPG.Core.Events;
 using DiscordRPG.Core.ValueObjects;
 using DiscordRPG.DiagnosticConsole.Commands;
+using DiscordRPG.DiagnosticConsole.Commands.Helper;
 using DiscordRPG.DiagnosticConsole.Importers;
 using DiscordRPG.DiagnosticConsole.Models;
 using DiscordRPG.DiagnosticConsole.Settings;
@@ -53,9 +54,12 @@ namespace DiscordRPG.DiagnosticConsole
                     .AddTransient<IEventImporter, EventImporter>()
                     .AddTransient<ICharacterImporter, CharacterImporter>()
                     .AddTransient<IItemGenerator, ItemGenerator>()
+                    .AddTransient<IWorthCalculator, WorthCalculator>()
                     .AddTransient<IDungeonGenerator, DungeonGenerator>()
                     .AddTransient<INameGenerator, NameGenerator>()
                     .AddTransient<IItemGenerator, ItemGenerator>()
+                    .AddTransient<IRandomizer, Randomizer>()
+                    .AddTransient<CharacterHelper>()
                     .AddTransient<IWoundGenerator, WoundGenerator>()
                     .AddTransient<IAspectGenerator, AspectGenerator>()
                     .AddTransient<IExperienceGenerator, ExperienceGenerator>()

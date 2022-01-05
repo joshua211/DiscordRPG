@@ -9,9 +9,11 @@ public enum EquipmentCategory
     Ring,
     Sword,
     Dagger,
-    Staff,
     Bow,
     Mace,
+    Spear,
+    Staff,
     Scepter,
-    Spear
+    Wand,
+    Flail
 }

@@ -1,4 +1,5 @@
-﻿using DiscordRPG.Core.DomainServices.Generators;
+﻿using DiscordRPG.Application.Data;
+using DiscordRPG.Core.DomainServices.Generators;
 using DiscordRPG.Core.Enums;
 using DiscordRPG.Core.ValueObjects;
 using DiscordRPG.DiagnosticConsole.Models;
@@ -53,7 +54,7 @@ public class GenerateDungeonCommand : ICommand
                         Rarity.Rare, Rarity.Unique, Rarity.Legendary, Rarity.Mythic, Rarity.Divine));
                     var level = AnsiConsole.Prompt(new TextPrompt<uint>("Level: "));
 
-                    var aspect = new Aspect("DEBUG", new[] {"DEBUG"});
+                    var aspect = Aspects.DebugAspect;
                     string choice;
                     do
                     {

@@ -64,7 +64,6 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
             .WithButton("Cancel", CommandName + ".cancel", ButtonStyle.Secondary)
             .Build();
 
-        //TODO some flavour text
         var text = $"This will take you {(int) duration} minutes, are you sure you want to search?";
         await command.RespondAsync(text, component: component, ephemeral: true);
     }

@@ -15,9 +15,10 @@ public static class EncounterWriter
         table.AddColumn("Health");
         table.AddColumn("Armor");
         table.AddColumn("Magic Armor");
+        table.AddColumn("Agi");
         table.AddRow(encounter.Level.ToString(), encounter.Damage.Value.ToString(),
             encounter.Damage.DamageType.ToString(), encounter.Health.ToString(), encounter.Armor.ToString(),
-            encounter.MagicArmor.ToString());
+            encounter.MagicArmor.ToString(), encounter.Agility.ToString());
 
         AnsiConsole.Write(table);
     }

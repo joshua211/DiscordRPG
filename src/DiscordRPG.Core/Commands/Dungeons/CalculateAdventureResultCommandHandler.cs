@@ -5,6 +5,7 @@ using DiscordRPG.Core.Entities;
 using DiscordRPG.Core.Events;
 using MediatR;
 using Serilog;
+using Weighted_Randomizer;
 
 namespace DiscordRPG.Core.Commands.Dungeons;
 
@@ -29,6 +30,7 @@ public class CalculateAdventureResultCommandHandler : CommandHandler<CalculateAd
         logger.Here().Debug("Handling {Name}", request.GetType().Name);
         try
         {
+            var hasFailed = false;
             var result =
                 adventureService.CalculateAdventureResult(request.Character, request.Dungeon, request.Duration);
 
@@ -37,22 +39,42 @@ public class CalculateAdventureResultCommandHandler : CommandHandler<CalculateAd
             var woundsBefore = request.Character.Wounds.DeepCopy<List<Wound>>();
 
             var woundResult = progressService.ApplyWounds(ref character, result.Wounds);
-            var expResult = progressService.ApplyExperience(ref character, result.Experience);
-            var itemResult = progressService.ApplyItems(ref character, result.Items);
+            ApplyExperienceResult expResult;
+            ApplyItemsResult itemResult;
 
             if (woundResult.HasDied)
             {
-                logger.Here().Debug("Character {ID} has died from {Wound}", character.ID, woundResult.FinalWound);
-                await characterRepository.DeleteAsync(character.ID, cancellationToken);
-                await PublishAsync(new CharacterDied(charBefore, woundResult.FinalWound!), cancellationToken);
+                expResult = new ApplyExperienceResult(0, 0, 0);
+                itemResult = new ApplyItemsResult(new List<Item>());
+                var selector = new DynamicWeightedRandomizer<bool>
+                {
+                    {true, (int) request.Dungeon.DungeonLevel},
+                    {false, request.Character.Luck}
+                };
+                var hasActuallyDied = selector.NextWithReplacement();
+                if (!hasActuallyDied)
+                {
+                    hasFailed = true;
+                    while (character.CurrentHealth <= 0)
+                        character.Wounds.Remove(character.Wounds.Last());
+                    await characterRepository.UpdateAsync(character, cancellationToken);
+                }
+                else
+                {
+                    logger.Here().Debug("Character {ID} has died from {Wound}", character.ID, woundResult.FinalWound);
+                    await characterRepository.DeleteAsync(character.ID, cancellationToken);
+                    await PublishAsync(new CharacterDied(charBefore, woundResult.FinalWound!), cancellationToken);
+                }
             }
             else
             {
+                expResult = progressService.ApplyExperience(ref character, result.Experience);
+                itemResult = progressService.ApplyItems(ref character, result.Items);
                 await characterRepository.UpdateAsync(character, cancellationToken);
             }
 
             await PublishAsync(
-                new AdventureResultCalculated(character, request.Dungeon, expResult, itemResult, woundResult,
+                new AdventureResultCalculated(character, hasFailed, request.Dungeon, expResult, itemResult, woundResult,
                     result.Encounters, woundsBefore),
                 cancellationToken);
 

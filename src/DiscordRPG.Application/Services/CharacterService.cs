@@ -254,6 +254,29 @@ public class CharacterService : ApplicationService, ICharacterService
         }
     }
 
+    public async Task<Result> DeleteAsync(Identity characterId, TransactionContext parentContext = null,
+        CancellationToken cancellationToken = default)
+    {
+        using var ctx = TransactionBegin(parentContext);
+        try
+        {
+            var cmd = new DeleteCharacterCommand(characterId);
+            var result = await PublishAsync(ctx, cmd, cancellationToken);
+            if (!result.WasSuccessful)
+            {
+                TransactionError(ctx, result.ErrorMessage);
+                return Result.Failure(result.ErrorMessage);
+            }
+
+            return Result.Success();
+        }
+        catch (Exception e)
+        {
+            TransactionError(ctx, e);
+            return Result.Failure(e.Message);
+        }
+    }
+
     private float GetRecoveryAmountFromRest(ActivityDuration duration) => duration switch
     {
         ActivityDuration.Quick => 0.05f,

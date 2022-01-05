@@ -1,75 +1,73 @@
 ﻿using DiscordRPG.Core.DomainServices.Generators;
-using DiscordRPG.WeightedRandom;
+using Weighted_Randomizer;
 
 namespace DiscordRPG.Application.Generators;
 
 public class RarityGenerator : GeneratorBase, IRarityGenerator
 {
-    public Rarity GenerateRarityFromActivityDuration(ActivityDuration duration)
+    public Rarity GenerateRarityFromActivityDuration(ActivityDuration duration, int luck)
     {
-        var selector = new DynamicRandomSelector<Rarity>();
+        var selector = new DynamicWeightedRandomizer<int>();
         switch (duration)
         {
             case ActivityDuration.Quick:
-                selector.Add(Rarity.Common, 1000);
-                selector.Add(Rarity.Uncommon, 100);
-                selector.Add(Rarity.Rare, 10);
-                selector.Add(Rarity.Unique, 1);
-                selector.Add(Rarity.Legendary, 0.1f);
-                selector.Add(Rarity.Mythic, 0.01f);
-                selector.Add(Rarity.Divine, 0.001f);
+                selector.Add((int) Rarity.Common, 1000000);
+                selector.Add((int) Rarity.Uncommon, 100000);
+                selector.Add((int) Rarity.Rare, 10000);
+                selector.Add((int) Rarity.Unique, 1000);
+                selector.Add((int) Rarity.Legendary, 100);
+                selector.Add((int) Rarity.Mythic, 10);
+                selector.Add((int) Rarity.Divine, 1);
                 break;
             case ActivityDuration.Short:
-                selector.Add(Rarity.Common, 500);
-                selector.Add(Rarity.Uncommon, 500);
-                selector.Add(Rarity.Rare, 100);
-                selector.Add(Rarity.Unique, 1);
-                selector.Add(Rarity.Legendary, 0.1f);
-                selector.Add(Rarity.Mythic, 0.01f);
-                selector.Add(Rarity.Divine, 0.001f);
+                selector.Add((int) Rarity.Common, 500000);
+                selector.Add((int) Rarity.Uncommon, 500000);
+                selector.Add((int) Rarity.Rare, 100000);
+                selector.Add((int) Rarity.Unique, 1000);
+                selector.Add((int) Rarity.Legendary, 100);
+                selector.Add((int) Rarity.Mythic, luck);
+                selector.Add((int) Rarity.Divine, luck / 2);
                 break;
             case ActivityDuration.Medium:
-                selector.Add(Rarity.Common, 100);
-                selector.Add(Rarity.Uncommon, 200);
-                selector.Add(Rarity.Rare, 300);
-                selector.Add(Rarity.Unique, 100);
-                selector.Add(Rarity.Legendary, 5);
-                selector.Add(Rarity.Mythic, 0.1f);
-                selector.Add(Rarity.Divine, 0.01f);
+                selector.Add((int) Rarity.Common, 10000);
+                selector.Add((int) Rarity.Uncommon, 20000);
+                selector.Add((int) Rarity.Rare, 30000);
+                selector.Add((int) Rarity.Unique, 10000);
+                selector.Add((int) Rarity.Legendary, 500);
+                selector.Add((int) Rarity.Mythic, luck);
+                selector.Add((int) Rarity.Divine, luck / 2);
                 break;
             case ActivityDuration.Long:
-                selector.Add(Rarity.Common, 10);
-                selector.Add(Rarity.Uncommon, 50);
-                selector.Add(Rarity.Rare, 100);
-                selector.Add(Rarity.Unique, 700);
-                selector.Add(Rarity.Legendary, 50);
-                selector.Add(Rarity.Mythic, 10f);
-                selector.Add(Rarity.Divine, 0.1f);
+                selector.Add((int) Rarity.Common, 100);
+                selector.Add((int) Rarity.Uncommon, 500);
+                selector.Add((int) Rarity.Rare, 1000);
+                selector.Add((int) Rarity.Unique, 7000);
+                selector.Add((int) Rarity.Legendary, 500);
+                selector.Add((int) Rarity.Mythic, luck);
+                selector.Add((int) Rarity.Divine, luck / 2);
                 break;
             case ActivityDuration.ExtraLong:
-                selector.Add(Rarity.Common, 10);
-                selector.Add(Rarity.Uncommon, 10);
-                selector.Add(Rarity.Rare, 100);
-                selector.Add(Rarity.Unique, 600);
-                selector.Add(Rarity.Legendary, 200);
-                selector.Add(Rarity.Mythic, 100);
-                selector.Add(Rarity.Divine, 10);
+                selector.Add((int) Rarity.Common, 10);
+                selector.Add((int) Rarity.Uncommon, 10);
+                selector.Add((int) Rarity.Rare, 100);
+                selector.Add((int) Rarity.Unique, 600);
+                selector.Add((int) Rarity.Legendary, 200);
+                selector.Add((int) Rarity.Mythic, luck);
+                selector.Add((int) Rarity.Divine, luck);
                 break;
         }
 
-        selector.Build();
-
-        return selector.SelectRandomItem();
+        return (Rarity) selector.NextWithReplacement();
     }
 
     public Rarity GenerateShopRarity()
     {
-        var selector = new DynamicRandomSelector<Rarity>();
-        selector.Add(Rarity.Common, 10);
-        selector.Add(Rarity.Uncommon, 7);
-        selector.Add(Rarity.Rare, 3);
-        selector.Add(Rarity.Unique, 1);
+        var selector = new DynamicWeightedRandomizer<int>();
+        selector.Add((int) Rarity.Common, 10);
+        selector.Add((int) Rarity.Uncommon, 7);
+        selector.Add((int) Rarity.Rare, 3);
+        selector.Add((int) Rarity.Unique, 1);
 
-        return selector.Build().SelectRandomItem();
+        return (Rarity) selector.NextWithReplacement();
     }
 }
