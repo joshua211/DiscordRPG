@@ -15,7 +15,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         this.worthCalculator = worthCalculator;
     }
 
-    public IEnumerable<Item> GenerateItems(Dungeon dungeon)
+    public IEnumerable<Item> GenerateItems(Character character, Dungeon dungeon)
     {
         var items = new List<Item>();
         var totalNum = GetNumOfItems();
@@ -28,7 +28,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
 
         for (int i = 0; i < totalNum; i++)
         {
-            var rarity = GetItemRarityFromDungeonRarity(dungeon.Rarity);
+            var rarity = GetItemRarityFromDungeon(character, dungeon);
             var itemType = selector.NextWithReplacement();
             switch (itemType)
             {
@@ -156,14 +156,14 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
     private CharacterAttribute GetScalingAttribute(EquipmentCategory category) => category switch
     {
         EquipmentCategory.Sword => CharacterAttribute.Strength,
-        EquipmentCategory.Bow => CharacterAttribute.Strength,
-        EquipmentCategory.Dagger => CharacterAttribute.Strength,
+        EquipmentCategory.Bow => CharacterAttribute.Agility,
+        EquipmentCategory.Dagger => CharacterAttribute.Agility,
         EquipmentCategory.Spear => CharacterAttribute.Strength,
         EquipmentCategory.Mace => CharacterAttribute.Strength,
         EquipmentCategory.Scepter => CharacterAttribute.Intelligence,
         EquipmentCategory.Staff => CharacterAttribute.Intelligence,
         EquipmentCategory.Wand => CharacterAttribute.Intelligence,
-        EquipmentCategory.Flail => CharacterAttribute.Intelligence
+        EquipmentCategory.Flail => CharacterAttribute.Vitality
     };
 
     private EquipmentCategory GenerateRandomEquipmentCategory()
@@ -264,52 +264,52 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         return selector.NextWithReplacement();
     }
 
-    private Rarity GetItemRarityFromDungeonRarity(Rarity rarity)
+    private Rarity GetItemRarityFromDungeon(Character character, Dungeon dungeon)
     {
         var selector = new DynamicWeightedRandomizer<int>();
-        switch (rarity)
+        switch (dungeon.Rarity)
         {
             case Rarity.Common:
                 selector.Add((int) Rarity.Common, 1);
                 break;
             case Rarity.Uncommon:
-                selector.Add((int) Rarity.Common, 1);
-                selector.Add((int) Rarity.Uncommon, 1);
+                selector.Add((int) Rarity.Common, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Uncommon, character.Luck);
                 break;
             case Rarity.Rare:
-                selector.Add((int) Rarity.Common, 1);
-                selector.Add((int) Rarity.Uncommon, 1);
-                selector.Add((int) Rarity.Rare, 1);
+                selector.Add((int) Rarity.Common, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Uncommon, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Rare, character.Luck);
                 break;
             case Rarity.Unique:
-                selector.Add((int) Rarity.Common, 1);
-                selector.Add((int) Rarity.Uncommon, 1);
-                selector.Add((int) Rarity.Rare, 1);
-                selector.Add((int) Rarity.Unique, 1);
+                selector.Add((int) Rarity.Common, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Uncommon, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Rare, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Unique, character.Luck);
                 break;
             case Rarity.Legendary:
-                selector.Add((int) Rarity.Common, 1);
-                selector.Add((int) Rarity.Uncommon, 1);
-                selector.Add((int) Rarity.Rare, 1);
-                selector.Add((int) Rarity.Unique, 1);
-                selector.Add((int) Rarity.Legendary, 1);
+                selector.Add((int) Rarity.Common, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Uncommon, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Rare, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Unique, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Legendary, character.Luck);
                 break;
             case Rarity.Mythic:
-                selector.Add((int) Rarity.Common, 1);
-                selector.Add((int) Rarity.Uncommon, 1);
-                selector.Add((int) Rarity.Rare, 1);
-                selector.Add((int) Rarity.Unique, 1);
-                selector.Add((int) Rarity.Legendary, 1);
-                selector.Add((int) Rarity.Mythic, 1);
+                selector.Add((int) Rarity.Common, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Uncommon, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Rare, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Unique, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Legendary, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Mythic, character.Luck);
                 break;
             case Rarity.Divine:
-                selector.Add((int) Rarity.Common, 1);
-                selector.Add((int) Rarity.Uncommon, 1);
-                selector.Add((int) Rarity.Rare, 1);
-                selector.Add((int) Rarity.Unique, 1);
-                selector.Add((int) Rarity.Legendary, 1);
-                selector.Add((int) Rarity.Mythic, 1);
-                selector.Add((int) Rarity.Divine, 1);
+                selector.Add((int) Rarity.Common, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Uncommon, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Rare, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Unique, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Legendary, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Mythic, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Divine, character.Luck);
                 break;
         }
 

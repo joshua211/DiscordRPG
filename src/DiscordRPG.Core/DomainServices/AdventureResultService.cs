@@ -33,7 +33,7 @@ public class AdventureResultService : IAdventureResultService
             var encounter = encounterGenerator.CreateDungeonEncounter(dungeon);
             encounters.Add(encounter);
             wounds.AddRange(woundGenerator.GenerateWounds(character, encounter));
-            items.AddRange(itemGenerator.GenerateItems(dungeon));
+            items.AddRange(itemGenerator.GenerateItems(character, dungeon));
             exp += experienceGenerator.GenerateExperienceFromEncounter(encounter);
         }
 

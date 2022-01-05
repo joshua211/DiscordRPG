@@ -4,7 +4,7 @@ namespace DiscordRPG.Core.DomainServices.Generators;
 
 public interface IItemGenerator
 {
-    IEnumerable<Item> GenerateItems(Dungeon dungeon);
+    IEnumerable<Item> GenerateItems(Character character, Dungeon dungeon);
     Weapon GenerateRandomWeapon(Rarity rarity, uint level, Aspect aspect);
     Equipment GenerateRandomEquipment(Rarity rarity, uint level, Aspect aspect);
     public Item GenerateRandomItem(Rarity rarity, uint level, int amount);

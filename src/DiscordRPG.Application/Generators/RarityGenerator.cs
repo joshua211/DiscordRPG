@@ -5,7 +5,7 @@ namespace DiscordRPG.Application.Generators;
 
 public class RarityGenerator : GeneratorBase, IRarityGenerator
 {
-    public Rarity GenerateRarityFromActivityDuration(ActivityDuration duration)
+    public Rarity GenerateRarityFromActivityDuration(ActivityDuration duration, int luck)
     {
         var selector = new DynamicWeightedRandomizer<int>();
         switch (duration)
@@ -25,8 +25,8 @@ public class RarityGenerator : GeneratorBase, IRarityGenerator
                 selector.Add((int) Rarity.Rare, 100000);
                 selector.Add((int) Rarity.Unique, 1000);
                 selector.Add((int) Rarity.Legendary, 100);
-                selector.Add((int) Rarity.Mythic, 100);
-                selector.Add((int) Rarity.Divine, 1);
+                selector.Add((int) Rarity.Mythic, luck);
+                selector.Add((int) Rarity.Divine, luck / 2);
                 break;
             case ActivityDuration.Medium:
                 selector.Add((int) Rarity.Common, 10000);
@@ -34,8 +34,8 @@ public class RarityGenerator : GeneratorBase, IRarityGenerator
                 selector.Add((int) Rarity.Rare, 30000);
                 selector.Add((int) Rarity.Unique, 10000);
                 selector.Add((int) Rarity.Legendary, 500);
-                selector.Add((int) Rarity.Mythic, 10);
-                selector.Add((int) Rarity.Divine, 1);
+                selector.Add((int) Rarity.Mythic, luck);
+                selector.Add((int) Rarity.Divine, luck / 2);
                 break;
             case ActivityDuration.Long:
                 selector.Add((int) Rarity.Common, 100);
@@ -43,8 +43,8 @@ public class RarityGenerator : GeneratorBase, IRarityGenerator
                 selector.Add((int) Rarity.Rare, 1000);
                 selector.Add((int) Rarity.Unique, 7000);
                 selector.Add((int) Rarity.Legendary, 500);
-                selector.Add((int) Rarity.Mythic, 100);
-                selector.Add((int) Rarity.Divine, 1);
+                selector.Add((int) Rarity.Mythic, luck);
+                selector.Add((int) Rarity.Divine, luck / 2);
                 break;
             case ActivityDuration.ExtraLong:
                 selector.Add((int) Rarity.Common, 10);
@@ -52,8 +52,8 @@ public class RarityGenerator : GeneratorBase, IRarityGenerator
                 selector.Add((int) Rarity.Rare, 100);
                 selector.Add((int) Rarity.Unique, 600);
                 selector.Add((int) Rarity.Legendary, 200);
-                selector.Add((int) Rarity.Mythic, 100);
-                selector.Add((int) Rarity.Divine, 10);
+                selector.Add((int) Rarity.Mythic, luck);
+                selector.Add((int) Rarity.Divine, luck);
                 break;
         }
 

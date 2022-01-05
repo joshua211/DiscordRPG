@@ -17,10 +17,10 @@ public class DungeonGenerator : GeneratorBase, IDungeonGenerator
         this.aspectGenerator = aspectGenerator;
     }
 
-    public Dungeon GenerateRandomDungeon(DiscordId serverId, DiscordId threadId, uint charLevel,
+    public Dungeon GenerateRandomDungeon(DiscordId serverId, DiscordId threadId, uint charLevel, int charLuck,
         ActivityDuration duration)
     {
-        var rarity = rarityGenerator.GenerateRarityFromActivityDuration(duration);
+        var rarity = rarityGenerator.GenerateRarityFromActivityDuration(duration, charLuck);
         var aspect = aspectGenerator.GetRandomAspect(rarity);
 
         return GenerateRandomDungeon(serverId, threadId, charLevel, aspect, rarity);
