@@ -9,9 +9,6 @@ public class EnterDungeonDialog : Dialog
     {
     }
 
-    public EnterDungeonDialog()
-    {
-    }
 
     public Dungeon Dungeon { get; set; }
     public string CharId { get; set; }

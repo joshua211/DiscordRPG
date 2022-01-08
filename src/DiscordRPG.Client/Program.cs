@@ -26,6 +26,7 @@ namespace DiscordRPG.Client;
 public class Program
 {
     public static IHostEnvironment HostEnvironment;
+    public static string Version;
 
     private static string template =
         "[{Timestamp:dd.MM HH:mm:ss} {Level}][{SourceContext:l}.{Method}] {Message}{NewLine}{Exception}";
@@ -46,6 +47,9 @@ public class Program
         HostEnvironment = new HostingEnvironment();
         var env = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
         HostEnvironment.EnvironmentName = string.IsNullOrEmpty(env) ? "Production" : env;
+        Version = Assembly.GetEntryAssembly()
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            .InformationalVersion;
 
         var config = GetLoggerConfiguration();
         Log.Logger = config.CreateBootstrapLogger();
@@ -53,9 +57,7 @@ public class Program
         try
         {
             Log.Information("Starting Application in {Env} environment on version {Version}",
-                HostEnvironment.EnvironmentName, Assembly.GetEntryAssembly()
-                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-                    .InformationalVersion);
+                HostEnvironment.EnvironmentName, Version);
             new Program().MainAsync().GetAwaiter().GetResult();
         }
         catch (Exception e)
@@ -81,6 +83,9 @@ public class Program
         {
             await handler.InstallAsync();
         }
+
+        Log.Information("Running Application in {Env} environment on version {Version}",
+            HostEnvironment.EnvironmentName, Version);
 
         await host.RunAsync();
     }

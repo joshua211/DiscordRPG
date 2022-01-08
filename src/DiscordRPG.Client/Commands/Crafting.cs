@@ -51,29 +51,21 @@ public class Crafting : DialogCommandBase<CraftingDialog>
 
         var menuBuilder = new SelectMenuBuilder()
             .WithPlaceholder("Select which type of item")
-            .WithCustomId(CommandName + ".item-type")
+            .WithCustomId(GetCommandId("set-item-type"))
             .AddOption("Equipment", "equipment", "Craft a new piece of equipment")
             .AddOption("Item", "item", "Craft a new item");
 
         var component = new ComponentBuilder()
             .WithSelectMenu(menuBuilder)
-            .WithButton("Cancel", CommandName + ".cancel", ButtonStyle.Secondary)
+            .WithButton("Cancel", GetCommandId("cancel"), ButtonStyle.Secondary)
             .Build();
 
         await command.RespondAsync("Choose which type of item you want to craft", ephemeral: true,
             component: component);
     }
 
-    protected override Task HandleSelection(SocketMessageComponent component, string id, CraftingDialog dialog) =>
-        id switch
-        {
-            "item-type" => HandleSelectItemType(component, dialog),
-            "select-item-recipe" => HandleSelectItem(component, dialog),
-            "select-equipment-recipe" => HandleSelectEquipment(component, dialog),
-            "select-equipment-category" => SetEquipCategory(component, dialog)
-        };
-
-    private async Task SetEquipCategory(SocketMessageComponent component, CraftingDialog dialog)
+    [Handler("select-equipment-category")]
+    public async Task SetEquipCategory(SocketMessageComponent component, CraftingDialog dialog)
     {
         var category = component.Data.Values.FirstOrDefault();
         dialog.EquipmentCategory = Enum.Parse<EquipmentCategory>(category);
@@ -81,7 +73,8 @@ public class Crafting : DialogCommandBase<CraftingDialog>
         await HandleSelectEquipment(component, dialog);
     }
 
-    private async Task HandleSelectItemType(SocketMessageComponent component, CraftingDialog dialog)
+    [Handler("set-item-type")]
+    public async Task HandleSelectItemType(SocketMessageComponent component, CraftingDialog dialog)
     {
         var itemType = component.Data.Values.FirstOrDefault();
         switch (itemType)
@@ -95,7 +88,8 @@ public class Crafting : DialogCommandBase<CraftingDialog>
         }
     }
 
-    private async Task HandleSelectItem(SocketMessageComponent component, CraftingDialog dialog)
+    [Handler("select-item-recipe")]
+    public async Task HandleSelectItem(SocketMessageComponent component, CraftingDialog dialog)
     {
         var selectedRecipe = component.Data.Values.FirstOrDefault();
         if (selectedRecipe is not null)
@@ -109,12 +103,15 @@ public class Crafting : DialogCommandBase<CraftingDialog>
         await component.UpdateAsync(properties =>
         {
             properties.Embeds = embeds.Any() ? embeds : null;
-            properties.Content = "Choose what kind of item you want to craft.";
+            properties.Content = dialog.RecipeCount > 0
+                ? "Choose what kind of item you want to craft."
+                : "You dont have enough materials to craft anything!";
             properties.Components = menuComponent;
         });
     }
 
-    private async Task HandleSelectEquipment(SocketMessageComponent component, CraftingDialog dialog)
+    [Handler("select-equipment-recipe")]
+    public async Task HandleSelectEquipment(SocketMessageComponent component, CraftingDialog dialog)
     {
         var selectedRecipe = component.Data.Values.FirstOrDefault();
         dialog.IsEquipment = true;
@@ -131,7 +128,9 @@ public class Crafting : DialogCommandBase<CraftingDialog>
         await component.UpdateAsync(properties =>
         {
             properties.Embeds = embeds.Any() ? embeds : null;
-            properties.Content = "Choose what kind of equipment you want to craft.";
+            properties.Content = dialog.RecipeCount > 0
+                ? "Choose what kind of equipment you want to craft."
+                : "You dont have enough materials to craft anything!";
             properties.Components = menuComponent;
         });
     }
@@ -159,7 +158,7 @@ public class Crafting : DialogCommandBase<CraftingDialog>
         var menuBuilder = new SelectMenuBuilder();
         if (dialog.IsEquipment)
         {
-            menuBuilder.WithCustomId(CommandName + ".select-equipment-recipe");
+            menuBuilder.WithCustomId(GetCommandId("select-equipment-recipe"));
             foreach (var recipe in recipeGenerator
                          .GetAllEquipmentRecipes(dialog.Character.Level.CurrentLevel)
                          .Where(r => r.EquipmentCategory == dialog.EquipmentCategory &&
@@ -174,7 +173,7 @@ public class Crafting : DialogCommandBase<CraftingDialog>
 
         else
         {
-            menuBuilder.WithCustomId(CommandName + ".select-item-recipe");
+            menuBuilder.WithCustomId(GetCommandId("select-item-recipe"));
             foreach (var recipe in recipeGenerator
                          .GetAllItemRecipes(dialog.Character.Level.CurrentLevel)
                          .Where(r => r.IsCraftableWith(dialog.Character.Inventory))
@@ -186,12 +185,16 @@ public class Crafting : DialogCommandBase<CraftingDialog>
 
         var builder = new ComponentBuilder();
         if (menuBuilder.Options.Any())
+        {
+            dialog.RecipeCount = menuBuilder.Options.Count;
             builder.WithSelectMenu(menuBuilder);
-        builder.WithButton("<", CommandName + ".prev-page", ButtonStyle.Secondary, disabled: dialog.CurrentPage <= 1);
-        builder.WithButton(">", CommandName + ".next-page", ButtonStyle.Secondary,
+        }
+
+        builder.WithButton("<", GetCommandId("prev-page"), ButtonStyle.Secondary, disabled: dialog.CurrentPage <= 1);
+        builder.WithButton(">", GetCommandId("next-page"), ButtonStyle.Secondary,
             disabled: menuBuilder.Options.Count < 10);
-        builder.WithButton("Craft", CommandName + ".craft", disabled: dialog.SelectedRecipe is null, row: 3);
-        builder.WithButton("Cancel", CommandName + ".cancel", ButtonStyle.Secondary);
+        builder.WithButton("Craft", GetCommandId("craft"), disabled: dialog.SelectedRecipe is null, row: 3);
+        builder.WithButton("Cancel", GetCommandId("cancel"), ButtonStyle.Secondary);
 
         return builder.Build();
     }
@@ -199,13 +202,13 @@ public class Crafting : DialogCommandBase<CraftingDialog>
     private async Task HandleSelectEquipmentCategory(SocketMessageComponent component, CraftingDialog dialog)
     {
         var menuBuilder = new SelectMenuBuilder();
-        menuBuilder.WithCustomId(CommandName + ".select-equipment-category");
+        menuBuilder.WithCustomId(GetCommandId("select-equipment-category"));
         foreach (var cat in Enum.GetValues<EquipmentCategory>())
             menuBuilder.AddOption(cat.ToString(), cat.ToString());
 
         var menuComponent = new ComponentBuilder()
             .WithSelectMenu(menuBuilder)
-            .WithButton("Cancel", CommandName + ".cancel", ButtonStyle.Secondary)
+            .WithButton("Cancel", GetCommandId("cancel"), ButtonStyle.Secondary)
             .Build();
 
         await component.UpdateAsync(properties =>
@@ -215,41 +218,8 @@ public class Crafting : DialogCommandBase<CraftingDialog>
         });
     }
 
-    protected override Task HandleButton(SocketMessageComponent component, string id, CraftingDialog dialog) =>
-        id switch
-        {
-            "craft" => HandleCraft(component, dialog),
-            "cancel" => HandleCancel(component, dialog),
-            "prev-page" => HandleChangePage(component, dialog, dialog.CurrentPage - 1),
-            "next-page" => HandleChangePage(component, dialog, dialog.CurrentPage + 1)
-        };
-
-    private async Task HandleChangePage(SocketMessageComponent component, CraftingDialog dialog, int newPage)
-    {
-        dialog.CurrentPage = newPage;
-        var embeds = GetDisplayEmbeds(dialog);
-        var menu = GetRecipeMenu(dialog);
-
-        await component.UpdateAsync(properties =>
-        {
-            properties.Embeds = embeds;
-            properties.Components = menu;
-        });
-    }
-
-    private async Task HandleCancel(SocketMessageComponent component, CraftingDialog dialog)
-    {
-        EndDialog(dialog.UserId);
-        await component.UpdateAsync(properties =>
-        {
-            properties.Content = "Maybe another time.";
-            properties.Components = null;
-            properties.Embeds = null;
-            properties.Embed = null;
-        });
-    }
-
-    private async Task HandleCraft(SocketMessageComponent component, CraftingDialog dialog)
+    [Handler("craft")]
+    public async Task HandleCraft(SocketMessageComponent component, CraftingDialog dialog)
     {
         EndDialog(dialog.UserId);
         var result = await characterService.CraftItemAsync(dialog.Character, dialog.SelectedRecipe);

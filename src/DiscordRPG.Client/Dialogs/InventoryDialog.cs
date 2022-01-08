@@ -4,10 +4,6 @@ namespace DiscordRPG.Client.Dialogs;
 
 public class InventoryDialog : Dialog
 {
-    public InventoryDialog()
-    {
-    }
-
     public InventoryDialog(ulong userId) : base(userId)
     {
     }

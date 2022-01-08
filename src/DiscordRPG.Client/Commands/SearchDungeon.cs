@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Client.Commands.Base;
+using DiscordRPG.Client.Commands.Helpers;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Client.Handlers;
 using DiscordRPG.Common.Extensions;
@@ -32,7 +33,7 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
     {
         try
         {
-            var optionBuilder = GetActivityDurationBuilder("Choose how long you are going to search");
+            var optionBuilder = OptionHelper.GetActivityDurationBuilder("Choose how long you are going to search");
 
             var command = new SlashCommandBuilder()
                 .WithName(CommandName)
@@ -60,38 +61,16 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
         dialog.Duration = duration;
 
         var component = new ComponentBuilder()
-            .WithButton("Search", CommandName + ".accept")
-            .WithButton("Cancel", CommandName + ".cancel", ButtonStyle.Secondary)
+            .WithButton("Search", GetCommandId("accept"))
+            .WithButton("Cancel", GetCommandId("cancel"), ButtonStyle.Secondary)
             .Build();
 
         var text = $"This will take you {(int) duration} minutes, are you sure you want to search?";
         await command.RespondAsync(text, component: component, ephemeral: true);
     }
 
-    protected override Task HandleSelection(SocketMessageComponent component, string id, SearchDungeonDialog dialog)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected override Task HandleButton(SocketMessageComponent component, string id, SearchDungeonDialog dialog) =>
-        id switch
-        {
-            "accept" => HandleSearchDungeon(component, dialog),
-            "cancel" => HandleCancelSearch(component, dialog),
-            _ => ComponentIdNotHandled(id)
-        };
-
-    private async Task HandleCancelSearch(SocketMessageComponent component, SearchDungeonDialog dialog)
-    {
-        EndDialog(dialog.UserId);
-        await component.UpdateAsync(properties =>
-        {
-            properties.Components = null;
-            properties.Content = "Maybe some other time!";
-        });
-    }
-
-    private async Task HandleSearchDungeon(SocketMessageComponent component, SearchDungeonDialog dialog)
+    [Handler("accept")]
+    public async Task HandleSearchDungeon(SocketMessageComponent component, SearchDungeonDialog dialog)
     {
         var result = await activityService.QueueActivityAsync(dialog.Character.ID, dialog.Duration,
             ActivityType.SearchDungeon, new ActivityData

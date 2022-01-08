@@ -11,8 +11,13 @@ public class Aspect
         DungeonPrefix = dungeonPrefix;
     }
 
-    [BsonDictionaryOptions(DictionaryRepresentation.ArrayOfArrays)]
-    public Dictionary<Rarity, IEnumerable<string>> ItemPrefixes { get; private set; }
+    [BsonConstructor]
+    public Aspect()
+    {
+    }
 
-    public string DungeonPrefix { get; private set; }
+    [BsonDictionaryOptions(DictionaryRepresentation.ArrayOfArrays)]
+    public Dictionary<Rarity, IEnumerable<string>> ItemPrefixes { get; set; }
+
+    public string DungeonPrefix { get; set; }
 }

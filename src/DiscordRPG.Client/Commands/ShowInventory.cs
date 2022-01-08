@@ -47,16 +47,17 @@ public class ShowInventory : DialogCommandBase<InventoryDialog>
         dialog.Character = context.Character;
         dialog.CurrentPage = 1;
 
-        var component = GetDialogComponent(dialog);
+        var component = GetMenu(dialog);
+        var text = GetDisplayText(dialog);
 
-        await command.RespondAsync("Your inventory", component: component, ephemeral: true);
+        await command.RespondAsync(text, component: component, ephemeral: true);
     }
 
-    private MessageComponent GetDialogComponent(InventoryDialog dialog)
+    private MessageComponent GetMenu(InventoryDialog dialog)
     {
         var menuBuilder = new SelectMenuBuilder()
             .WithPlaceholder("Filter Category")
-            .WithCustomId(CommandName + ".category")
+            .WithCustomId(GetCommandId("select-category"))
             .AddOption("Items", "items")
             .AddOption("Weapons", "weapons")
             .AddOption("Helmets", "helmets")
@@ -67,42 +68,30 @@ public class ShowInventory : DialogCommandBase<InventoryDialog>
 
         return new ComponentBuilder()
             .WithSelectMenu(menuBuilder)
-            .WithButton("<", CommandName + ".prev", disabled: dialog.CurrentPage <= 1)
-            .WithButton(">", CommandName + ".next", disabled: dialog.CurrentPage >= dialog.MaxPagesOfCurrentCategory)
-            .WithButton("Close Inventory", CommandName + ".close", ButtonStyle.Secondary, row: 3)
+            .WithButton("<", GetCommandId("prev-page"), disabled: dialog.CurrentPage <= 1)
+            .WithButton(">", GetCommandId("next-page"),
+                disabled: dialog.CurrentPage >= dialog.MaxPagesOfCurrentCategory)
+            .WithButton("Close Inventory", GetCommandId("cancel"), ButtonStyle.Secondary, row: 3)
             .Build();
     }
 
-    protected override Task HandleSelection(SocketMessageComponent component, string id, InventoryDialog dialog) =>
-        id switch
-        {
-            "category" => HandleCategory(component, dialog, component.Data.Values.FirstOrDefault()),
-            _ => Task.CompletedTask,
-        };
-
-    private async Task HandleCategory(SocketMessageComponent component, InventoryDialog dialog, string category)
+    private string GetDisplayText(InventoryDialog dialog)
     {
-        dialog.CurrentCategory = category;
-
-        var task = category switch
+        var items = dialog.CurrentCategory switch
         {
-            "items" => ShowItems(component, dialog),
-            "weapons" => ShowWeapons(component, dialog),
-            "helmets" => ShowEquipment(component, dialog, EquipmentCategory.Helmet),
-            "armor" => ShowEquipment(component, dialog, EquipmentCategory.Armor),
-            "pants" => ShowEquipment(component, dialog, EquipmentCategory.Pants),
-            "rings" => ShowEquipment(component, dialog, EquipmentCategory.Ring),
-            "amulets" => ShowEquipment(component, dialog, EquipmentCategory.Amulet),
-            _ => Task.CompletedTask
+            "weapons" => dialog.Character.Inventory.Where(i => i is Weapon).OrderByDescending(i => i.Level),
+            "helmets" => dialog.Character.Inventory.Where(i => i is Equipment {Position: EquipmentPosition.Helmet})
+                .OrderByDescending(i => i.Level),
+            "armor" => dialog.Character.Inventory.Where(i => i is Equipment {Position: EquipmentPosition.Armor})
+                .OrderByDescending(i => i.Level),
+            "pants" => dialog.Character.Inventory.Where(i => i is Equipment {Position: EquipmentPosition.Pants})
+                .OrderByDescending(i => i.Level),
+            "rings" => dialog.Character.Inventory.Where(i => i is Equipment {Position: EquipmentPosition.Ring})
+                .OrderByDescending(i => i.Level),
+            "amulets" => dialog.Character.Inventory.Where(i => i is Equipment {Position: EquipmentPosition.Amulet})
+                .OrderByDescending(i => i.Level),
+            _ => dialog.Character.Inventory.Where(i => i is not Equipment).OrderByDescending(i => i.Level)
         };
-
-        await task;
-    }
-
-    private async Task ShowItems(SocketMessageComponent component, InventoryDialog dialog)
-    {
-        var items = dialog.Character.Inventory.Where(i => i is not Equipment).OrderByDescending(i => i.Level);
-        ;
 
         dialog.MaxPagesOfCurrentCategory = items.Count() / 10;
         if (items.Count() % 10 != 0)
@@ -111,128 +100,91 @@ public class ShowInventory : DialogCommandBase<InventoryDialog>
         var sb = new StringBuilder();
         foreach (var item in items.Skip((dialog.CurrentPage - 1) * 10).Take(10))
         {
-            sb.AppendLine(
-                $"[{item.Rarity.ToString()}] {item.Name} (Lvl: {item.Level} | {item.Worth}$) x {item.Amount}");
+            if (item is Equipment e)
+            {
+                sb.Append(
+                    $"[{item.Rarity.ToString()}] {item.Name} (Lvl: {item.Level} | {item.Worth}$) Armor: {e.Armor} MArmor: {e.MagicArmor} ");
+                sb.Append('(');
+                if (e.Strength > 0)
+                    sb.Append($"STR: {e.Strength} ");
+                if (e.Vitality > 0)
+                    sb.Append($"VIT: {e.Vitality} ");
+                if (e.Agility > 0)
+                    sb.Append($"AGI: {e.Agility} ");
+                if (e.Intelligence > 0)
+                    sb.Append($"INT: {e.Intelligence} ");
+                sb.Append(')');
+                sb.Append('\n');
+            }
+            else if (item is Weapon w)
+            {
+                sb.Append(
+                    $"[{item.Rarity.ToString()}] {item.Name} (Lvl: {item.Level} | {item.Worth}$) Dmg: {w.DamageValue} {w.DamageType} ");
+                sb.Append('(');
+                if (w.Strength > 0)
+                    sb.Append($"STR: {w.Strength} ");
+                if (w.Vitality > 0)
+                    sb.Append($"VIT: {w.Vitality} ");
+                if (w.Agility > 0)
+                    sb.Append($"AGI: {w.Agility} ");
+                if (w.Intelligence > 0)
+                    sb.Append($"INT: {w.Intelligence} ");
+                sb.Append(')');
+                sb.Append('\n');
+            }
+            else
+                sb.AppendLine(
+                    $"[{item.Rarity.ToString()}] {item.Name} (Lvl: {item.Level} | {item.Worth}$) x {item.Amount}");
         }
 
         if (sb.Length == 0)
             sb.AppendLine("Nothing to show here");
 
-        var messageComponent = GetDialogComponent(dialog);
-
-        await component.UpdateAsync(properties =>
-        {
-            properties.Components = messageComponent;
-            properties.Content = sb.ToString();
-        });
+        return sb.ToString();
     }
 
-    private async Task ShowWeapons(SocketMessageComponent component, InventoryDialog dialog)
+    [Handler("select-category")]
+    public async Task HandleCategory(SocketMessageComponent component, InventoryDialog dialog)
     {
-        var items = dialog.Character.Inventory.Where(i => i is Weapon).OrderByDescending(i => i.Level);
+        var category = component.Data.Values.FirstOrDefault();
+        dialog.CurrentCategory = category;
 
-        dialog.MaxPagesOfCurrentCategory = items.Count() / 10;
-        if (items.Count() % 10 != 0)
-            dialog.MaxPagesOfCurrentCategory++;
-
-        var sb = new StringBuilder();
-        foreach (Weapon item in items.Skip((dialog.CurrentPage - 1) * 10).Take(10))
-        {
-            sb.Append(
-                $"[{item.Rarity.ToString()}] {item.Name} (Lvl: {item.Level} | {item.Worth}$) Dmg: {item.DamageValue} {item.DamageType} ");
-            sb.Append('(');
-            if (item.Strength > 0)
-                sb.Append($"STR: {item.Strength} ");
-            if (item.Vitality > 0)
-                sb.Append($"VIT: {item.Vitality} ");
-            if (item.Agility > 0)
-                sb.Append($"AGI: {item.Agility} ");
-            if (item.Intelligence > 0)
-                sb.Append($"INT: {item.Intelligence} ");
-            sb.Append(')');
-            sb.Append('\n');
-        }
-
-        if (sb.Length == 0)
-            sb.AppendLine("Nothing to show here");
-
-        var messageComponent = GetDialogComponent(dialog);
+        var menu = GetMenu(dialog);
+        var text = GetDisplayText(dialog);
 
         await component.UpdateAsync(properties =>
         {
-            properties.Components = messageComponent;
-            properties.Content = sb.ToString();
+            properties.Components = menu;
+            properties.Content = text;
         });
     }
 
-    private async Task ShowEquipment(SocketMessageComponent component, InventoryDialog dialog,
-        EquipmentCategory category)
-    {
-        var items = dialog.Character.Inventory.Where(i =>
-            i is Equipment equipment && equipment.EquipmentCategory == category).OrderByDescending(i => i.Level);
-        ;
 
-        dialog.MaxPagesOfCurrentCategory = items.Count() / 10;
-        if (items.Count() % 10 != 0)
-            dialog.MaxPagesOfCurrentCategory++;
-
-        var sb = new StringBuilder();
-        foreach (Equipment item in items.Skip((dialog.CurrentPage - 1) * 10).Take(10))
-        {
-            sb.Append(
-                $"[{item.Rarity.ToString()}] {item.Name} (Lvl: {item.Level} | {item.Worth}$) Armor: {item.Armor} MArmor: {item.MagicArmor} ");
-            sb.Append('(');
-            if (item.Strength > 0)
-                sb.Append($"STR: {item.Strength} ");
-            if (item.Vitality > 0)
-                sb.Append($"VIT: {item.Vitality} ");
-            if (item.Agility > 0)
-                sb.Append($"AGI: {item.Agility} ");
-            if (item.Intelligence > 0)
-                sb.Append($"INT: {item.Intelligence} ");
-            sb.Append(')');
-            sb.Append('\n');
-        }
-
-        var messageComponent = GetDialogComponent(dialog);
-
-        if (sb.Length == 0)
-            sb.AppendLine("Nothing to show here");
-
-        await component.UpdateAsync(properties =>
-        {
-            properties.Components = messageComponent;
-            properties.Content = sb.ToString();
-        });
-    }
-
-    protected override Task HandleButton(SocketMessageComponent component, string id, InventoryDialog dialog) =>
-        id switch
-        {
-            "close" => HandleClose(component, dialog),
-            "prev" => HandlePrevPage(component, dialog),
-            "next" => HandleNextPage(component, dialog)
-        };
-
-    private Task HandleNextPage(SocketMessageComponent component, InventoryDialog dialog)
+    [Handler("next-page")]
+    public async Task HandleNextPage(SocketMessageComponent component, InventoryDialog dialog)
     {
         dialog.CurrentPage++;
-        return HandleCategory(component, dialog, dialog.CurrentCategory);
+        var menu = GetMenu(dialog);
+        var text = GetDisplayText(dialog);
+
+        await component.UpdateAsync(properties =>
+        {
+            properties.Components = menu;
+            properties.Content = text;
+        });
     }
 
-    private Task HandlePrevPage(SocketMessageComponent component, InventoryDialog dialog)
+    [Handler("prev-page")]
+    public async Task HandlePrevPage(SocketMessageComponent component, InventoryDialog dialog)
     {
         dialog.CurrentPage--;
-        return HandleCategory(component, dialog, dialog.CurrentCategory);
-    }
+        var menu = GetMenu(dialog);
+        var text = GetDisplayText(dialog);
 
-    private async Task HandleClose(SocketMessageComponent component, InventoryDialog dialog)
-    {
-        EndDialog(dialog.UserId);
-        component.UpdateAsync(properties =>
+        await component.UpdateAsync(properties =>
         {
-            properties.Components = null;
-            properties.Content = "You closed your inventory";
+            properties.Components = menu;
+            properties.Content = text;
         });
     }
 }

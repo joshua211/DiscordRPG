@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Client.Commands.Base;
+using DiscordRPG.Client.Commands.Helpers;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Client.Handlers;
 using DiscordRPG.Common.Extensions;
@@ -31,7 +32,7 @@ public class Rest : DialogCommandBase<RestDialog>
     {
         try
         {
-            var optionBuilder = GetActivityDurationBuilder("How long do you want to rest?");
+            var optionBuilder = OptionHelper.GetActivityDurationBuilder("How long do you want to rest?");
             var command = new SlashCommandBuilder()
                 .WithName(CommandName)
                 .WithDescription("Rest and recover from your wounds")
@@ -55,8 +56,8 @@ public class Rest : DialogCommandBase<RestDialog>
         dialog.Duration = duration;
 
         var component = new ComponentBuilder()
-            .WithButton("Rest", CommandName + ".rest")
-            .WithButton("Cancel", CommandName + ".cancel", ButtonStyle.Secondary)
+            .WithButton("Rest", GetCommandId("rest"))
+            .WithButton("Cancel", GetCommandId("cancel"), ButtonStyle.Secondary)
             .Build();
 
         var text =
@@ -65,20 +66,8 @@ public class Rest : DialogCommandBase<RestDialog>
         await command.RespondAsync(text, component: component, ephemeral: true);
     }
 
-    protected override Task HandleSelection(SocketMessageComponent component, string id, RestDialog dialog)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected override Task HandleButton(SocketMessageComponent component, string id, RestDialog dialog) =>
-        id switch
-        {
-            "rest" => HandleRest(component, dialog),
-            "cancel" => HandleCancel(component, dialog),
-            _ => ComponentIdNotHandled(id)
-        };
-
-    private async Task HandleRest(SocketMessageComponent component, RestDialog dialog)
+    [Handler("rest")]
+    public async Task HandleRest(SocketMessageComponent component, RestDialog dialog)
     {
         var result = await activityService.QueueActivityAsync(dialog.CharId, dialog.Duration,
             ActivityType.Rest, new ActivityData());
@@ -94,16 +83,5 @@ public class Rest : DialogCommandBase<RestDialog>
         });
 
         EndDialog(dialog.UserId);
-    }
-
-    private async Task HandleCancel(SocketMessageComponent component, RestDialog dialog)
-    {
-        EndDialog(dialog.UserId);
-
-        await component.UpdateAsync(properties =>
-        {
-            properties.Content = "Maybe another time!";
-            properties.Components = null;
-        });
     }
 }

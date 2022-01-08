@@ -8,10 +8,6 @@ public class RestDialog : Dialog
     {
     }
 
-    public RestDialog()
-    {
-    }
-
     public string CharId { get; set; }
     public ActivityDuration Duration { get; set; }
 }

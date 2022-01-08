@@ -1,4 +1,6 @@
-﻿namespace DiscordRPG.Client.Dialogs;
+﻿using Discord;
+
+namespace DiscordRPG.Client.Dialogs;
 
 public abstract class Dialog
 {
@@ -7,9 +9,16 @@ public abstract class Dialog
         UserId = userId;
     }
 
-    public Dialog()
-    {
-    }
 
     public ulong UserId { get; private set; }
+}
+
+public interface IShareableDialog
+{
+    Embed ShareableEmbed { get; set; }
+}
+
+public interface IPageableDialog
+{
+    int CurrentPage { get; set; }
 }

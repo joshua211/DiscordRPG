@@ -75,20 +75,16 @@ public class UseItem : DialogCommandBase<UseItemDialog>
         var componentBuilder = new ComponentBuilder();
         if (menuBuilder.Options.Any())
             componentBuilder.WithSelectMenu(menuBuilder);
-        componentBuilder.WithButton("Use Item", CommandName + ".use",
+        componentBuilder.WithButton("Use Item", GetCommandId("use"),
             disabled: dialog.SelectedItem is null);
-        componentBuilder.WithButton("Cancel", CommandName + ".cancel", ButtonStyle.Secondary);
+        componentBuilder.WithButton("Cancel", GetCommandId("cancel"), ButtonStyle.Secondary);
 
         return componentBuilder.Build();
     }
 
-    protected override Task HandleSelection(SocketMessageComponent component, string id, UseItemDialog dialog) =>
-        id switch
-        {
-            "select-item" => HandleSelectItem(component, dialog),
-        };
 
-    private async Task HandleSelectItem(SocketMessageComponent component, UseItemDialog dialog)
+    [Handler("select-item")]
+    public async Task HandleSelectItem(SocketMessageComponent component, UseItemDialog dialog)
     {
         var itemName = component.Data.Values.First();
         dialog.SelectedItem = dialog.Character.Inventory.FirstOrDefault(i => i.Name == itemName);
@@ -103,13 +99,8 @@ public class UseItem : DialogCommandBase<UseItemDialog>
         });
     }
 
-    protected override Task HandleButton(SocketMessageComponent component, string id, UseItemDialog dialog) => id switch
-    {
-        "cancel" => HandleCancel(component, dialog),
-        "use" => HandleUseItem(component, dialog)
-    };
-
-    private async Task HandleUseItem(SocketMessageComponent component, UseItemDialog dialog)
+    [Handler("use")]
+    public async Task HandleUseItem(SocketMessageComponent component, UseItemDialog dialog)
     {
         EndDialog(dialog.UserId);
         var result = await characterService.UseItemAsync(dialog.Character, dialog.SelectedItem);
@@ -126,17 +117,6 @@ public class UseItem : DialogCommandBase<UseItemDialog>
             properties.Content = null;
             properties.Embeds = null;
             properties.Embed = embed;
-        });
-    }
-
-    private async Task HandleCancel(SocketMessageComponent component, UseItemDialog dialog)
-    {
-        EndDialog(dialog.UserId);
-        await component.UpdateAsync(properties =>
-        {
-            properties.Components = null;
-            properties.Content = "Maybe another time";
-            properties.Embeds = null;
         });
     }
 }

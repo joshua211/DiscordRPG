@@ -5,7 +5,7 @@ namespace DiscordRPG.Core.ValueObjects;
 
 public class Item
 {
-    private static readonly Regex WhitespaceRegex = new Regex(@"\s+");
+    protected static readonly Regex WhitespaceRegex = new Regex(@"\s+");
 
     public Item(string name, string description, Rarity rarity, int worth, uint level, int amount, bool isUsable)
     {
@@ -36,5 +36,5 @@ public class Item
         return $"[{Rarity.ToString()} {GetType().Name}] {Name} (Lvl: {Level} | {Worth}$)";
     }
 
-    public string GetItemCode() => $"{Rarity}-{WhitespaceRegex.Replace(Name, "")}{Level}|{Worth}";
+    public virtual string GetItemCode() => $"{Rarity}-{WhitespaceRegex.Replace(Name, "")}{Level}|{Worth}";
 }

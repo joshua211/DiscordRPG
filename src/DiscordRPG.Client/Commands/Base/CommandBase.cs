@@ -1,10 +1,10 @@
-﻿using Discord;
+﻿using System.Reflection;
+using Discord;
 using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Common.Extensions;
 using DiscordRPG.Core.Entities;
-using DiscordRPG.Core.Enums;
 using Serilog;
 
 namespace DiscordRPG.Client.Commands.Base;
@@ -28,8 +28,8 @@ public abstract class CommandBase : IGuildCommand
         this.dungeonService = dungeonService;
         this.guildService = guildService;
 
-        client.SelectMenuExecuted += HandleSelectionAsync;
-        client.ButtonExecuted += HandleButtonAsync;
+        client.SelectMenuExecuted += c => GetHandlerAsync(c, true);
+        client.ButtonExecuted += c => GetHandlerAsync(c);
     }
 
     public abstract string CommandName { get; }
@@ -138,41 +138,39 @@ public abstract class CommandBase : IGuildCommand
         await HandleAsync(command, new GuildCommandContext(character, activity, dungeon, guild));
     }
 
-    private async Task HandleSelectionAsync(SocketMessageComponent component)
+    private async Task GetHandlerAsync(SocketMessageComponent component, bool isSelection = false)
     {
         var idSplit = component.Data.CustomId.Split('.');
         if (idSplit[0] != CommandName)
             return;
 
-        await HandleSelectionAsync(component, idSplit[1]);
-    }
+        var methodInfo = GetType().GetMethods()
+            .FirstOrDefault(m =>
+            {
+                var attr = m.GetCustomAttribute(typeof(HandlerAttribute), true) as HandlerAttribute;
+                return attr is not null && attr.Id == idSplit[1];
+            });
 
-    private async Task HandleButtonAsync(SocketMessageComponent component)
-    {
-        var idSplit = component.Data.CustomId.Split('.');
-        if (idSplit[0] != CommandName)
+        if (methodInfo is null)
             return;
 
-        await HandleButtonAsync(component, idSplit[1]);
+        if (isSelection)
+            await HandleSelectionAsync(component, methodInfo);
+        else
+            await HandleButtonAsync(component, methodInfo);
     }
+
+    protected virtual async Task HandleButtonAsync(SocketMessageComponent component, MethodInfo method)
+    {
+        await (Task) method.Invoke(this, new object[] {component});
+    }
+
+    protected virtual async Task HandleSelectionAsync(SocketMessageComponent component, MethodInfo method)
+    {
+        await (Task) method.Invoke(this, new object[] {component});
+    }
+
+    public string GetCommandId(string idName) => $"{CommandName}.{idName}";
 
     protected abstract Task HandleAsync(SocketSlashCommand command, GuildCommandContext context);
-
-    protected virtual Task HandleSelectionAsync(SocketMessageComponent component, string id)
-        => Task.CompletedTask;
-
-    protected virtual Task HandleButtonAsync(SocketMessageComponent component, string id) => Task.CompletedTask;
-
-    protected static SlashCommandOptionBuilder GetActivityDurationBuilder(string description)
-    {
-        return new SlashCommandOptionBuilder()
-            .WithName("duration")
-            .WithDescription(description)
-            .WithType(ApplicationCommandOptionType.Integer)
-            .WithRequired(true)
-            .AddChoice("quick", (int) ActivityDuration.Quick)
-            .AddChoice("short", (int) ActivityDuration.Short)
-            .AddChoice("medium", (int) ActivityDuration.Medium)
-            .AddChoice("long", (int) ActivityDuration.Long);
-    }
 }

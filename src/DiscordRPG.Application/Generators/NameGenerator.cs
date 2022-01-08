@@ -105,7 +105,7 @@ public class NameGenerator : GeneratorBase, INameGenerator
 
     public string GenerateRandomEquipmentName(Rarity rarity, EquipmentCategory category, Aspect aspect)
     {
-        var prefix = aspect.ItemPrefixes.ToList()[random.Next(aspect.ItemPrefixes.Count())];
+        var prefix = aspect.ItemPrefixes[rarity].ToList()[random.Next(aspect.ItemPrefixes.Count())];
         var noun = category.ToString();
 
         return $"{prefix} {noun}";

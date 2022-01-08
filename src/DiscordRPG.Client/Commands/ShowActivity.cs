@@ -102,20 +102,8 @@ public class ShowActivity : DialogCommandBase<ShowActivityDialog>
         }
     }
 
-    protected override Task HandleSelection(SocketMessageComponent component, string id, ShowActivityDialog dialog)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected override Task HandleButton(SocketMessageComponent component, string id, ShowActivityDialog dialog) =>
-        id switch
-        {
-            "cancel" => HandleCancel(component, dialog),
-            "stop" => HandleStop(component, dialog),
-            "accept-prompt" => HandleAcceptPrompt(component, dialog)
-        };
-
-    private async Task HandleAcceptPrompt(SocketMessageComponent component, ShowActivityDialog dialog)
+    [Handler("accept-prompt")]
+    public async Task HandleAcceptPrompt(SocketMessageComponent component, ShowActivityDialog dialog)
     {
         await activityService.StopActivityAsync(dialog.Activity);
         await component.UpdateAsync(properties =>
@@ -125,11 +113,12 @@ public class ShowActivity : DialogCommandBase<ShowActivityDialog>
         });
     }
 
-    private async Task HandleStop(SocketMessageComponent component, ShowActivityDialog dialog)
+    [Handler("stop")]
+    public async Task HandleStop(SocketMessageComponent component, ShowActivityDialog dialog)
     {
         var msgComponent = new ComponentBuilder()
-            .WithButton("Stop activity", CommandName + ".accept-prompt", ButtonStyle.Danger)
-            .WithButton("Cancel", CommandName + ".cancel", ButtonStyle.Secondary)
+            .WithButton("Stop activity", GetCommandId("accept-prompt"), ButtonStyle.Danger)
+            .WithButton("Cancel", GetCommandId("cancel"), ButtonStyle.Secondary)
             .Build();
 
         await component.UpdateAsync(properties =>
@@ -138,11 +127,5 @@ public class ShowActivity : DialogCommandBase<ShowActivityDialog>
             properties.Content = "If you stop now, you wont get any rewards!";
             properties.Components = msgComponent;
         });
-    }
-
-    private async Task HandleCancel(SocketMessageComponent component, ShowActivityDialog dialog)
-    {
-        EndDialog(dialog.UserId);
-        await component.UpdateAsync(properties => { properties.Components = null; });
     }
 }

@@ -6,9 +6,6 @@ public class CreateCharacterDialog : Dialog
     {
     }
 
-    public CreateCharacterDialog()
-    {
-    }
 
     public string GuildId { get; set; }
     public string? Name { get; set; }

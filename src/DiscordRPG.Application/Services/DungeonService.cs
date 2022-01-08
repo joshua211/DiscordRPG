@@ -61,7 +61,7 @@ public class DungeonService : ApplicationService, IDungeonService
 
             await channelManager.UpdateDungeonThreadNameAsync(threadId, dungeon.Name);
             await channelManager.AddUserToThread(threadId, character.UserId);
-            var embed = new EmbedBuilder()
+            var dungeonEmbed = new EmbedBuilder()
                 .WithTitle(dungeon.Name)
                 .WithDescription($"{character.CharacterName} found this new dungeon!")
                 .WithColor(Color.Purple)
@@ -71,10 +71,12 @@ public class DungeonService : ApplicationService, IDungeonService
                 .WithFooter(
                     "This dungeon will be deleted if no explorations are left or if it has not been used for 24 hours")
                 .Build();
+            var newFoundEmbed = new EmbedBuilder().WithTitle("New Dungeon!").WithDescription(
+                    $"{character.CharacterName} found a new **{dungeon.Rarity.ToString()}** dungeon (Lvl. {dungeon.DungeonLevel})! <#{threadId}>")
+                .Build();
 
-            await channelManager.SendToChannelAsync(threadId, string.Empty, embed);
-            await channelManager.SendToDungeonHallAsync(serverId,
-                $"{character.CharacterName} found a new **{dungeon.Rarity.ToString()}** dungeon (Lvl. {dungeon.DungeonLevel})! <#{threadId}>");
+            await channelManager.SendToChannelAsync(threadId, string.Empty, dungeonEmbed);
+            await channelManager.SendToDungeonHallAsync(serverId, string.Empty, newFoundEmbed);
 
             return Result<Dungeon>.Success(dungeon);
         }

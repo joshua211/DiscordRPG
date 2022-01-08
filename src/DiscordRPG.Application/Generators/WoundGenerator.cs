@@ -45,7 +45,6 @@ public class WoundGenerator : GeneratorBase, IWoundGenerator
 
                 if (dmgToChar > 0)
                 {
-                    wounds.Add(new Wound(nameGenerator.GenerateWoundName(), dmgToChar));
                     totalDmg += dmgToChar;
                 }
             }
@@ -53,7 +52,6 @@ public class WoundGenerator : GeneratorBase, IWoundGenerator
             {
                 if (dmgToChar > 0)
                 {
-                    wounds.Add(new Wound(nameGenerator.GenerateWoundName(), dmgToChar));
                     totalDmg += dmgToChar;
                 }
 
@@ -67,6 +65,6 @@ public class WoundGenerator : GeneratorBase, IWoundGenerator
 
         logger.Here().Verbose("Generated wounds {@Wounds} for encounter {@Encounter}", wounds, encounter);
 
-        return wounds;
+        return new[] {new Wound(nameGenerator.GenerateWoundName(), totalDmg)};
     }
 }

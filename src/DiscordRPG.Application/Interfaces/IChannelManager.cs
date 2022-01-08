@@ -8,7 +8,7 @@ public interface IChannelManager
 
     Task SendToGuildHallAsync(DiscordId serverId, string text, Embed embed = null);
 
-    Task SendToDungeonHallAsync(DiscordId serverId, string text);
+    Task SendToDungeonHallAsync(DiscordId serverId, string text, Embed embed = null);
 
     Task SendToChannelAsync(DiscordId channelId, string text, Embed embed = null);
 

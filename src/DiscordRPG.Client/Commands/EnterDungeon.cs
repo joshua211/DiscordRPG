@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Client.Commands.Base;
+using DiscordRPG.Client.Commands.Helpers;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Common.Extensions;
 using DiscordRPG.Core.Enums;
@@ -31,7 +32,8 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
     {
         try
         {
-            var optionBuilder = GetActivityDurationBuilder("How long do you want to explore this dungeon?");
+            var optionBuilder =
+                OptionHelper.GetActivityDurationBuilder("How long do you want to explore this dungeon?");
             var command = new SlashCommandBuilder()
                 .WithName(CommandName)
                 .WithDescription("Enter and explore the current dungeon")
@@ -62,8 +64,8 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
         }
 
         var component = new ComponentBuilder()
-            .WithButton("Enter Dungeon", CommandName + ".enter")
-            .WithButton("Cancel", CommandName + ".cancel", ButtonStyle.Secondary)
+            .WithButton("Enter Dungeon", GetCommandId("enter"))
+            .WithButton("Cancel", GetCommandId("cancel"), ButtonStyle.Secondary)
             .Build();
 
         var text =
@@ -72,31 +74,8 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
         await command.RespondAsync(text, component: component, ephemeral: true);
     }
 
-    protected override Task HandleSelection(SocketMessageComponent component, string id, EnterDungeonDialog dialog)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected override Task HandleButton(SocketMessageComponent component, string id, EnterDungeonDialog dialog) =>
-        id switch
-        {
-            "enter" => HandleEnterDungeon(component, dialog),
-            "cancel" => HandleCancelDungeon(component, dialog),
-            _ => ComponentIdNotHandled(id)
-        };
-
-    private async Task HandleCancelDungeon(SocketMessageComponent component, EnterDungeonDialog dialog)
-    {
-        EndDialog(dialog.UserId);
-
-        await component.UpdateAsync(properties =>
-        {
-            properties.Content = "Maybe another time!";
-            properties.Components = null;
-        });
-    }
-
-    private async Task HandleEnterDungeon(SocketMessageComponent component, EnterDungeonDialog dialog)
+    [Handler("enter")]
+    public async Task HandleEnterDungeon(SocketMessageComponent component, EnterDungeonDialog dialog)
     {
         var result = await activityService.QueueActivityAsync(dialog.CharId, dialog.Duration,
             ActivityType.Dungeon, new ActivityData

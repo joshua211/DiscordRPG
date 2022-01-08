@@ -71,7 +71,7 @@ public class Shop : DialogCommandBase<ShopDialog>
         }
     }
 
-    private async Task HandleBuy(SocketSlashCommand command, ShopDialog dialog)
+    public async Task HandleBuy(SocketSlashCommand command, ShopDialog dialog)
     {
         dialog.IsBuying = true;
         var shopResult = await shopService.GetGuildShopAsync(dialog.GuildId);
@@ -108,12 +108,8 @@ public class Shop : DialogCommandBase<ShopDialog>
         await command.RespondAsync(ephemeral: true, component: menu, embeds: embeds.ToArray());
     }
 
-    protected override Task HandleSelection(SocketMessageComponent component, string id, ShopDialog dialog) => id switch
-    {
-        "inspect" => HandleInspectItem(component, dialog)
-    };
-
-    private async Task HandleInspectItem(SocketMessageComponent component, ShopDialog dialog)
+    [Handler("inspect")]
+    public async Task HandleInspectItem(SocketMessageComponent component, ShopDialog dialog)
     {
         var id = component.Data.Values.FirstOrDefault();
         if (dialog.IsBuying)
@@ -137,18 +133,11 @@ public class Shop : DialogCommandBase<ShopDialog>
         });
     }
 
-    protected override Task HandleButton(SocketMessageComponent component, string id, ShopDialog dialog) => id switch
-    {
-        "buy" => HandleBuyEquip(component, dialog),
-        "sell" => HandleSellItem(component, dialog),
-        "cancel" => HandleCancel(component, dialog),
-        "prev-page" => HandleChangePage(component, dialog, dialog.CurrentPage - 1),
-        "next-page" => HandleChangePage(component, dialog, dialog.CurrentPage + 1)
-    };
 
-    private async Task HandleChangePage(SocketMessageComponent component, ShopDialog dialog, int newPage)
+    [Handler("next-page")]
+    public async Task HandleNextPage(SocketMessageComponent component, ShopDialog dialog)
     {
-        dialog.CurrentPage = newPage;
+        dialog.CurrentPage += 1;
         var menu = GetMenu(dialog);
         var embeds = GetDisplayEmbeds(dialog);
 
@@ -159,7 +148,22 @@ public class Shop : DialogCommandBase<ShopDialog>
         });
     }
 
-    private async Task HandleSellItem(SocketMessageComponent component, ShopDialog dialog)
+    [Handler("prev-page")]
+    private async Task HandlePrevPage(SocketMessageComponent component, ShopDialog dialog)
+    {
+        dialog.CurrentPage -= 1;
+        var menu = GetMenu(dialog);
+        var embeds = GetDisplayEmbeds(dialog);
+
+        await component.UpdateAsync(properties =>
+        {
+            properties.Components = menu;
+            properties.Embeds = embeds.ToArray();
+        });
+    }
+
+    [Handler("sell")]
+    public async Task HandleSellItem(SocketMessageComponent component, ShopDialog dialog)
     {
         var result = await shopService.SellItemAsync(dialog.Character, dialog.SelectedItem);
         if (!result.WasSuccessful)
@@ -185,18 +189,8 @@ public class Shop : DialogCommandBase<ShopDialog>
         });
     }
 
-    private async Task HandleCancel(SocketMessageComponent component, ShopDialog dialog)
-    {
-        EndDialog(dialog.UserId);
-        await component.UpdateAsync(properties =>
-        {
-            properties.Components = null;
-            properties.Embeds = null;
-            properties.Content = "Maybe another time";
-        });
-    }
-
-    private async Task HandleBuyEquip(SocketMessageComponent component, ShopDialog dialog)
+    [Handler("buy")]
+    public async Task HandleBuyEquip(SocketMessageComponent component, ShopDialog dialog)
     {
         var result =
             await shopService.BuyEquipAsync(dialog.GuildShop, dialog.Character, (Equipment) dialog.SelectedItem);
@@ -228,7 +222,7 @@ public class Shop : DialogCommandBase<ShopDialog>
     private MessageComponent GetMenu(ShopDialog dialog)
     {
         var selectionBuilder = new SelectMenuBuilder();
-        selectionBuilder.WithCustomId(CommandName + ".inspect");
+        selectionBuilder.WithCustomId(GetCommandId("inspect"));
 
         List<Item> tradableItems;
         if (dialog.IsBuying)
@@ -257,16 +251,16 @@ public class Shop : DialogCommandBase<ShopDialog>
             componentBuilder.WithSelectMenu(selectionBuilder, row: 0);
 
         var label = dialog.IsBuying ? "Buy" : "Sell";
-        var id = dialog.IsBuying ? ".buy" : ".sell";
+        var id = dialog.IsBuying ? "buy" : "sell";
 
         if (!dialog.IsBuying)
             componentBuilder
-                .WithButton("<", CommandName + ".prev-page", ButtonStyle.Secondary, disabled: dialog.CurrentPage <= 1)
-                .WithButton(">", CommandName + ".next-page", ButtonStyle.Secondary);
+                .WithButton("<", GetCommandId("prev-page"), ButtonStyle.Secondary, disabled: dialog.CurrentPage <= 1)
+                .WithButton(">", GetCommandId("next-page"), ButtonStyle.Secondary);
 
         componentBuilder
-            .WithButton(label, CommandName + id, disabled: dialog.SelectedItem is null, row: 2)
-            .WithButton("Cancel", CommandName + ".cancel", ButtonStyle.Secondary, row: 2);
+            .WithButton(label, GetCommandId(id), disabled: dialog.SelectedItem is null, row: 2)
+            .WithButton("Cancel", GetCommandId("cancel"), ButtonStyle.Secondary, row: 2);
 
         return componentBuilder.Build();
     }

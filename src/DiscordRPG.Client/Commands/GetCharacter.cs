@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Client.Commands.Base;
+using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Common.Extensions;
 using Serilog;
 
@@ -10,7 +11,7 @@ namespace DiscordRPG.Client.Commands;
 
 [RequireGuild]
 [RequireCharacter]
-public class GetCharacter : CommandBase
+public class GetCharacter : DialogCommandBase<ShowCharacterDialog>
 {
     public GetCharacter(DiscordSocketClient client, ILogger logger, IActivityService activityService,
         ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService) : base(client,
@@ -37,10 +38,11 @@ public class GetCharacter : CommandBase
         }
     }
 
-    protected override async Task HandleAsync(SocketSlashCommand command, GuildCommandContext context)
+    protected override async Task HandleDialogAsync(SocketSlashCommand command, GuildCommandContext context,
+        ShowCharacterDialog dialog)
     {
         var character = context.Character!;
-        var builder = new EmbedBuilder()
+        var embed = new EmbedBuilder()
             .WithTitle(character.CharacterName)
             .WithDescription("No Title equiped")
             .WithColor(Color.DarkGreen)
@@ -59,8 +61,14 @@ public class GetCharacter : CommandBase
             .AddField("\u200b", "\u200b", true)
             .AddField("Vitality", character.Vitality, true)
             .AddField("Intelligence", character.Intelligence, true)
-            .AddField("\u200b", "\u200b", true);
+            .AddField("\u200b", "\u200b", true)
+            .Build();
 
-        await command.RespondAsync(embed: builder.Build(), ephemeral: true);
+        dialog.ShareableEmbed = embed;
+
+        var menu = new ComponentBuilder().WithButton("Share", GetCommandId("share"), ButtonStyle.Primary)
+            .WithButton("Close", GetCommandId("cancel"), ButtonStyle.Secondary).Build();
+
+        await command.RespondAsync(embed: embed, component: menu, ephemeral: true);
     }
 }

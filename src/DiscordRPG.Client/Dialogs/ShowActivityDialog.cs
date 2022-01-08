@@ -4,10 +4,6 @@ namespace DiscordRPG.Client.Dialogs;
 
 public class ShowActivityDialog : Dialog
 {
-    public ShowActivityDialog()
-    {
-    }
-
     public ShowActivityDialog(ulong userId) : base(userId)
     {
     }

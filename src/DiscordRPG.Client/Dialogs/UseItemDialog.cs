@@ -5,10 +5,6 @@ namespace DiscordRPG.Client.Dialogs;
 
 public class UseItemDialog : Dialog
 {
-    public UseItemDialog()
-    {
-    }
-
     public UseItemDialog(ulong userId) : base(userId)
     {
     }

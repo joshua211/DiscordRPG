@@ -65,88 +65,28 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
         dialog.Name = name;
         dialog.GuildId = context.Guild.ID;
 
-        await ChooseRace(command, dialog);
+        var menu = GetMenu(dialog);
+        var embed = GetDisplayEmbed(dialog);
+
+        await command.RespondAsync(embed: embed, component: menu, ephemeral: true);
     }
 
-    private async Task ChooseRace(IDiscordInteraction interaction, CreateCharacterDialog dialog)
+    private Embed GetDisplayEmbed(CreateCharacterDialog dialog)
     {
-        var menuBuilder = new SelectMenuBuilder()
-            .WithPlaceholder("Choose your race")
-            .WithCustomId(CommandName + ".race-select");
-
-        foreach (var (id, race) in raceService.GetAllRaces())
+        if (dialog.RaceId == 0)
         {
-            menuBuilder.AddOption(race.RaceName, id.ToString(), race.Description);
+            return new EmbedBuilder().WithDescription($"Alright {dialog.Name}, choose a race first!").Build();
         }
 
-        var component = new ComponentBuilder().WithSelectMenu(menuBuilder).Build();
-        var text = $"Alright {dialog.Name}, choose a race for yourself first!";
-        if (interaction is SocketMessageComponent comp)
+        if (dialog.ClassId == 0)
         {
-            await comp.UpdateAsync(properties =>
-            {
-                properties.Content = text;
-                properties.Embed = null;
-                properties.Components = component;
-            });
+            return new EmbedBuilder()
+                .WithDescription($"A {raceService.GetRace(dialog.RaceId).RaceName} huh? Anyway, choose your path next!")
+                .Build();
         }
-        else
-        {
-            await interaction.RespondAsync(text, component: component,
-                ephemeral: true);
-        }
-    }
-
-    protected override Task HandleSelection(SocketMessageComponent component, string id,
-        CreateCharacterDialog dialog) => id switch
-    {
-        "race-select" => HandleRaceSelect(component, dialog),
-        "class-select" => HandleClassSelect(component, dialog),
-        _ => throw new Exception("Cant handle " + id)
-    };
-
-    protected override Task HandleButton(SocketMessageComponent component, string id, CreateCharacterDialog dialog) =>
-        id switch
-        {
-            "submit" => HandleSubmit(component, dialog),
-            "restart" => HandleRestart(component, dialog),
-            "cancel" => HandleCancel(component, dialog),
-            _ => throw new Exception("Cant handle " + id)
-        };
-
-    private Task HandleRaceSelect(SocketMessageComponent component, CreateCharacterDialog dialog)
-    {
-        var raceId = int.Parse(component.Data.Values.FirstOrDefault());
-        dialog.RaceId = raceId;
-
-        return component.UpdateAsync(properties =>
-        {
-            var menuBuilder = new SelectMenuBuilder()
-                .WithPlaceholder("Choose your class")
-                .WithCustomId(CommandName + ".class-select");
-            foreach (var item in classService.GetAllClasses())
-            {
-                var @class = item.@class;
-                menuBuilder.AddOption(@class.ClassName, item.id.ToString(), @class.Description);
-            }
-
-            var component = new ComponentBuilder().WithSelectMenu(menuBuilder).Build();
-
-            var choosenRace = raceService.GetRace(raceId);
-
-            properties.Components = component;
-            properties.Content =
-                $"{choosenRace.RaceName}, huh? Alright, its time to choose your path!";
-        });
-    }
-
-    private Task HandleClassSelect(SocketMessageComponent component, CreateCharacterDialog dialog)
-    {
-        var classId = int.Parse(component.Data.Values.FirstOrDefault());
-        dialog.ClassId = classId;
 
         var race = raceService.GetRace(dialog.RaceId);
-        var charClass = classService.GetClass(classId);
+        var charClass = classService.GetClass(dialog.ClassId);
 //race
         var builder = new EmbedBuilder()
             .WithTitle("Character Creation")
@@ -208,21 +148,80 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
             .AddField("Agility", charClass.BaseAgility, true)
             .AddField("Intelligence", charClass.BaseIntelligence, true);
 
-        return component.UpdateAsync(properties =>
-        {
-            var component = new ComponentBuilder()
-                .WithButton("Create character", CommandName + ".submit")
-                .WithButton("Let me start over", CommandName + ".restart", ButtonStyle.Secondary)
-                .WithButton("Cancel", CommandName + ".cancel", ButtonStyle.Danger)
-                .Build();
+        return builder.Build();
+    }
 
-            properties.Components = component;
-            properties.Content = string.Empty;
-            properties.Embed = builder.Build();
+    private MessageComponent GetMenu(CreateCharacterDialog dialog)
+    {
+        if (dialog.RaceId == 0)
+        {
+            var menuBuilder = new SelectMenuBuilder()
+                .WithPlaceholder("Choose your race")
+                .WithCustomId(GetCommandId("race-select"));
+
+            foreach (var (id, race) in raceService.GetAllRaces())
+            {
+                menuBuilder.AddOption(race.RaceName, id.ToString(), race.Description);
+            }
+
+            return new ComponentBuilder().WithSelectMenu(menuBuilder).Build();
+        }
+
+        if (dialog.ClassId == 0)
+        {
+            var menuBuilder = new SelectMenuBuilder()
+                .WithPlaceholder("Choose your class")
+                .WithCustomId(GetCommandId("class-select"));
+            foreach (var item in classService.GetAllClasses())
+            {
+                var @class = item.@class;
+                menuBuilder.AddOption(@class.ClassName, item.id.ToString(), @class.Description);
+            }
+
+            return new ComponentBuilder().WithSelectMenu(menuBuilder).Build();
+        }
+
+        return new ComponentBuilder()
+            .WithButton("Create character", GetCommandId("submit"))
+            .WithButton("Let me start over", GetCommandId("restart"), ButtonStyle.Secondary)
+            .WithButton("Cancel", GetCommandId("cancel"), ButtonStyle.Danger)
+            .Build();
+    }
+
+    [Handler("race-select")]
+    public async Task RaceSelectHandler(SocketMessageComponent component, CreateCharacterDialog dialog)
+    {
+        var raceId = int.Parse(component.Data.Values.FirstOrDefault());
+        dialog.RaceId = raceId;
+
+        var menu = GetMenu(dialog);
+        var embed = GetDisplayEmbed(dialog);
+
+        await component.UpdateAsync(properties =>
+        {
+            properties.Embed = embed;
+            properties.Components = menu;
         });
     }
 
-    private async Task HandleSubmit(SocketMessageComponent component, CreateCharacterDialog dialog)
+    [Handler("class-select")]
+    public async Task ClassSelectHandler(SocketMessageComponent component, CreateCharacterDialog dialog)
+    {
+        var classId = int.Parse(component.Data.Values.FirstOrDefault());
+        dialog.ClassId = classId;
+
+        var menu = GetMenu(dialog);
+        var embed = GetDisplayEmbed(dialog);
+
+        await component.UpdateAsync(properties =>
+        {
+            properties.Embed = embed;
+            properties.Components = menu;
+        });
+    }
+
+    [Handler("submit")]
+    public async Task HandleSubmit(SocketMessageComponent component, CreateCharacterDialog dialog)
     {
         var guildUser = component.User as SocketGuildUser;
         var result =
@@ -246,20 +245,19 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
         EndDialog(component.User.Id);
     }
 
-    private async Task HandleCancel(SocketMessageComponent component, CreateCharacterDialog dialog)
+    [Handler("restart")]
+    private async Task HandleRestart(SocketMessageComponent component, CreateCharacterDialog dialog)
     {
-        EndDialog(dialog.UserId);
+        dialog.ClassId = 0;
+        dialog.RaceId = 0;
+
+        var menu = GetMenu(dialog);
+        var embed = GetDisplayEmbed(dialog);
 
         await component.UpdateAsync(properties =>
         {
-            properties.Content = "Maybe another time!";
-            properties.Components = null;
-            properties.Embed = null;
+            properties.Components = menu;
+            properties.Embed = embed;
         });
-    }
-
-    private async Task HandleRestart(SocketMessageComponent component, CreateCharacterDialog dialog)
-    {
-        await ChooseRace(component, dialog);
     }
 }

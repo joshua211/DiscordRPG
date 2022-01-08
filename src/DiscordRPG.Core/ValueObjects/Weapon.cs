@@ -25,4 +25,7 @@ public class Weapon : Equipment
     {
         return $"[{Rarity.ToString()} Weapon] {Name} (Lvl: {Level} | {Worth}$)";
     }
+
+    public override string GetItemCode() =>
+        $"{Rarity}-{WhitespaceRegex.Replace(Name, "")}{Level}|{DamageValue}{DamageType}{Strength}{Vitality}{Agility}{Intelligence}{Luck}";
 }

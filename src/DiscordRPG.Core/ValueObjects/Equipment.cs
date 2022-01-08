@@ -50,4 +50,7 @@ public class Equipment : Item
         return Strength.GetHashCode() + Vitality.GetHashCode() + Agility.GetHashCode() + Intelligence.GetHashCode() +
                Luck.GetHashCode() + Name.GetHashCode() + Level.GetHashCode() + Rarity.GetHashCode();
     }
+
+    public override string GetItemCode() =>
+        $"{Rarity}-{WhitespaceRegex.Replace(Name, "")}{Level}|{Armor}{MagicArmor}{Strength}{Vitality}{Agility}{Intelligence}{Luck}";
 }

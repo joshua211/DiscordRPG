@@ -77,116 +77,65 @@ public class Equip : DialogCommandBase<EquipDialog>
                 .AddField("Total Magic Armor", context.Character.MagicArmor, true)
                 .Build();
 
-            EndDialog(dialog.UserId);
-            await command.RespondAsync(embed: embed, ephemeral: true);
+            dialog.ShareableEmbed = embed;
+            var component = new ComponentBuilder().WithButton("Share", GetCommandId("share"))
+                .WithButton("Close", GetCommandId("cancel"), ButtonStyle.Secondary).Build();
+            await command.RespondAsync(embed: embed, component: component, ephemeral: true);
         }
         else
         {
             var value = (long) category;
-            var position = (EquipmentPosition) (int) value;
-            await HandleChangeEquipment(command, dialog, position);
+            dialog.Position = (EquipmentPosition) (int) value;
+            await HandleSelectEquipment(command, dialog);
         }
     }
 
-    private Task HandleChangeEquipment(SocketSlashCommand command, EquipDialog dialog, EquipmentPosition position) =>
-        position switch
-        {
-            EquipmentPosition.Weapon => SelectWeapon(command, dialog),
-            _ => SelectEquip(command, dialog, position)
-        };
-
-    private async Task SelectEquip(SocketSlashCommand command, EquipDialog dialog, EquipmentPosition position)
+    private async Task HandleSelectEquipment(SocketSlashCommand command, EquipDialog dialog)
     {
-        var equipment = dialog.Character.Equipment.CurrentEquipment[position];
-        var embed = EmbedHelper.GetItemAsEmbed(equipment);
+        var embed = GetDisplayEmbed(dialog);
+        var menu = GetMenu(dialog);
 
-        var messageComponent = GetEquipmentSelectionMenu(dialog, equipment, position);
-
-        await command.RespondAsync(embed: embed, component: messageComponent, ephemeral: true);
+        await command.RespondAsync(embed: embed, component: menu, ephemeral: true);
     }
 
-    private async Task SelectWeapon(SocketSlashCommand command, EquipDialog dialog)
+    private Embed GetDisplayEmbed(EquipDialog dialog)
     {
-        var weapon = dialog.Character.Equipment.Weapon;
-        var embed = EmbedHelper.GetItemAsEmbed(weapon);
+        var embed = dialog.CurrentItem is null
+            ? new EmbedBuilder().WithDescription("Choose your new equipment").Build()
+            : EmbedHelper.GetItemAsEmbed(dialog.CurrentItem,
+                comparison: dialog.Character.Equipment.CurrentEquipment[dialog.Position]);
 
-        var messageComponent = GetWeaponSelectionMenu(dialog, weapon);
-
-        await command.RespondAsync(embed: embed, component: messageComponent, ephemeral: true);
+        dialog.ShareableEmbed = embed;
+        return embed;
     }
 
-    protected override Task HandleSelection(SocketMessageComponent component, string id, EquipDialog dialog) =>
-        id switch
-        {
-            "change-weapon" => HandleChangeWeapon(component, dialog),
-            _ => HandleChangeEquipment(component, dialog)
-        };
-
-    private async Task HandleChangeWeapon(SocketMessageComponent component, EquipDialog dialog)
+    [Handler("select")]
+    public async Task HandleSelect(SocketMessageComponent component, EquipDialog dialog)
     {
-        var itemCode = component.Data.Values.First();
-        var item = dialog.Character.Inventory.FirstOrDefault(i => i.GetItemCode() == itemCode) as Weapon;
-
-        dialog.Character.Equipment.Weapon = item;
-        dialog.CurrentItem = item;
-
-        await component.UpdateAsync(properties =>
-        {
-            properties.Embed = EmbedHelper.GetItemAsEmbed(item);
-            properties.Components = GetWeaponSelectionMenu(dialog, item);
-        });
-    }
-
-    private async Task HandleChangeEquipment(SocketMessageComponent component, EquipDialog dialog)
-    {
-        var itemCode = component.Data.Values.First();
-        var item = dialog.Character.Inventory.FirstOrDefault(i => i.GetItemCode() == itemCode) as Equipment;
-
-        switch (item.EquipmentCategory)
-        {
-            case EquipmentCategory.Helmet:
-                dialog.Character.Equipment.Helmet = item;
-                break;
-            case EquipmentCategory.Armor:
-                dialog.Character.Equipment.Armor = item;
-                break;
-            case EquipmentCategory.Pants:
-                dialog.Character.Equipment.Pants = item;
-                break;
-            case EquipmentCategory.Amulet:
-                dialog.Character.Equipment.Amulet = item;
-                break;
-            case EquipmentCategory.Ring:
-                dialog.Character.Equipment.Ring = item;
-                break;
-        }
+        var itemCode = component.Data.Values.FirstOrDefault();
+        var item = dialog.Character.Inventory.FirstOrDefault(i => i.GetItemCode() == itemCode);
 
         dialog.CurrentItem = item;
 
+        var menu = GetMenu(dialog);
+        var embed = GetDisplayEmbed(dialog);
+
         await component.UpdateAsync(properties =>
         {
-            properties.Embed = EmbedHelper.GetItemAsEmbed(item);
-            properties.Components = GetEquipmentSelectionMenu(dialog, item);
+            properties.Embed = embed;
+            properties.Components = menu;
         });
     }
 
-    protected override Task HandleButton(SocketMessageComponent component, string id, EquipDialog dialog) => id switch
-    {
-        "close" => HandleClose(component, dialog),
-        "equip-weapon" => HandleEquipWeapon(component, dialog),
-        "equip-helmet" => HandleEquipEquipment(component, dialog, EquipmentPosition.Helmet),
-        "equip-armor" => HandleEquipEquipment(component, dialog, EquipmentPosition.Armor),
-        "equip-pants" => HandleEquipEquipment(component, dialog, EquipmentPosition.Pants),
-        "equip-amulet" => HandleEquipEquipment(component, dialog, EquipmentPosition.Amulet),
-        "equip-ring" => HandleEquipEquipment(component, dialog, EquipmentPosition.Ring),
-    };
-
-    private async Task HandleEquipWeapon(SocketMessageComponent component, EquipDialog dialog)
+    [Handler("equip")]
+    public async Task HandleEquip(SocketMessageComponent component, EquipDialog dialog)
     {
         EndDialog(dialog.UserId);
 
         var id = dialog.Character.ID;
         var equip = dialog.Character.Equipment;
+        equip.CurrentEquipment[dialog.Position] = (Equipment) dialog.CurrentItem;
+
         var result = await characterService.UpdateEquipmentAsync(id, equip);
         if (!result.WasSuccessful)
         {
@@ -204,95 +153,67 @@ public class Equip : DialogCommandBase<EquipDialog>
         {
             properties.Embed = null;
             properties.Components = null;
-            properties.Content = $"You equipped {dialog.CurrentItem.Name} as your new weapon!";
+            properties.Content = $"You've equipped {dialog.CurrentItem.Name}!";
         });
     }
 
-    private async Task HandleEquipEquipment(SocketMessageComponent component, EquipDialog dialog,
-        EquipmentPosition position)
+    private MessageComponent GetMenu(EquipDialog dialog)
     {
-        EndDialog(dialog.UserId);
-
-        var id = dialog.Character.ID;
-        var equip = dialog.Character.Equipment;
-        var result = await characterService.UpdateEquipmentAsync(id, equip);
-
-        if (!result.WasSuccessful)
-        {
-            await component.UpdateAsync(properties =>
-            {
-                properties.Embed = null;
-                properties.Components = null;
-                properties.Content = $"Something went wrong, please try again!!";
-            });
-        }
-
-        await component.UpdateAsync(properties =>
-        {
-            properties.Embed = null;
-            properties.Components = null;
-            properties.Content = $"You equipped {dialog.CurrentItem.Name}!";
-        });
-    }
-
-    private async Task HandleClose(SocketMessageComponent component, EquipDialog dialog)
-    {
-        EndDialog(dialog.UserId);
-        await component.UpdateAsync(properties =>
-        {
-            properties.Embed = null;
-            properties.Components = null;
-            properties.Content = "You closed your inventory";
-        });
-    }
-
-    private MessageComponent GetEquipmentSelectionMenu(EquipDialog dialog, Equipment equipment = null,
-        EquipmentPosition position = default)
-    {
-        position = equipment?.Position ?? position;
-        var equipments =
-            dialog.Character.Inventory.Where(
-                i => i is Equipment e && e.Position == position && !e.Equals(equipment));
+        var current = dialog.Character.Equipment.CurrentEquipment[dialog.Position];
+        var items = dialog.Character.Inventory.Where(i =>
+            i is Equipment e && e.Position == dialog.Position && !e.Equals(current));
 
         var menuBuilder = new SelectMenuBuilder()
-            .WithPlaceholder($"Choose a new {position}")
-            .WithCustomId(CommandName + $".change-{position.ToString().ToLower()}");
+            .WithPlaceholder($"Choose a new {dialog.Position}")
+            .WithCustomId(GetCommandId("select"));
+        var displayItems = items.Skip((dialog.CurrentPage - 1) * 10)
+            .Take(10);
 
-        foreach (Equipment w in equipments)
+        foreach (Equipment w in displayItems)
         {
             menuBuilder.AddOption($"[{w.Rarity}] {w.Name} (Lvl: {w.Level} | {w.Worth}$)]", w.GetItemCode());
         }
 
         var messageComponentBuilder = new ComponentBuilder();
-        if (equipments.Any()) messageComponentBuilder.WithSelectMenu(menuBuilder);
+        if (displayItems.Any()) messageComponentBuilder.WithSelectMenu(menuBuilder);
 
         return messageComponentBuilder
-            .WithButton("Equip", CommandName + $".equip-{position.ToString().ToLower()}",
+            .WithButton("Equip", GetCommandId("equip"),
                 disabled: dialog.CurrentItem == null)
-            .WithButton("Close", CommandName + ".close", ButtonStyle.Secondary)
+            .WithButton("<", GetCommandId("prev-page"), ButtonStyle.Secondary, disabled: dialog.CurrentPage <= 0)
+            .WithButton(">", GetCommandId("next-page"), ButtonStyle.Secondary)
+            .WithButton("Share", GetCommandId("share"), disabled: dialog.CurrentItem == null)
+            .WithButton("Cancel", GetCommandId("cancel"), ButtonStyle.Secondary)
             .Build();
     }
 
-    private MessageComponent GetWeaponSelectionMenu(EquipDialog dialog, Weapon weapon)
+    [Handler("prev-page")]
+    public async Task HandlePrevPage(SocketMessageComponent component, EquipDialog dialog)
     {
-        var weapons =
-            dialog.Character.Inventory.Where(i =>
-                i is Weapon w && w.Level <= dialog.Character.Level.CurrentLevel && !w.Equals(weapon));
+        if (dialog.CurrentPage >= 0)
+            dialog.CurrentPage--;
 
-        var menuBuilder = new SelectMenuBuilder()
-            .WithPlaceholder("Choose a new Weapon")
-            .WithCustomId(CommandName + ".change-weapon");
-        foreach (Weapon w in weapons)
+        var menu = GetMenu(dialog);
+        var embed = GetDisplayEmbed(dialog);
+
+        await component.UpdateAsync(properties =>
         {
-            menuBuilder.AddOption($"[{w.Rarity}] {w.Name} (Lvl: {w.Level} | {w.Worth}$)]", w.GetItemCode());
-        }
+            properties.Embed = embed;
+            properties.Components = menu;
+        });
+    }
 
-        var messageComponentBuilder = new ComponentBuilder();
-        if (weapons.Any()) messageComponentBuilder.WithSelectMenu(menuBuilder);
+    [Handler("next-page")]
+    public async Task HandleNextPage(SocketMessageComponent component, EquipDialog dialog)
+    {
+        dialog.CurrentPage++;
+        var menu = GetMenu(dialog);
+        var embed = GetDisplayEmbed(dialog);
 
-        return messageComponentBuilder
-            .WithButton("Equip", CommandName + ".equip-weapon", disabled: dialog.CurrentItem == null)
-            .WithButton("Close", CommandName + ".close", ButtonStyle.Secondary)
-            .Build();
+        await component.UpdateAsync(properties =>
+        {
+            properties.Embed = embed;
+            properties.Components = menu;
+        });
     }
 }

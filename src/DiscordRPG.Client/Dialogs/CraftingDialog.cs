@@ -10,13 +10,11 @@ public class CraftingDialog : Dialog
     {
     }
 
-    public CraftingDialog()
-    {
-    }
 
     public Character Character { get; set; }
     public Recipe SelectedRecipe { get; set; }
     public EquipmentCategory EquipmentCategory { get; set; }
     public int CurrentPage { get; set; }
     public bool IsEquipment { get; set; }
+    public int RecipeCount { get; set; }
 }
