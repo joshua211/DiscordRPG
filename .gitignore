@@ -13,6 +13,7 @@
 *appsettings.json
 /deploy
 *.env
+.ssh
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
