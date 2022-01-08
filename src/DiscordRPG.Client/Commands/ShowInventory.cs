@@ -100,7 +100,7 @@ public class ShowInventory : DialogCommandBase<InventoryDialog>
         var sb = new StringBuilder();
         foreach (var item in items.Skip((dialog.CurrentPage - 1) * 10).Take(10))
         {
-            if (item is Equipment e)
+            if (item is Equipment e and not Weapon)
             {
                 sb.Append(
                     $"[{item.Rarity.ToString()}] {item.Name} (Lvl: {item.Level} | {item.Worth}$) Armor: {e.Armor} MArmor: {e.MagicArmor} ");

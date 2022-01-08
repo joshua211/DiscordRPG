@@ -37,10 +37,14 @@ public class CharacterService : ApplicationService, ICharacterService
         using var ctx = TransactionBegin(parentContext);
         try
         {
+            var potion = itemGenerator.GetHealthPotion(Rarity.Common, 1);
+            var armor = Equip.StarterArmor;
+            var pants = Equip.StarterLeg;
+            var wep = Equip.StarterWeapon;
             var character = new Character(userId, guildId, name, classId, raceId,
                 new Level(1, 0, experienceCurve.GetRequiredExperienceForLevel(1)),
-                new EquipmentInfo(Equip.StarterWeapon, null, Equip.StarterArmor, Equip.StarterLeg, null, null),
-                new List<Item>(), new List<Wound>(), 10);
+                new EquipmentInfo(wep, null, armor, pants, null, null),
+                new List<Item>() {wep, armor, pants, potion}, new List<Wound>(), 10);
             character.ClassService = classService;
             character.RaceService = raceService;
 
