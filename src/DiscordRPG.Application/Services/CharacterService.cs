@@ -224,7 +224,7 @@ public class CharacterService : ApplicationService, ICharacterService
             Command command = null;
             if (item.Name.Contains("Health Potion"))
             {
-                var hpAmount = (int) Math.Round(item.Level * 10 * (1 + (int) item.Rarity * 0.2f));
+                var hpAmount = (int) Math.Round(item.Level * 20 * (1 + (int) item.Rarity * 0.2f));
                 command = new RestoreHealthCommand(character, hpAmount);
             }
 

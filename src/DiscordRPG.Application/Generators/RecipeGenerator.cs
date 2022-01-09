@@ -24,7 +24,7 @@ public class RecipeGenerator : GeneratorBase
             for (uint level = 1; level <= maxLevel; level = (level + 10).RoundOff())
             {
                 yield return new Recipe(rarity, level, nameGenerator.GenerateHealthPotionName(rarity, level),
-                    $"A potion that can restore  {Math.Round(level * 10 * (1 + (int) rarity * 0.2f))} health points",
+                    $"A potion that can restore  {Math.Round(level * 20 * (1 + (int) rarity * 0.2f))} health points",
                     itemGenerator.GetHealthPotion(rarity, level),
                     new List<(string ingredientName, int amount)>()
                     {
