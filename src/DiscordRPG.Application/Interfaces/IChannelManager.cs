@@ -7,6 +7,7 @@ public interface IChannelManager
     Task<DiscordId> CreateDungeonThreadAsync(DiscordId serverId, string dungeonName);
 
     Task SendToGuildHallAsync(DiscordId serverId, string text, Embed embed = null);
+    Task SendToInn(DiscordId serverId, string text, Embed embed = null);
 
     Task SendToDungeonHallAsync(DiscordId serverId, string text, Embed embed = null);
 

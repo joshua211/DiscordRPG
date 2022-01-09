@@ -62,13 +62,13 @@ public class GuildService : ApplicationService, IGuildService
     }
 
     public async Task<Result<Guild>> CreateGuildAsync(DiscordId serverId, string guildName, DiscordId guildHallId,
-        DiscordId dungeonHallId, TransactionContext parentContext = null,
+        DiscordId dungeonHallId, DiscordId innChannel, TransactionContext parentContext = null,
         CancellationToken token = default)
     {
         using var ctx = TransactionBegin(parentContext);
         try
         {
-            var guild = new Guild(serverId, guildName, guildHallId, dungeonHallId);
+            var guild = new Guild(serverId, guildName, guildHallId, dungeonHallId, innChannel);
             var cmd = new CreateGuildCommand(guild);
 
             var result = await PublishAsync(ctx, cmd, token);

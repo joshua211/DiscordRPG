@@ -10,4 +10,5 @@ public class RestDialog : Dialog
 
     public string CharId { get; set; }
     public ActivityDuration Duration { get; set; }
+    public ulong ServerId { get; set; }
 }

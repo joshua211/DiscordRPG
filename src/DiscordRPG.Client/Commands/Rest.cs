@@ -16,7 +16,7 @@ namespace DiscordRPG.Client.Commands;
 
 [RequireCharacter]
 [RequireNoCurrentActivity]
-[RequireChannelName(ServerHandler.GuildHallName)]
+[RequireChannelName(ServerHandler.Inn)]
 [RequireGuild]
 public class Rest : DialogCommandBase<RestDialog>
 {
@@ -51,6 +51,7 @@ public class Rest : DialogCommandBase<RestDialog>
         RestDialog dialog)
     {
         dialog.CharId = context.Character.ID;
+        dialog.ServerId = context.Guild.ServerId;
         var value = (long) command.Data.Options.FirstOrDefault().Value;
         var duration = (ActivityDuration) (int) value;
         dialog.Duration = duration;
@@ -70,7 +71,11 @@ public class Rest : DialogCommandBase<RestDialog>
     public async Task HandleRest(SocketMessageComponent component, RestDialog dialog)
     {
         var result = await activityService.QueueActivityAsync(dialog.CharId, dialog.Duration,
-            ActivityType.Rest, new ActivityData());
+            ActivityType.Rest, new ActivityData
+            {
+                UserId = dialog.UserId,
+                ServerId = dialog.ServerId
+            });
 
         await component.UpdateAsync(properties =>
         {

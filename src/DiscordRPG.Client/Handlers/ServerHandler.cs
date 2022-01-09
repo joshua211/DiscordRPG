@@ -9,6 +9,7 @@ public class ServerHandler : IHandler
 {
     public const string GuildHallName = "guild-hall";
     public const string DungeonHallName = "dungeon-hall";
+    public const string Inn = "inn";
     public const string CategoryName = "--RPG--";
 
     private readonly ApplicationCommandHandler applicationCommandHandler;
@@ -49,6 +50,7 @@ public class ServerHandler : IHandler
 
             await socketGuild.GetChannel(result.Value.GuildHallId).DeleteAsync();
             await socketGuild.GetChannel(result.Value.DungeonHallId).DeleteAsync();
+            await socketGuild.GetChannel(result.Value.InnChannel).DeleteAsync();
             var cat = socketGuild.CategoryChannels.FirstOrDefault(c => c.Name == CategoryName);
             await cat?.DeleteAsync();
 
@@ -78,10 +80,13 @@ public class ServerHandler : IHandler
             var dungeonHall =
                 await socketGuild.CreateTextChannelAsync(DungeonHallName,
                     properties => properties.CategoryId = category.Id);
+            var inn =
+                await socketGuild.CreateTextChannelAsync(Inn,
+                    properties => properties.CategoryId = category.Id);
 
             var result =
                 await guildService.CreateGuildAsync(socketGuild.Id.ToString(), socketGuild.Name,
-                    guildHall.Id.ToString(), dungeonHall.Id.ToString());
+                    guildHall.Id.ToString(), dungeonHall.Id.ToString(), inn.Id.ToString());
 
             if (result.WasSuccessful)
             {

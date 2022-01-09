@@ -3,6 +3,8 @@ using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Core.Commands.Activities;
 using DiscordRPG.Core.DomainServices.Generators;
 using MediatR;
+using Discord;
+using ActivityType = DiscordRPG.Core.Enums.ActivityType;
 
 namespace DiscordRPG.Application.Worker;
 
@@ -80,6 +82,16 @@ public class ActivityWorker
     private async Task ExecuteRest(Activity activity)
     {
         var result = await characterService.RestoreWoundsFromRestAsync(activity.CharId, activity.Duration);
+        if (!result.WasSuccessful)
+        {
+            logger.Here().Error("Failed resting");
+            return;
+        }
+
+        var embed = new EmbedBuilder().WithTitle("Rest complete")
+            .WithDescription($"<@{activity.Data.UserId}> you are done resting!").Build();
+
+        await channelManager.SendToInn(new DiscordId(activity.Data.ServerId.ToString()), String.Empty, embed);
     }
 
     private async Task ExecuteEnterDungeon(Activity activity)

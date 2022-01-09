@@ -72,6 +72,24 @@ public class ChannelManager : IChannelManager
         });
     }
 
+    public async Task SendToInn(DiscordId guildId, string text, Embed embed = null)
+    {
+        logger.Here().Verbose("Sending Message to Inn: {Msg}", text);
+        var result = await guildService.GetGuildWithDiscordIdAsync(guildId);
+        if (!result.WasSuccessful)
+        {
+            logger.Here().Warning("No guild found, cant send message");
+            return;
+        }
+
+        await policy.ExecuteAsync(async () =>
+        {
+            var channel = client.GetChannel(result.Value.InnChannel) as SocketTextChannel;
+            if (channel is not null)
+                await channel.SendMessageAsync(text, embed: embed);
+        });
+    }
+
     public async Task SendToDungeonHallAsync(DiscordId guildId, string text, Embed embed = null)
     {
         logger.Here().Verbose("Sending Message to GuildHall: {Msg}", text);

@@ -12,7 +12,7 @@ public interface IGuildService
         CancellationToken cancellationToken = default);
 
     Task<Result<Guild>> CreateGuildAsync(DiscordId serverId, string guildName, DiscordId guildHallId,
-        DiscordId dungeonHallId,
+        DiscordId dungeonHallId, DiscordId innChannel,
         TransactionContext parentContext = null,
         CancellationToken token = default);
 
