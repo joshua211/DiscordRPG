@@ -28,8 +28,8 @@ public class RecipeGenerator : GeneratorBase
                     itemGenerator.GetHealthPotion(rarity, level),
                     new List<(string ingredientName, int amount)>()
                     {
-                        (Items.ItemNamesByRarity[rarity][2].name, 10),
-                        (Items.ItemNamesByRarity[rarity][3].name, 10)
+                        (Items.ItemNamesByRarity[rarity][2].name, 5),
+                        (Items.ItemNamesByRarity[rarity][3].name, 5)
                     });
             }
         }
@@ -50,8 +50,8 @@ public class RecipeGenerator : GeneratorBase
                         $"[{rarity.ToString()}] Crafted {category.ToString()} (Lvl. {i})", "Crafted Equipment", null,
                         new List<(string ingredientName, int amount)>()
                         {
-                            (Items.ItemNamesByRarity[rarity][0].name, 20),
-                            (Items.ItemNamesByRarity[rarity][1].name, 20)
+                            (Items.ItemNamesByRarity[rarity][0].name, 10),
+                            (Items.ItemNamesByRarity[rarity][1].name, 10)
                         }, category);
                 }
             }
