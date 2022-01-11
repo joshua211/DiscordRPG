@@ -57,7 +57,6 @@ public class ShopWorker
     {
         var random = new Random();
         var level = character.Level.CurrentLevel;
-        var rarity = rarityGenerator.GenerateShopRarity();
 
         var selector = new DynamicWeightedRandomizer<int>();
         selector.Add(5, 6);
@@ -70,6 +69,7 @@ public class ShopWorker
 
         for (int i = 0; i < numOfItems; i++)
         {
+            var rarity = rarityGenerator.GenerateShopRarity();
             var aspect = aspectGenerator.GetRandomAspect(rarity);
             if (random.Next(3) == 0)
                 yield return itemGenerator.GenerateRandomWeapon(rarity, level, aspect);
