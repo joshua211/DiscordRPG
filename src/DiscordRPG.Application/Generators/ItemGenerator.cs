@@ -248,11 +248,12 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         var selector = new DynamicWeightedRandomizer<int>();
         if (isItem)
         {
-            selector.Add(1, 5);
-            selector.Add(2, 7);
-            selector.Add(3, 10);
-            selector.Add(4, 7);
-            selector.Add(5, 5);
+            selector.Add(3, 4);
+            selector.Add(4, 5);
+            selector.Add(5, 7);
+            selector.Add(6, 10);
+            selector.Add(7, 5);
+            selector.Add(8, 4);
         }
         else
         {

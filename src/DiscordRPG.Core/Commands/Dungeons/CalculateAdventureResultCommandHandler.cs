@@ -78,6 +78,13 @@ public class CalculateAdventureResultCommandHandler : CommandHandler<CalculateAd
                     result.Encounters, woundsBefore),
                 cancellationToken);
 
+            if (expResult.TotalLevelsGained > 0)
+            {
+                await PublishAsync(
+                    new LevelGained(charBefore.Level.CurrentLevel, character.Level.CurrentLevel, character.ID),
+                    cancellationToken);
+            }
+
             return ExecutionResult.Success();
         }
         catch (Exception e)
