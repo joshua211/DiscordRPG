@@ -14,6 +14,6 @@ public class AdventureResult
 
     public List<Wound> Wounds { get; init; }
     public List<Item> Items { get; private set; }
-    public ulong Experience { get; init; }
     public List<Encounter> Encounters { get; private set; }
+    public ulong Experience { get; init; }
 }

@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordRPG.Client", "Discor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordRPG.DiagnosticConsole", "DiscordRPG.DiagnosticConsole\DiscordRPG.DiagnosticConsole.csproj", "{74F8E40A-DF3C-4C37-AD37-68C8EF434239}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordRPG.Domain", "DiscordRPG.Domain\DiscordRPG.Domain.csproj", "{3ECF1145-5222-4593-BB3A-BC57A7694839}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,9 @@ Global
 		{74F8E40A-DF3C-4C37-AD37-68C8EF434239}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{74F8E40A-DF3C-4C37-AD37-68C8EF434239}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{74F8E40A-DF3C-4C37-AD37-68C8EF434239}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3ECF1145-5222-4593-BB3A-BC57A7694839}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3ECF1145-5222-4593-BB3A-BC57A7694839}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3ECF1145-5222-4593-BB3A-BC57A7694839}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3ECF1145-5222-4593-BB3A-BC57A7694839}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

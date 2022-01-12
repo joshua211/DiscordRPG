@@ -1,4 +1,4 @@
-﻿namespace DiscordRPG.Core.Enums;
+﻿namespace DiscordRPG.Domain.Entities.Activity.Enums;
 
 /// <summary>
 /// Activity Duration in minutes
