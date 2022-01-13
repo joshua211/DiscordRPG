@@ -1,10 +1,9 @@
-﻿using DiscordRPG.Core.DomainServices;
-using DiscordRPG.Core.DomainServices.Generators;
-using DiscordRPG.Core.DomainServices.Progress;
+﻿using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
+using DiscordRPG.Domain.Services;
 
 namespace DiscordRPG.Application.Generators;
 
-public class ExperienceGenerator : GeneratorBase, IExperienceGenerator
+public class ExperienceGenerator : GeneratorBase
 {
     private readonly IExperienceCurve experienceCurve;
 

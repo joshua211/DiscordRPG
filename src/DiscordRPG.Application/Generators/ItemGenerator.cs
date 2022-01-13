@@ -1,25 +1,28 @@
-﻿using DiscordRPG.Application.Data;
-using DiscordRPG.Core.DomainServices.Generators;
+﻿using DiscordRPG.Application.Models;
+using DiscordRPG.Domain.Entities.Character.Enums;
+using DiscordRPG.Domain.Entities.Character.ValueObjects;
+using DiscordRPG.Domain.Entities.Dungeon.ValueObjects;
+using DiscordRPG.Domain.Enums;
 using Weighted_Randomizer;
 
 namespace DiscordRPG.Application.Generators;
 
-public class ItemGenerator : GeneratorBase, IItemGenerator
+public class ItemGenerator : GeneratorBase
 {
-    private readonly INameGenerator nameGenerator;
+    private readonly NameGenerator nameGenerator;
     private IWorthCalculator worthCalculator;
 
-    public ItemGenerator(INameGenerator nameGenerator, IWorthCalculator worthCalculator)
+    public ItemGenerator(NameGenerator nameGenerator, IWorthCalculator worthCalculator)
     {
         this.nameGenerator = nameGenerator;
         this.worthCalculator = worthCalculator;
     }
 
-    public IEnumerable<Item> GenerateItems(Character character, Dungeon dungeon)
+    public IEnumerable<Item> GenerateItems(CharacterReadModel character, DungeonReadModel dungeon)
     {
         var items = new List<Item>();
         var totalNum = GetNumOfItems();
-        var level = dungeon.DungeonLevel;
+        var level = dungeon.Level.Value;
 
         var selector = new DynamicWeightedRandomizer<int>();
         selector.Add(0, 5);
@@ -36,17 +39,17 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
 
                     var num = GetNumOfItems(true);
                     var genItem = GenerateRandomItem(rarity, level, num);
-                    var existing = items.FirstOrDefault(i => i.GetItemCode() == genItem.GetItemCode());
+                    var existing = items.FirstOrDefault(item => item == genItem);
                     if (existing is null)
                         items.Add(genItem);
                     else
-                        existing.Amount += genItem.Amount;
+                        existing.IncreaseAmount(genItem.Amount);
                     break;
                 case 1:
-                    items.Add(GenerateRandomEquipment(rarity, level, dungeon.DungeonAspect));
+                    items.Add(GenerateRandomEquipment(rarity, level, dungeon.Aspect));
                     break;
                 case 2:
-                    items.Add(GenerateRandomWeapon(rarity, level, dungeon.DungeonAspect));
+                    items.Add(GenerateRandomWeapon(rarity, level, dungeon.Aspect));
                     break;
             }
         }
@@ -54,14 +57,14 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         return items;
     }
 
-    public Weapon GenerateRandomWeapon(Rarity rarity, uint level, Aspect aspect)
+    public Item GenerateRandomWeapon(Rarity rarity, uint level, Aspect aspect)
     {
         var cat = GenerateRandomWeaponCategory();
 
         return GenerateWeapon(rarity, level, aspect, cat);
     }
 
-    public Equipment GenerateRandomEquipment(Rarity rarity, uint level, Aspect aspect)
+    public Item GenerateRandomEquipment(Rarity rarity, uint level, Aspect aspect)
     {
         var category = GenerateRandomEquipmentCategory();
         return GenerateEquipment(rarity, level, aspect, category);
@@ -73,10 +76,13 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         var (name, descr) = nameGenerator.GenerateRandomItemName(rarity);
         var worth = worthCalculator.CalculateWorth(rarity, roundedLevel);
 
-        return new Item(name, descr, rarity, worth, roundedLevel, amount, false);
+        return new Item(ItemId.New, name,
+            descr, amount, rarity,
+            EquipmentCategory.Amulet, EquipmentPosition.Amulet, ItemType.Item, CharacterAttribute.Vitality,
+            DamageType.Physical, worth, level, 0, 0, 0, 0, 0, 0, 0, 0, false);
     }
 
-    public Equipment GenerateEquipment(Rarity rarity, uint level, Aspect aspect, EquipmentCategory category)
+    public Item GenerateEquipment(Rarity rarity, uint level, Aspect aspect, EquipmentCategory category)
     {
         var totalWorth = worthCalculator.CalculateWorth(rarity, level);
         int statWorth;
@@ -99,10 +105,13 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         var position = GetPositionFromCategory(category);
         var name = nameGenerator.GenerateRandomEquipmentName(rarity, category, aspect);
 
-        return new Equipment(name, "", rarity, armor, marmor, s, v, a, i, l, totalWorth, category, position, level);
+        return new Item(ItemId.New, name,
+            "", 1, rarity,
+            category, position, ItemType.Weapon, CharacterAttribute.Vitality,
+            DamageType.Physical, totalWorth, level, armor, marmor, s, v, a, i, l, 0, false);
     }
 
-    public Weapon GenerateWeapon(Rarity rarity, uint level, Aspect aspect, EquipmentCategory category)
+    public Item GenerateWeapon(Rarity rarity, uint level, Aspect aspect, EquipmentCategory category)
     {
         var totalWorth = worthCalculator.CalculateWorth(rarity, level);
         var statWorth = (int) (totalWorth * 0.3f);
@@ -115,28 +124,30 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         var charAttr = GetScalingAttribute(category);
         var dmgType = GetDamageType(category);
 
-        return new Weapon(name, "", rarity, 0, 0, s, v, a, i, l, totalWorth, charAttr, dmgType, dmgValue,
-            category,
-            level);
+        return new Item(ItemId.New, name,
+            "", 1, rarity,
+            category, EquipmentPosition.Weapon, ItemType.Weapon, charAttr,
+            dmgType, totalWorth, level, 0, 0, s, v, a, i, l, dmgValue, false);
     }
 
     public Item GetHealthPotion(Rarity rarity, uint level)
     {
+        //TODO heal amount auslagern
         var name = nameGenerator.GenerateHealthPotionName(rarity, level);
         var worth = worthCalculator.CalculateWorth(rarity, level);
-        return new Item(name,
-            $"A potion that can restore  {Math.Round(level * 10 * (1 + (int) rarity * 0.2f))} health points", rarity,
-            worth,
-            level, 1, true);
+        return new Item(ItemId.New, name,
+            $"A potion that can restore {Math.Round(level * 20 * (1 + (int) rarity * 0.2f))} health points", 1, rarity,
+            EquipmentCategory.Amulet, EquipmentPosition.Amulet, ItemType.Consumable, CharacterAttribute.Intelligence,
+            DamageType.Magical, worth, level, 0, 0, 0, 0, 0, 0, 0, 0, false);
     }
 
-    public Item GenerateFromRecipe(Recipe recipe)
+    /*public Item GenerateFromRecipe(Recipe recipe)
     {
         var aspect = Aspects.CraftedAspect;
         return (int) recipe.EquipmentCategory.Value > 4
             ? GenerateWeapon(recipe.Rarity, recipe.Level, aspect, recipe.EquipmentCategory.Value)
             : GenerateEquipment(recipe.Rarity, recipe.Level, aspect, recipe.EquipmentCategory.Value);
-    }
+    }*/
 
     private int GetDamageValue(int availableWorth) => availableWorth / 3;
 
@@ -265,7 +276,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         return selector.NextWithReplacement();
     }
 
-    private Rarity GetItemRarityFromDungeon(Character character, Dungeon dungeon)
+    private Rarity GetItemRarityFromDungeon(CharacterReadModel character, DungeonReadModel dungeon)
     {
         var selector = new DynamicWeightedRandomizer<int>();
         switch (dungeon.Rarity)
@@ -274,42 +285,42 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
                 selector.Add((int) Rarity.Common, 1);
                 break;
             case Rarity.Uncommon:
-                selector.Add((int) Rarity.Common, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Common, (int) dungeon.Level.Value * 2);
                 selector.Add((int) Rarity.Uncommon, character.Luck);
                 break;
             case Rarity.Rare:
-                selector.Add((int) Rarity.Common, (int) dungeon.DungeonLevel * 2);
-                selector.Add((int) Rarity.Uncommon, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Common, (int) dungeon.Level.Value * 2);
+                selector.Add((int) Rarity.Uncommon, (int) dungeon.Level.Value * 2);
                 selector.Add((int) Rarity.Rare, character.Luck);
                 break;
             case Rarity.Unique:
-                selector.Add((int) Rarity.Common, (int) dungeon.DungeonLevel * 2);
-                selector.Add((int) Rarity.Uncommon, (int) dungeon.DungeonLevel * 2);
-                selector.Add((int) Rarity.Rare, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Common, (int) dungeon.Level.Value * 2);
+                selector.Add((int) Rarity.Uncommon, (int) dungeon.Level.Value * 2);
+                selector.Add((int) Rarity.Rare, (int) dungeon.Level.Value * 2);
                 selector.Add((int) Rarity.Unique, character.Luck);
                 break;
             case Rarity.Legendary:
-                selector.Add((int) Rarity.Common, (int) dungeon.DungeonLevel * 2);
-                selector.Add((int) Rarity.Uncommon, (int) dungeon.DungeonLevel * 2);
-                selector.Add((int) Rarity.Rare, (int) dungeon.DungeonLevel * 2);
-                selector.Add((int) Rarity.Unique, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Common, (int) dungeon.Level.Value * 2);
+                selector.Add((int) Rarity.Uncommon, (int) dungeon.Level.Value * 2);
+                selector.Add((int) Rarity.Rare, (int) dungeon.Level.Value * 2);
+                selector.Add((int) Rarity.Unique, (int) dungeon.Level.Value * 2);
                 selector.Add((int) Rarity.Legendary, character.Luck);
                 break;
             case Rarity.Mythic:
-                selector.Add((int) Rarity.Common, (int) dungeon.DungeonLevel * 2);
-                selector.Add((int) Rarity.Uncommon, (int) dungeon.DungeonLevel * 2);
-                selector.Add((int) Rarity.Rare, (int) dungeon.DungeonLevel * 2);
-                selector.Add((int) Rarity.Unique, (int) dungeon.DungeonLevel * 2);
-                selector.Add((int) Rarity.Legendary, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Common, (int) dungeon.Level.Value * 2);
+                selector.Add((int) Rarity.Uncommon, (int) dungeon.Level.Value * 2);
+                selector.Add((int) Rarity.Rare, (int) dungeon.Level.Value * 2);
+                selector.Add((int) Rarity.Unique, (int) dungeon.Level.Value * 2);
+                selector.Add((int) Rarity.Legendary, (int) dungeon.Level.Value * 2);
                 selector.Add((int) Rarity.Mythic, character.Luck);
                 break;
             case Rarity.Divine:
-                selector.Add((int) Rarity.Common, (int) dungeon.DungeonLevel * 2);
-                selector.Add((int) Rarity.Uncommon, (int) dungeon.DungeonLevel * 2);
-                selector.Add((int) Rarity.Rare, (int) dungeon.DungeonLevel * 2);
-                selector.Add((int) Rarity.Unique, (int) dungeon.DungeonLevel * 2);
-                selector.Add((int) Rarity.Legendary, (int) dungeon.DungeonLevel * 2);
-                selector.Add((int) Rarity.Mythic, (int) dungeon.DungeonLevel * 2);
+                selector.Add((int) Rarity.Common, (int) dungeon.Level.Value * 2);
+                selector.Add((int) Rarity.Uncommon, (int) dungeon.Level.Value * 2);
+                selector.Add((int) Rarity.Rare, (int) dungeon.Level.Value * 2);
+                selector.Add((int) Rarity.Unique, (int) dungeon.Level.Value * 2);
+                selector.Add((int) Rarity.Legendary, (int) dungeon.Level.Value * 2);
+                selector.Add((int) Rarity.Mythic, (int) dungeon.Level.Value * 2);
                 selector.Add((int) Rarity.Divine, character.Luck);
                 break;
         }

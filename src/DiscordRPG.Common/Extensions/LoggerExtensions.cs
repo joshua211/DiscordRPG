@@ -5,11 +5,11 @@ namespace DiscordRPG.Common.Extensions;
 
 public static class LoggerExtensions
 {
-    public static ILogger Here(this ILogger logger,
+    public static ILogger Context(this ILogger logger, TransactionContext context,
         [CallerMemberName] string memberName = "")
     {
-        return logger
-            .ForContext("Method", memberName);
+        return logger.ForContext("Method", memberName)
+            .ForContext("TransactionId", context?.Id ?? "-");
     }
 
     public static ILogger WithContext<T>(this ILogger logger)

@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordRPG.Common", "DiscordRPG.Common\DiscordRPG.Common.csproj", "{FF413136-A09D-4BFA-AF1C-43A6CEDA038A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordRPG.Core", "DiscordRPG.Core\DiscordRPG.Core.csproj", "{E8CE8614-D4E0-46D6-B6AE-02A2BE9ACF05}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordRPG.Application", "DiscordRPG.Application\DiscordRPG.Application.csproj", "{D4407B19-215E-4B3D-80DD-249F78F16FD3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordRPG.Client", "DiscordRPG.Client\DiscordRPG.Client.csproj", "{4055D046-9FC0-41BD-AACD-E5974396CF97}"
@@ -28,10 +26,6 @@ Global
 		{FF413136-A09D-4BFA-AF1C-43A6CEDA038A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF413136-A09D-4BFA-AF1C-43A6CEDA038A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF413136-A09D-4BFA-AF1C-43A6CEDA038A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E8CE8614-D4E0-46D6-B6AE-02A2BE9ACF05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E8CE8614-D4E0-46D6-B6AE-02A2BE9ACF05}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E8CE8614-D4E0-46D6-B6AE-02A2BE9ACF05}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E8CE8614-D4E0-46D6-B6AE-02A2BE9ACF05}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D4407B19-215E-4B3D-80DD-249F78F16FD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D4407B19-215E-4B3D-80DD-249F78F16FD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4407B19-215E-4B3D-80DD-249F78F16FD3}.Release|Any CPU.ActiveCfg = Release|Any CPU

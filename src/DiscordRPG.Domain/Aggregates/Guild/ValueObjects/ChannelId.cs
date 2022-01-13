@@ -14,4 +14,8 @@ public class ChannelId : ValueObject
     }
 
     public string Value { get; private set; }
+
+    public override string ToString() => Value;
+
+    public static implicit operator ulong(ChannelId id) => ulong.Parse(id.Value);
 }

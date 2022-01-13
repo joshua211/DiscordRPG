@@ -1,13 +1,8 @@
-﻿using System.Collections.Concurrent;
-using DiscordRPG.Application.Settings;
-using DiscordRPG.Common;
-using MongoDB.Driver;
-
-namespace DiscordRPG.Application.Worker;
+﻿namespace DiscordRPG.Application.Worker;
 
 public class DiagnosticsWorker
 {
-    private readonly IMongoCollection<DomainEvent> collection;
+    /*private readonly IMongoCollection<DomainEvent> collection;
     private readonly ILogger logger;
     private readonly ConcurrentBag<DomainEvent> uncommittedEvents;
 
@@ -41,5 +36,5 @@ public class DiagnosticsWorker
 
         var result = await collection.BulkWriteAsync(bulk);
         logger.Here().Debug("Saved {Count} entries", result.InsertedCount);
-    }
+    }*/
 }

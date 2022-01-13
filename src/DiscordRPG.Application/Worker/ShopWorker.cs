@@ -1,12 +1,8 @@
-﻿using DiscordRPG.Application.Interfaces.Services;
-using DiscordRPG.Core.DomainServices.Generators;
-using Weighted_Randomizer;
-
-namespace DiscordRPG.Application.Worker;
+﻿namespace DiscordRPG.Application.Worker;
 
 public class ShopWorker
 {
-    private readonly IAspectGenerator aspectGenerator;
+    /*private readonly IAspectGenerator aspectGenerator;
     private readonly ICharacterService characterService;
     private readonly IGuildService guildService;
     private readonly IItemGenerator itemGenerator;
@@ -76,5 +72,5 @@ public class ShopWorker
             else
                 yield return itemGenerator.GenerateRandomEquipment(rarity, level, aspect);
         }
-    }
+    }*/
 }

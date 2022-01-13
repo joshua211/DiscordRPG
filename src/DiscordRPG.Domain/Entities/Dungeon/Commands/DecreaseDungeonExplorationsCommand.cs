@@ -1,16 +1,20 @@
-﻿using DiscordRPG.Domain.Aggregates.Guild;
+﻿using DiscordRPG.Common;
+using DiscordRPG.Domain.Aggregates.Guild;
 using EventFlow.Commands;
 
 namespace DiscordRPG.Domain.Entities.Dungeon.Commands;
 
 public class DecreaseDungeonExplorationsCommand : Command<GuildAggregate, GuildId>
 {
-    public DecreaseDungeonExplorationsCommand(GuildId aggregateId, DungeonId dungeonId) : base(aggregateId)
+    public DecreaseDungeonExplorationsCommand(GuildId aggregateId, DungeonId dungeonId, TransactionContext context) :
+        base(aggregateId)
     {
         DungeonId = dungeonId;
+        Context = context;
     }
 
     public DungeonId DungeonId { get; private set; }
+    public TransactionContext Context { get; private set; }
 }
 
 public class
@@ -20,7 +24,7 @@ public class
     public override Task ExecuteAsync(GuildAggregate aggregate, DecreaseDungeonExplorationsCommand command,
         CancellationToken cancellationToken)
     {
-        aggregate.DecreaseExplorations(command.DungeonId);
+        aggregate.DecreaseExplorations(command.DungeonId, command.Context);
         return Task.CompletedTask;
     }
 }

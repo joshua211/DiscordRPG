@@ -21,7 +21,7 @@ public class CleaningWorker
 
     public async Task RemoveExhaustedAndUnusedDungeons()
     {
-        logger.Here().Information("Removing all exhausted Dungeons");
+        /*logger.Here().Information("Removing all exhausted Dungeons");
         var allDungeonResult = await dungeonService.GetAllDungeonsAsync();
         if (!allDungeonResult.WasSuccessful)
         {
@@ -56,6 +56,6 @@ public class CleaningWorker
             deletedCount++;
         }
 
-        logger.Here().Information("Finished cleaning and deleted {Count} dungeons", deletedCount);
+        logger.Here().Information("Finished cleaning and deleted {Count} dungeons", deletedCount);*/
     }
 }

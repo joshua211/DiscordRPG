@@ -14,6 +14,7 @@ public class Shop : Entity<ShopId>
 
     public List<SalesInventory> Inventory { get; private set; }
 
+
     public void UpdateInventoryForCharacter(CharacterId characterId, List<Item> newItems)
     {
         var charInventory = Inventory.First(i => i.CharacterId == characterId);

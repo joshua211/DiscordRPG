@@ -1,28 +1,31 @@
-﻿using DiscordRPG.Application.Services;
-using DiscordRPG.Common;
+﻿using DiscordRPG.Application.Models;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Entities.Activity.Enums;
+using DiscordRPG.Domain.Entities.Character;
+using DiscordRPG.Domain.Entities.Dungeon;
 
 namespace DiscordRPG.Application.Interfaces.Services;
 
 public interface IDungeonService
 {
-    Task<Result<Dungeon>> CreateDungeonAsync(DiscordId serverId, Character character, ActivityDuration duration,
-        TransactionContext parentContext = null,
+    Task<Result> CreateDungeonAsync(GuildId guildId, CharacterId character, uint charLevel, int charLuck,
+        ActivityDuration duration,
+        TransactionContext context, CancellationToken token = default);
+
+    Task<Result<DungeonReadModel>> GetDungeonAsync(DungeonId dungeonId, TransactionContext parentContext,
         CancellationToken token = default);
 
-    Task<Result<Dungeon>> GetDungeonFromChannelIdAsync(DiscordId channelId, TransactionContext parentContext = null,
-        CancellationToken token = default);
-
-    Task<Result> CalculateDungeonAdventureResultAsync(Identity chadId, DiscordId threadId,
+    Task<Result> CalculateDungeonAdventureResultAsync(GuildId guildId, DungeonId dungeonId, CharacterId characterId,
         ActivityDuration activityDuration,
-        TransactionContext parentContext = null,
+        TransactionContext parentContext,
         CancellationToken token = default);
 
-    Task<Result> DecreaseExplorationsAsync(Dungeon dialogDungeon, TransactionContext parentContext = null,
+    Task<Result> DecreaseExplorationsAsync(GuildId guildId, DungeonId dungeonId, TransactionContext parentContext,
         CancellationToken token = default);
 
-    Task<Result<IEnumerable<Dungeon>>> GetAllDungeonsAsync(TransactionContext parentContext = null,
+    Task<Result<IEnumerable<DungeonReadModel>>> GetAllDungeonsAsync(TransactionContext parentContext,
         CancellationToken token = default);
 
-    Task<Result> DeleteDungeonAsync(Dungeon dungeon, TransactionContext parentContext = null,
+    Task<Result> DeleteDungeonAsync(GuildId guildId, DungeonId dungeonId, TransactionContext parentContext,
         CancellationToken token = default);
 }

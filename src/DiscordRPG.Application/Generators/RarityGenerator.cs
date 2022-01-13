@@ -1,9 +1,10 @@
-﻿using DiscordRPG.Core.DomainServices.Generators;
+﻿using DiscordRPG.Domain.Entities.Activity.Enums;
+using DiscordRPG.Domain.Enums;
 using Weighted_Randomizer;
 
 namespace DiscordRPG.Application.Generators;
 
-public class RarityGenerator : GeneratorBase, IRarityGenerator
+public class RarityGenerator : GeneratorBase
 {
     public Rarity GenerateRarityFromActivityDuration(ActivityDuration duration, int luck)
     {

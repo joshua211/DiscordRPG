@@ -1,13 +1,36 @@
-﻿using DiscordRPG.Common;
+﻿using DiscordRPG.Application.Models;
+using DiscordRPG.Domain.Entities.Character;
+using EventFlow.MongoDB.ReadStores;
+using EventFlow.Queries;
+using MongoDB.Driver;
 
 namespace DiscordRPG.Application.Queries;
 
-public class GetCharacterActivityQuery : Query<Activity>
+public class GetCharacterActivityQuery : IQuery<ActivityReadModel>
 {
-    public GetCharacterActivityQuery(string charId)
+    public GetCharacterActivityQuery(CharacterId characterId)
     {
-        CharId = charId;
+        CharacterId = characterId;
     }
 
-    public string CharId { get; private set; }
+    public CharacterId CharacterId { get; private set; }
+}
+
+public class GetCharacterActivityQueryHandler : IQueryHandler<GetCharacterActivityQuery, ActivityReadModel>
+{
+    private readonly IMongoDbReadModelStore<ActivityReadModel> store;
+
+    public GetCharacterActivityQueryHandler(IMongoDbReadModelStore<ActivityReadModel> store)
+    {
+        this.store = store;
+    }
+
+    public async Task<ActivityReadModel> ExecuteQueryAsync(GetCharacterActivityQuery query,
+        CancellationToken cancellationToken)
+    {
+        var id = query.CharacterId.Value;
+        var result = await store.FindAsync(a => a.CharacterId == id, cancellationToken: cancellationToken);
+
+        return result.FirstOrDefault(cancellationToken: cancellationToken);
+    }
 }

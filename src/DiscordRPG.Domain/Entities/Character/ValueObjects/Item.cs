@@ -8,16 +8,16 @@ namespace DiscordRPG.Domain.Entities.Character.ValueObjects;
 
 public class Item : Entity<ItemId>
 {
-    public Item(ItemId id, ItemId itemId, string name, string description, int amount, Rarity rarity,
+    public Item(ItemId id, string name, string description, int amount, Rarity rarity,
         EquipmentCategory equipmentCategory, EquipmentPosition position, ItemType itemType,
-        CharacterAttribute damageAttribute, DamageType damageType, int worth, uint level, bool isUsable, int armor,
+        CharacterAttribute damageAttribute, DamageType damageType, int worth, uint level, int armor,
         int magicArmor, int strength, int vitality, int agility, int intelligence, int luck, int damageValue,
         bool isEquipped) : base(id)
     {
         if (string.IsNullOrEmpty(name))
             DomainError.With(nameof(name));
 
-        ItemId = itemId;
+        ItemId = id;
         Name = name;
         Description = description;
         Amount = amount;
@@ -29,7 +29,6 @@ public class Item : Entity<ItemId>
         DamageType = damageType;
         Worth = worth;
         Level = level;
-        IsUsable = isUsable;
         Armor = armor;
         MagicArmor = magicArmor;
         Strength = strength;
@@ -42,18 +41,17 @@ public class Item : Entity<ItemId>
     }
 
     public ItemId ItemId { get; private set; }
-    public string Name { get; set; }
-    public string Description { get; set; }
-    public int Amount { get; set; }
-    public Rarity Rarity { get; set; }
+    public string Name { get; private set; }
+    public string Description { get; private set; }
+    public int Amount { get; private set; }
+    public Rarity Rarity { get; private set; }
     public EquipmentCategory EquipmentCategory { get; private set; }
     public EquipmentPosition Position { get; private set; }
     public ItemType ItemType { get; private set; }
     public CharacterAttribute DamageAttribute { get; private set; }
     public DamageType DamageType { get; private set; }
-    public int Worth { get; set; }
-    public uint Level { get; set; }
-    public bool IsUsable { get; set; }
+    public int Worth { get; private set; }
+    public uint Level { get; private set; }
     public int Armor { get; private set; }
     public int MagicArmor { get; private set; }
     public int Strength { get; private set; }
@@ -72,6 +70,20 @@ public class Item : Entity<ItemId>
     public void Unequip()
     {
         IsEquipped = false;
+    }
+
+    public void IncreaseAmount(int genItemAmount)
+    {
+        Amount += genItemAmount;
+    }
+
+    protected override IEnumerable<object> GetEqualityComponents()
+    {
+        return new object[]
+        {
+            Name, Worth, Level, Rarity, Armor, MagicArmor, Strength, Vitality, Agility, Intelligence, Luck, DamageValue,
+            DamageType, DamageAttribute
+        };
     }
 }
 

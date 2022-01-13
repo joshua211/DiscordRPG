@@ -1,0 +1,39 @@
+﻿using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Entities.Shop.Events;
+using DiscordRPG.Domain.Entities.Shop.ValueObjects;
+using EventFlow.Aggregates;
+using EventFlow.MongoDB.ReadStores;
+using EventFlow.ReadStores;
+
+namespace DiscordRPG.Application.Models;
+
+public class ShopReadModel : IMongoDbReadModel,
+    IAmReadModelFor<GuildAggregate, GuildId, ShopAdded>,
+    IAmReadModelFor<GuildAggregate, GuildId, ShopInventoryRemoved>,
+    IAmReadModelFor<GuildAggregate, GuildId, ShopInventoryUpdated>
+{
+    public List<SalesInventory> Inventory { get; private set; }
+
+    public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, ShopAdded> domainEvent)
+    {
+        var shop = domainEvent.AggregateEvent.Shop;
+        Id = shop.Id.Value;
+        Inventory = shop.Inventory;
+    }
+
+    public void Apply(IReadModelContext context,
+        IDomainEvent<GuildAggregate, GuildId, ShopInventoryRemoved> domainEvent)
+    {
+        Inventory.RemoveAll(i => i.CharacterId == domainEvent.AggregateEvent.CharacterId);
+    }
+
+    public void Apply(IReadModelContext context,
+        IDomainEvent<GuildAggregate, GuildId, ShopInventoryUpdated> domainEvent)
+    {
+        var charInventory = Inventory.First(i => i.CharacterId == domainEvent.AggregateEvent.CharacterId);
+        Inventory[Inventory.IndexOf(charInventory)] = charInventory.UpdateItems(domainEvent.AggregateEvent.NewItems);
+    }
+
+    public string Id { get; private set; }
+    public long? Version { get; set; }
+}

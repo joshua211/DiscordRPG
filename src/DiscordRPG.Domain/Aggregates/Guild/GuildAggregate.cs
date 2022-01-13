@@ -1,4 +1,5 @@
-﻿using DiscordRPG.Domain.Aggregates.Guild.Events;
+﻿using DiscordRPG.Common;
+using DiscordRPG.Domain.Aggregates.Guild.Events;
 using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
 using DiscordRPG.Domain.Entities.Activity;
 using DiscordRPG.Domain.Entities.Activity.Events;
@@ -25,103 +26,106 @@ public class GuildAggregate : AggregateRoot<GuildAggregate, GuildId>
 
     public IEnumerable<Character> Characters => state.Characters;
 
-    public void Create(GuildId id, GuildName name, ChannelId guildHallId, ChannelId dungeonHallId, ChannelId innId)
+    public void Create(GuildId id, GuildName name, ChannelId guildHallId, ChannelId dungeonHallId, ChannelId innId,
+        TransactionContext context)
     {
         Emit(new GuildCreated(id, name, guildHallId, dungeonHallId, innId));
     }
 
-    public void Delete()
+    public void Delete(TransactionContext context)
     {
-        Emit(new GuildDeleted());
+        Emit(new GuildDeleted(), new Metadata(context.AsMetadata()));
     }
 
-    public void AddActivity(Activity activity)
-    {
-        //TODO spec
-        Emit(new ActivityAdded(activity));
-    }
-
-    public void CompleteActivity(ActivityId id, bool success)
+    public void AddActivity(Activity activity, TransactionContext context)
     {
         //TODO spec
-        Emit(new ActivityCompleted(id, success));
+        Emit(new ActivityAdded(activity), new Metadata(context.AsMetadata()));
     }
 
-    public void CancelActivity(ActivityId commandActivityId)
+    public void CompleteActivity(ActivityId id, bool success, TransactionContext context)
     {
         //TODO spec
-        Emit(new ActivityCancelled(commandActivityId));
+        Emit(new ActivityCompleted(id, success), new Metadata(context.AsMetadata()));
     }
 
-    public void AddCharacter(Character commandCharacter)
+    public void CancelActivity(ActivityId commandActivityId, TransactionContext context)
     {
-        Emit(new CharacterCreated(commandCharacter));
+        //TODO spec
+        Emit(new ActivityCancelled(commandActivityId), new Metadata(context.AsMetadata()));
     }
 
-    public void KillCharacter(CharacterId commandCharacterId)
+    public void AddCharacter(Character commandCharacter, TransactionContext context)
     {
-        Emit(new CharacterDied(commandCharacterId));
+        Emit(new CharacterCreated(commandCharacter), new Metadata(context.AsMetadata()));
     }
 
-    public void ChangeCharacterInventory(CharacterId commandCharacterId, List<Item> commandNewInventory)
+    public void KillCharacter(CharacterId commandCharacterId, TransactionContext context)
     {
-        Emit(new InventoryChanged(commandCharacterId, commandNewInventory));
+        Emit(new CharacterDied(commandCharacterId), new Metadata(context.AsMetadata()));
     }
 
-    public void EquipItem(CharacterId commandCharacterId, ItemId commandItemId)
+    public void ChangeCharacterInventory(CharacterId commandCharacterId, List<Item> commandNewInventory,
+        TransactionContext context)
     {
-        Emit(new ItemEquipped(commandItemId, commandCharacterId));
+        Emit(new InventoryChanged(commandCharacterId, commandNewInventory), new Metadata(context.AsMetadata()));
     }
 
-    public void UnequipItem(CharacterId commandCharacterId, ItemId commandItemId)
+    public void EquipItem(CharacterId commandCharacterId, ItemId commandItemId, TransactionContext context)
     {
-        Emit(new ItemUnequipped(commandItemId, commandCharacterId));
+        Emit(new ItemEquipped(commandItemId, commandCharacterId), new Metadata(context.AsMetadata()));
     }
 
-    public void SetCharacterLevel(CharacterId commandCharacterId, Level commandLevel)
+    public void UnequipItem(CharacterId commandCharacterId, ItemId commandItemId, TransactionContext context)
     {
-        Emit(new LevelGained(commandCharacterId, commandLevel));
+        Emit(new ItemUnequipped(commandItemId, commandCharacterId), new Metadata(context.AsMetadata()));
     }
 
-    public void CompleteCharacterRest(CharacterId commandCharacterId)
+    public void SetCharacterLevel(CharacterId commandCharacterId, Level commandLevel, TransactionContext context)
+    {
+        Emit(new LevelGained(commandCharacterId, commandLevel), new Metadata(context.AsMetadata()));
+    }
+
+    public void CompleteCharacterRest(CharacterId commandCharacterId, TransactionContext context)
     {
         //TODO change wounds after rest complete
-        Emit(new RestComplete(commandCharacterId));
+        Emit(new RestComplete(commandCharacterId), new Metadata(context.AsMetadata()));
     }
 
-    public void AddDungeon(Dungeon commandDungeon)
+    public void AddDungeon(Dungeon commandDungeon, TransactionContext context)
     {
-        Emit(new DungeonAdded(commandDungeon));
+        Emit(new DungeonAdded(commandDungeon), new Metadata(context.AsMetadata()));
     }
 
-    public void RemoveDungeon(DungeonId commandDungeonId)
+    public void RemoveDungeon(DungeonId commandDungeonId, TransactionContext context)
     {
-        Emit(new DungeonDeleted(commandDungeonId));
+        Emit(new DungeonDeleted(commandDungeonId), new Metadata(context.AsMetadata()));
     }
 
-    public void DecreaseExplorations(DungeonId commandDungeonId)
+    public void DecreaseExplorations(DungeonId commandDungeonId, TransactionContext context)
     {
-        Emit(new ExplorationsDecreased(commandDungeonId));
+        Emit(new ExplorationsDecreased(commandDungeonId), new Metadata(context.AsMetadata()));
     }
 
-    public void AddShop(Shop commandShop)
+    public void AddShop(Shop commandShop, TransactionContext context)
     {
-        Emit(new ShopAdded(commandShop));
+        Emit(new ShopAdded(commandShop), new Metadata(context.AsMetadata()));
     }
 
     public void UpdateShopInventory(ShopId commandShopId, List<Item> commandNewInventory,
-        CharacterId commandCharacterId)
+        CharacterId commandCharacterId, TransactionContext context)
     {
-        Emit(new ShopInventoryUpdated(commandShopId, commandCharacterId, commandNewInventory));
+        Emit(new ShopInventoryUpdated(commandShopId, commandCharacterId, commandNewInventory),
+            new Metadata(context.AsMetadata()));
     }
 
-    public void BuyItem(CharacterId commandCharacterId, Item item)
+    public void BuyItem(CharacterId commandCharacterId, Item item, TransactionContext context)
     {
-        Emit(new ItemBought(commandCharacterId, item));
+        Emit(new ItemBought(commandCharacterId, item), new Metadata(context.AsMetadata()));
     }
 
-    public void RemoveShopInventory(ShopId shopId, CharacterId charId)
+    public void RemoveShopInventory(ShopId shopId, CharacterId charId, TransactionContext context)
     {
-        Emit(new ShopInventoryRemoved(shopId, charId));
+        Emit(new ShopInventoryRemoved(shopId, charId), new Metadata(context.AsMetadata()));
     }
 }

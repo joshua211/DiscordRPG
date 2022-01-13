@@ -1,32 +1,35 @@
-﻿using DiscordRPG.Core.DomainServices.Generators;
+﻿using DiscordRPG.Domain.Entities.Activity.Enums;
+using DiscordRPG.Domain.Entities.Dungeon;
+using DiscordRPG.Domain.Entities.Dungeon.ValueObjects;
+using DiscordRPG.Domain.Enums;
 using Weighted_Randomizer;
 
 namespace DiscordRPG.Application.Generators;
 
-public class DungeonGenerator : GeneratorBase, IDungeonGenerator
+public class DungeonGenerator : GeneratorBase
 {
-    private readonly IAspectGenerator aspectGenerator;
-    private readonly INameGenerator nameGenerator;
-    private readonly IRarityGenerator rarityGenerator;
+    private readonly AspectGenerator aspectGenerator;
+    private readonly NameGenerator nameGenerator;
+    private readonly RarityGenerator rarityGenerator;
 
-    public DungeonGenerator(INameGenerator nameGenerator, IRarityGenerator rarityGenerator,
-        IAspectGenerator aspectGenerator)
+    public DungeonGenerator(NameGenerator nameGenerator, RarityGenerator rarityGenerator,
+        AspectGenerator aspectGenerator)
     {
         this.nameGenerator = nameGenerator;
         this.rarityGenerator = rarityGenerator;
         this.aspectGenerator = aspectGenerator;
     }
 
-    public Dungeon GenerateRandomDungeon(DiscordId serverId, DiscordId threadId, uint charLevel, int charLuck,
+    public Dungeon GenerateRandomDungeon(DungeonId dungeonId, uint charLevel, int charLuck,
         ActivityDuration duration)
     {
         var rarity = rarityGenerator.GenerateRarityFromActivityDuration(duration, charLuck);
         var aspect = aspectGenerator.GetRandomAspect(rarity);
 
-        return GenerateRandomDungeon(serverId, threadId, charLevel, aspect, rarity);
+        return GenerateRandomDungeon(dungeonId, charLevel, aspect, rarity);
     }
 
-    public Dungeon GenerateRandomDungeon(DiscordId serverId, DiscordId threadId, uint charLevel, Aspect aspect,
+    public Dungeon GenerateRandomDungeon(DungeonId dungeonId, uint charLevel, Aspect aspect,
         Rarity rarity)
     {
         var explorations = (byte) random.Next(3, 15);
@@ -42,7 +45,8 @@ public class DungeonGenerator : GeneratorBase, IDungeonGenerator
         level = level <= 0 ? 1 : level;
 
         var name = aspect.DungeonPrefix + " " + nameGenerator.GenerateDungeonName(rarity);
-        var dungeon = new Dungeon(serverId, threadId, level, rarity, name, explorations, aspect);
+        var dungeon = new Dungeon(dungeonId, new DungeonName(name), new Explorations(explorations),
+            new DungeonLevel(level), rarity, aspect);
 
         return dungeon;
     }

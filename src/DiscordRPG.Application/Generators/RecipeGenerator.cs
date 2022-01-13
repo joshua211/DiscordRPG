@@ -1,11 +1,8 @@
-﻿using DiscordRPG.Application.Data;
-using DiscordRPG.Core.DomainServices.Generators;
-
-namespace DiscordRPG.Application.Generators;
+﻿namespace DiscordRPG.Application.Generators;
 
 public class RecipeGenerator : GeneratorBase
 {
-    private readonly IItemGenerator itemGenerator;
+    /*private readonly IItemGenerator itemGenerator;
     private readonly INameGenerator nameGenerator;
 
     public RecipeGenerator(IItemGenerator itemGenerator, INameGenerator nameGenerator)
@@ -56,5 +53,5 @@ public class RecipeGenerator : GeneratorBase
                 }
             }
         }
-    }
+    }*/
 }

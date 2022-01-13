@@ -1,4 +1,6 @@
-﻿namespace DiscordRPG.Application.Data;
+﻿using DiscordRPG.Domain.Enums;
+
+namespace DiscordRPG.Application.Data;
 
 public static class Items
 {

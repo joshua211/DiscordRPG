@@ -10,4 +10,8 @@
         <PackageReference Include="EventFlow" Version="0.83.4713"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\DiscordRPG.Common\DiscordRPG.Common.csproj"/>
+    </ItemGroup>
+
 </Project>

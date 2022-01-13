@@ -1,24 +1,20 @@
-﻿using DiscordRPG.Application.Services;
-using DiscordRPG.Common;
+﻿using DiscordRPG.Application.Models;
+using DiscordRPG.Domain.Aggregates.Guild;
 
 namespace DiscordRPG.Application.Interfaces.Services;
 
 public interface IGuildService
 {
-    Task<Result<Guild>> GetGuildAsync(Identity identity, TransactionContext parentContext = null,
+    Task<Result<GuildReadModel>> GetGuildAsync(GuildId identity, TransactionContext context,
         CancellationToken cancellationToken = default);
 
-    Task<Result<Guild>> GetGuildWithDiscordIdAsync(DiscordId serverId, TransactionContext parentContext = null,
+    Task<Result> CreateGuildAsync(string serverId, string guildName, string guildHallId,
+        string dungeonHallId, string innChannel,
+        TransactionContext context, CancellationToken token = default);
+
+    Task<Result> DeleteGuildAsync(GuildId id, TransactionContext parentContext,
         CancellationToken cancellationToken = default);
 
-    Task<Result<Guild>> CreateGuildAsync(DiscordId serverId, string guildName, DiscordId guildHallId,
-        DiscordId dungeonHallId, DiscordId innChannel,
-        TransactionContext parentContext = null,
-        CancellationToken token = default);
-
-    Task<Result> DeleteGuildAsync(DiscordId serverId, TransactionContext parentContext = null,
-        CancellationToken cancellationToken = default);
-
-    Task<Result<IEnumerable<Guild>>> GetAllGuildsAsync(TransactionContext parentContext = null,
+    Task<Result<IEnumerable<GuildReadModel>>> GetAllGuildsAsync(TransactionContext parentContext,
         CancellationToken cancellationToken = default);
 }

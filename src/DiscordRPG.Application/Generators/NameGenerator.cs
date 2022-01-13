@@ -1,9 +1,11 @@
 ﻿using DiscordRPG.Application.Data;
-using DiscordRPG.Core.DomainServices.Generators;
+using DiscordRPG.Domain.Entities.Character.Enums;
+using DiscordRPG.Domain.Entities.Dungeon.ValueObjects;
+using DiscordRPG.Domain.Enums;
 
 namespace DiscordRPG.Application.Generators;
 
-public class NameGenerator : GeneratorBase, INameGenerator
+public class NameGenerator : GeneratorBase
 {
     private static readonly Dictionary<Rarity, List<string>> dungeonNouns;
     private static List<string> woundAdjectives;

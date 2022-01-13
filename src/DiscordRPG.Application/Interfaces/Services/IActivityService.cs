@@ -1,23 +1,30 @@
-﻿using DiscordRPG.Application.Services;
-using DiscordRPG.Common;
+﻿using DiscordRPG.Application.Models;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Entities.Activity;
+using DiscordRPG.Domain.Entities.Activity.Enums;
+using DiscordRPG.Domain.Entities.Activity.ValueObjects;
+using DiscordRPG.Domain.Entities.Character;
 
 namespace DiscordRPG.Application.Interfaces.Services;
 
 public interface IActivityService
 {
-    Task<Result> QueueActivityAsync(Identity charId, ActivityDuration duration, ActivityType type, ActivityData data,
-        TransactionContext parentContext = null,
+    Task<Result> QueueActivityAsync(GuildId id, CharacterId characterId, ActivityDuration duration, ActivityType type,
+        ActivityData data,
+        TransactionContext context,
         CancellationToken cancellationToken = default);
 
-    Task<Result<Activity>> GetCharacterActivityAsync(Identity charId, TransactionContext parentContext = null,
+    Task<Result<ActivityReadModel>> GetCharacterActivityAsync(CharacterId characterId, TransactionContext context,
         CancellationToken token = default);
 
-    Task<Result<Activity>> GetActivityAsync(Identity activityId, TransactionContext parentContext = null,
+    Task<Result<ActivityReadModel>> GetActivityAsync(ActivityId id, TransactionContext context,
         CancellationToken token = default);
 
-    Task<Result> StopActivityAsync(Activity dialogActivity, TransactionContext parentContext = null,
+    Task<Result> StopActivityAsync(GuildId guildId, ActivityId activityId, TransactionContext context,
         CancellationToken token = default);
 
-    Task<Result<IEnumerable<Activity>>> GetAllActivitiesAsync(TransactionContext parentContext = null,
+    Task<Result<IEnumerable<ActivityReadModel>>> GetAllActivitiesAsync(TransactionContext context,
         CancellationToken token = default);
+
+    Task<Result> CompleteActivityAsync(GuildId guildId, ActivityId activityId, TransactionContext context);
 }

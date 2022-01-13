@@ -1,15 +1,22 @@
-﻿namespace DiscordRPG.Application.Data;
+﻿using DiscordRPG.Domain.Entities.Character.Enums;
+using DiscordRPG.Domain.Entities.Character.ValueObjects;
+using DiscordRPG.Domain.Enums;
+
+namespace DiscordRPG.Application.Data;
 
 public static class Equip
 {
-    public static Equipment StarterArmor => new Equipment("Leather Armor", "A basic leather armor", Rarity.Common, 3, 2,
-        0, 1,
-        1, 0, 0, 1, EquipmentCategory.Armor, EquipmentPosition.Armor, 1);
+    public static Item StarterArmor => new Item(ItemId.New, "Leather Armor", "A basic leather armor", 1, Rarity.Common,
+        EquipmentCategory.Armor, EquipmentPosition.Armor, ItemType.Equipment, CharacterAttribute.Agility,
+        DamageType.Magical, 1, 1, 3, 2, 0, 1, 1, 0, 0, 0, true);
 
-    public static Equipment StarterLeg => new Equipment("Leather Pants", "Some basic leather pants", Rarity.Common, 2,
-        2, 1, 0,
-        0, 1, 1, 1, EquipmentCategory.Pants, EquipmentPosition.Pants, 1);
+    public static Item StarterLeg => new Item(ItemId.New, "Leather Pants", "Some basic leather pants", 1, Rarity.Common,
+        EquipmentCategory.Armor, EquipmentPosition.Armor, ItemType.Equipment, CharacterAttribute.Agility,
+        DamageType.Magical, 1, 1, 2, 1, 1, 0, 0, 0, 0, 0, true);
 
-    public static Weapon StarterWeapon => new Weapon("Rusty Dagger", "An old and rusty dagger", Rarity.Common, 0, 0, 1,
-        0, 0, 0, 0, 1, CharacterAttribute.Strength, DamageType.Physical, 4, EquipmentCategory.Dagger, 1);
+    public static Item StarterWeapon => new Item(new ItemId("starterweapon"), "Rusty Dagger", "An old and rusty dagger",
+        1,
+        Rarity.Common,
+        EquipmentCategory.Dagger, EquipmentPosition.Weapon, ItemType.Weapon, CharacterAttribute.Strength,
+        DamageType.Physical, 1, 1, 0, 0, 1, 0, 0, 0, 0, 4, true);
 }

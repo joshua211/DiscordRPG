@@ -1,109 +1,40 @@
-﻿using DiscordRPG.Core.DomainServices;
+﻿using DiscordRPG.Domain.Entities.Character.ValueObjects;
 
 namespace DiscordRPG.Application.Data;
 
-public class Classes : IClassService
+public static class Classes
 {
-    private readonly Dictionary<int, Class> classes;
-    private readonly ILogger logger;
-
-    public Classes(ILogger logger)
+    private static readonly Dictionary<string, CharacterClass> classes = new Dictionary<string, CharacterClass>()
     {
-        this.logger = logger.WithContext(GetType());
-        classes = new Dictionary<int, Class>() {{1, Mage}, {2, Warrior}, {3, Knight}, {4, Thief}, {5, Lucky}};
+        {Mage.Name, Mage},
+        {Thief.Name, Thief},
+        {Knight.Name, Knight},
+        {Warrior.Name, Warrior}
+    };
+
+    public static CharacterClass Mage => new("Mage", "You are harry, wizard!",
+        6, 10, 6, 18, 10,
+        0.4f, 0.4f, 0.4f, 1.5f, 0.5f);
+
+    public static CharacterClass Thief => new("Thief", "Not only stealing hearts",
+        10, 10, 15, 10, 10,
+        0.7f, 0.5f, 1.2f, 0.3f, 0.5f);
+
+    public static CharacterClass Knight => new("Knight", "TODO: funny description",
+        12, 16, 5, 7, 10,
+        1f, 1.2f, 0.3f, 0.3f, 0.4f);
+
+    public static CharacterClass Warrior => new("Warrior", "The more aggressive kinda guy",
+        16, 12, 7, 5, 10,
+        1f, 0.9f, 0.5f, 0.3f, 0.5f);
+
+    public static CharacterClass GetClass(string name)
+    {
+        classes.TryGetValue(name, out var c);
+        return c;
     }
 
-    public static Class Mage => new Class("Mage")
-    {
-        Description = "You are harry, wizard!",
-        BaseIntelligence = 18,
-        BaseAgility = 6,
-        BaseStrength = 6,
-        BaseVitality = 10,
-        BaseLuck = 10,
-        AgilityModifier = 0.4f,
-        IntelligenceModifier = 1.5f,
-        LuckModifier = 0.5f,
-        StrengthModifier = 0.4f,
-        VitalityModifier = 0.4f
-    };
-
-    public static Class Lucky => new Class("Lucky Bastard")
-    {
-        Description = "How are you still alive",
-        BaseIntelligence = 5,
-        BaseAgility = 5,
-        BaseStrength = 5,
-        BaseVitality = 5,
-        BaseLuck = 20,
-        AgilityModifier = 0.3f,
-        IntelligenceModifier = 0.3f,
-        LuckModifier = 1.8f,
-        StrengthModifier = 0.3f,
-        VitalityModifier = 0.3f
-    };
-
-    public static Class Thief => new Class("Thief")
-    {
-        Description = "Not only stealing hearts",
-        BaseIntelligence = 5,
-        BaseAgility = 15,
-        BaseStrength = 10,
-        BaseVitality = 10,
-        BaseLuck = 10,
-        AgilityModifier = 1.2f,
-        IntelligenceModifier = 0.3f,
-        LuckModifier = 0.5f,
-        StrengthModifier = 0.7f,
-        VitalityModifier = 0.5f
-    };
-
-    public static Class Knight => new Class("Knight")
-    {
-        Description = "TODO lustige beschreibung",
-        BaseIntelligence = 2,
-        BaseAgility = 5,
-        BaseStrength = 10,
-        BaseVitality = 15,
-        BaseLuck = 8,
-        AgilityModifier = 0.3f,
-        IntelligenceModifier = 0.3f,
-        LuckModifier = 0.4f,
-        StrengthModifier = 1f,
-        VitalityModifier = 1.2f
-    };
-
-    public static Class Warrior => new Class("Warrior")
-    {
-        Description = "The more aggressive kinda guy",
-        BaseIntelligence = 5,
-        BaseAgility = 7,
-        BaseStrength = 16,
-        BaseVitality = 12,
-        BaseLuck = 10,
-        AgilityModifier = 0.5f,
-        IntelligenceModifier = 0.3f,
-        LuckModifier = 0.5f,
-        StrengthModifier = 1,
-        VitalityModifier = 0.9f
-    };
-
-    public Class GetClass(int id)
-    {
-        if (!classes.TryGetValue(id, out var obj))
-        {
-            logger.Here().Error("No class with id {Id} found", id);
-        }
-
-        return obj;
-    }
-
-    public IEnumerable<(int id, Class @class)> GetAllClasses()
-    {
-        return classes.ToList().Select(kv => (kv.Key, kv.Value));
-    }
-
-    public IEnumerable<string> GetStrengths(Class charClass)
+    public static IEnumerable<string> GetStrengths(CharacterClass charClass)
     {
         var list = new List<string>();
         if (charClass.AgilityModifier > 0.5f)
@@ -123,7 +54,7 @@ public class Classes : IClassService
         return list;
     }
 
-    public IEnumerable<string> GetWeaknesses(Class charClass)
+    public static IEnumerable<string> GetWeaknesses(CharacterClass charClass)
     {
         var list = new List<string>();
         if (charClass.AgilityModifier < 0.5f)
