@@ -1,13 +1,15 @@
-﻿using DiscordRPG.Core.Entities;
+﻿using DiscordRPG.Application.Models;
+using DiscordRPG.Common;
 
 namespace DiscordRPG.Client.Dialogs;
 
 public class ShowActivityDialog : Dialog
 {
-    public ShowActivityDialog(ulong userId) : base(userId)
+    public ShowActivityDialog(ulong userId, TransactionContext context) : base(userId, context)
     {
     }
 
-    public Activity Activity { get; set; }
-    public Character Character { get; set; }
+
+    public ActivityReadModel Activity { get; set; }
+    public CharacterReadModel Character { get; set; }
 }

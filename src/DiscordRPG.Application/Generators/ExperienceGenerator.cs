@@ -1,9 +1,10 @@
 ﻿using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
+using DiscordRPG.Domain.DomainServices.Generators;
 using DiscordRPG.Domain.Services;
 
 namespace DiscordRPG.Application.Generators;
 
-public class ExperienceGenerator : GeneratorBase
+public class ExperienceGenerator : GeneratorBase, IExperienceGenerator
 {
     private readonly IExperienceCurve experienceCurve;
 

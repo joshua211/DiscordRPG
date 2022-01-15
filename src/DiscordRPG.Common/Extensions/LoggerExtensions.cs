@@ -12,6 +12,12 @@ public static class LoggerExtensions
             .ForContext("TransactionId", context?.Id ?? "-");
     }
 
+    public static ILogger Here(this ILogger logger,
+        [CallerMemberName] string memberName = "")
+    {
+        return logger.ForContext("Method", memberName);
+    }
+
     public static ILogger WithContext<T>(this ILogger logger)
     {
         return logger.ForContext("SourceContext", typeof(T).Name);

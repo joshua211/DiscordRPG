@@ -1,4 +1,4 @@
-﻿using Discord;
+﻿/*using Discord;
 using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Commands.Attributes;
@@ -128,4 +128,5 @@ public class ShowActivity : DialogCommandBase<ShowActivityDialog>
             properties.Components = msgComponent;
         });
     }
-}
+}*/
+

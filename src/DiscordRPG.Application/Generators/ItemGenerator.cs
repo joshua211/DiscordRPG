@@ -1,13 +1,16 @@
 ﻿using DiscordRPG.Application.Models;
+using DiscordRPG.Domain.DomainServices.Generators;
+using DiscordRPG.Domain.Entities.Character;
 using DiscordRPG.Domain.Entities.Character.Enums;
 using DiscordRPG.Domain.Entities.Character.ValueObjects;
+using DiscordRPG.Domain.Entities.Dungeon;
 using DiscordRPG.Domain.Entities.Dungeon.ValueObjects;
 using DiscordRPG.Domain.Enums;
 using Weighted_Randomizer;
 
 namespace DiscordRPG.Application.Generators;
 
-public class ItemGenerator : GeneratorBase
+public class ItemGenerator : GeneratorBase, IItemGenerator
 {
     private readonly NameGenerator nameGenerator;
     private IWorthCalculator worthCalculator;
@@ -18,8 +21,27 @@ public class ItemGenerator : GeneratorBase
         this.worthCalculator = worthCalculator;
     }
 
-    public IEnumerable<Item> GenerateItems(CharacterReadModel character, DungeonReadModel dungeon)
+    public IEnumerable<Item> GenerateItems(Character characterEntity, Dungeon dungeonEntity)
     {
+        var character = new CharacterReadModel
+        {
+            Class = characterEntity.Class,
+            Inventory = characterEntity.Inventory,
+            Level = characterEntity.CharacterLevel,
+            Money = characterEntity.Money,
+            Name = characterEntity.Name,
+            Race = characterEntity.Race,
+            Wounds = characterEntity.Wounds
+        };
+        var dungeon = new DungeonReadModel
+        {
+            Aspect = dungeonEntity.Aspect,
+            Explorations = dungeonEntity.Explorations,
+            Level = dungeonEntity.Level,
+            Name = dungeonEntity.Name,
+            Rarity = dungeonEntity.Rarity
+        };
+
         var items = new List<Item>();
         var totalNum = GetNumOfItems();
         var level = dungeon.Level.Value;
@@ -55,6 +77,17 @@ public class ItemGenerator : GeneratorBase
         }
 
         return items;
+    }
+
+    public Item GetHealthPotion(Rarity rarity, uint level)
+    {
+        //TODO heal amount auslagern
+        var name = nameGenerator.GenerateHealthPotionName(rarity, level);
+        var worth = worthCalculator.CalculateWorth(rarity, level);
+        return new Item(ItemId.New, name,
+            $"A potion that can restore {Math.Round(level * 20 * (1 + (int) rarity * 0.2f))} health points", 1, rarity,
+            EquipmentCategory.Amulet, EquipmentPosition.Amulet, ItemType.Consumable, CharacterAttribute.Intelligence,
+            DamageType.Magical, worth, level, 0, 0, 0, 0, 0, 0, 0, 0, false);
     }
 
     public Item GenerateRandomWeapon(Rarity rarity, uint level, Aspect aspect)
@@ -128,17 +161,6 @@ public class ItemGenerator : GeneratorBase
             "", 1, rarity,
             category, EquipmentPosition.Weapon, ItemType.Weapon, charAttr,
             dmgType, totalWorth, level, 0, 0, s, v, a, i, l, dmgValue, false);
-    }
-
-    public Item GetHealthPotion(Rarity rarity, uint level)
-    {
-        //TODO heal amount auslagern
-        var name = nameGenerator.GenerateHealthPotionName(rarity, level);
-        var worth = worthCalculator.CalculateWorth(rarity, level);
-        return new Item(ItemId.New, name,
-            $"A potion that can restore {Math.Round(level * 20 * (1 + (int) rarity * 0.2f))} health points", 1, rarity,
-            EquipmentCategory.Amulet, EquipmentPosition.Amulet, ItemType.Consumable, CharacterAttribute.Intelligence,
-            DamageType.Magical, worth, level, 0, 0, 0, 0, 0, 0, 0, 0, false);
     }
 
     /*public Item GenerateFromRecipe(Recipe recipe)

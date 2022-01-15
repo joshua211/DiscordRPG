@@ -1,4 +1,4 @@
-﻿using Discord;
+﻿/*using Discord;
 using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Commands.Attributes;
@@ -274,4 +274,5 @@ public class Shop : DialogCommandBase<ShopDialog>
 
         yield return EmbedHelper.GetItemAsEmbed(dialog.SelectedItem, dialog.IsBuying ? 1 : 0.7f);
     }
-}
+}*/
+

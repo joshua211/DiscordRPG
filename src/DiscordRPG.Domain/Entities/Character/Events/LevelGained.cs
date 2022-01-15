@@ -1,17 +1,19 @@
-﻿using DiscordRPG.Domain.Aggregates.Guild;
+﻿using DiscordRPG.Common;
+using DiscordRPG.Domain.Aggregates.Guild;
 using DiscordRPG.Domain.Entities.Character.ValueObjects;
 using EventFlow.Aggregates;
 
 namespace DiscordRPG.Domain.Entities.Character.Events;
 
-public class LevelGained : AggregateEvent<GuildAggregate, GuildId>
+public class LevelGained : AggregateEvent<GuildAggregate, GuildId>, IEntityEvent<CharacterId>
 {
-    public LevelGained(CharacterId characterId, Level newLevel)
+    public LevelGained(CharacterId entityId, Level newLevel)
     {
-        CharacterId = characterId;
+        EntityId = entityId;
         NewLevel = newLevel;
     }
 
-    public CharacterId CharacterId { get; private set; }
     public Level NewLevel { get; private set; }
+
+    public CharacterId EntityId { get; private set; }
 }

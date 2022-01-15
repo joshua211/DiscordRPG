@@ -1,9 +1,9 @@
 ﻿using DiscordRPG.Application.Data;
-using DiscordRPG.Application.Generators;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Models;
 using DiscordRPG.Application.Queries;
 using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.DomainServices.Generators;
 using DiscordRPG.Domain.Entities.Activity.Enums;
 using DiscordRPG.Domain.Entities.Character;
 using DiscordRPG.Domain.Entities.Character.Commands;
@@ -19,16 +19,16 @@ public class CharacterService : ICharacterService
 {
     private readonly ICommandBus bus;
     private readonly IExperienceCurve experienceCurve;
-    private readonly ItemGenerator itemGenerator;
+    private readonly IItemGenerator itemGenerator;
     private readonly ILogger logger;
     private readonly IQueryProcessor processor;
 
-    public CharacterService(IQueryProcessor processor, ICommandBus bus, ILogger logger, ItemGenerator itemGenerator,
+    public CharacterService(IQueryProcessor processor, ICommandBus bus, ILogger logger, IItemGenerator itemGenerator,
         IExperienceCurve experienceCurve)
     {
         this.processor = processor;
         this.bus = bus;
-        this.logger = logger;
+        this.logger = logger.WithContext(GetType());
         this.itemGenerator = itemGenerator;
         this.experienceCurve = experienceCurve;
     }
@@ -63,6 +63,7 @@ public class CharacterService : ICharacterService
         logger.Context(context).Information("Querying Character with Id {Id}", id.Value);
         var query = new GetCharacterQuery(id);
         var result = await processor.ProcessAsync(query, token);
+        logger.Context(context).Information("Found Character {Name}", result?.Name.Value);
 
         return Result<CharacterReadModel>.Success(result);
     }

@@ -1,11 +1,13 @@
 ﻿using DiscordRPG.Application.Models;
 using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
+using DiscordRPG.Domain.DomainServices.Generators;
+using DiscordRPG.Domain.Entities.Character;
 using DiscordRPG.Domain.Entities.Character.Enums;
 using DiscordRPG.Domain.Entities.Character.ValueObjects;
 
 namespace DiscordRPG.Application.Generators;
 
-public class WoundGenerator : GeneratorBase
+public class WoundGenerator : GeneratorBase, IWoundGenerator
 {
     private readonly ILogger logger;
     private readonly NameGenerator nameGenerator;
@@ -18,8 +20,19 @@ public class WoundGenerator : GeneratorBase
         this.logger = logger.WithContext(GetType());
     }
 
-    public IEnumerable<Wound> GenerateWounds(CharacterReadModel character, Encounter encounter)
+    public IEnumerable<Wound> GenerateWounds(Character characterEntity, Encounter encounter)
     {
+        var character = new CharacterReadModel
+        {
+            Class = characterEntity.Class,
+            Inventory = characterEntity.Inventory,
+            Level = characterEntity.CharacterLevel,
+            Money = characterEntity.Money,
+            Name = characterEntity.Name,
+            Race = characterEntity.Race,
+            Wounds = characterEntity.Wounds
+        };
+
         var wounds = new List<Wound>();
         var totalDmg = 0;
         var encounterHealth = encounter.Health;

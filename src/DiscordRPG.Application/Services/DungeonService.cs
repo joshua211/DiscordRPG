@@ -1,8 +1,10 @@
 ﻿using DiscordRPG.Application.Generators;
+using DiscordRPG.Application.Interfaces;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Models;
 using DiscordRPG.Application.Queries;
 using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Aggregates.Guild.Commands;
 using DiscordRPG.Domain.Entities.Activity.Enums;
 using DiscordRPG.Domain.Entities.Character;
 using DiscordRPG.Domain.Entities.Dungeon;
@@ -15,16 +17,19 @@ namespace DiscordRPG.Application.Services;
 public class DungeonService : IDungeonService
 {
     private readonly ICommandBus bus;
+    private readonly IChannelManager channelManager;
     private readonly DungeonGenerator dungeonGenerator;
     private readonly ILogger logger;
     private readonly IQueryProcessor processor;
 
-    public DungeonService(IQueryProcessor processor, ICommandBus bus, ILogger logger, DungeonGenerator dungeonGenerator)
+    public DungeonService(IQueryProcessor processor, ICommandBus bus, ILogger logger, DungeonGenerator dungeonGenerator,
+        IChannelManager channelManager)
     {
         this.processor = processor;
         this.bus = bus;
         this.logger = logger;
         this.dungeonGenerator = dungeonGenerator;
+        this.channelManager = channelManager;
     }
 
     public async Task<Result> CreateDungeonAsync(GuildId guildId, CharacterId character, uint charLevel, int charLuck,
@@ -32,7 +37,8 @@ public class DungeonService : IDungeonService
         TransactionContext context, CancellationToken token = default)
     {
         logger.Context(context).Information("Creating dungeon");
-        var dungeon = dungeonGenerator.GenerateRandomDungeon(DungeonId.New, charLevel, charLuck, duration);
+        var id = await channelManager.CreateDungeonThreadAsync(guildId, "Dungeon", context);
+        var dungeon = dungeonGenerator.GenerateRandomDungeon(new DungeonId(id.Value), charLevel, charLuck, duration);
         var cmd = new AddDungeonCommand(guildId, dungeon, context);
         var result = await bus.PublishAsync(cmd, token);
 
@@ -41,6 +47,8 @@ public class DungeonService : IDungeonService
             logger.Context(context).Error("Failed to add dungeon");
             return Result.Failure("Failed to add dungeon");
         }
+
+        await channelManager.UpdateDungeonThreadNameAsync(id, dungeon.Name.Value, context);
 
         return Result.Success();
     }
@@ -55,11 +63,22 @@ public class DungeonService : IDungeonService
         return Result<DungeonReadModel>.Success(result);
     }
 
-    public Task<Result> CalculateDungeonAdventureResultAsync(GuildId guildId, DungeonId dungeonId,
+    public async Task<Result> CalculateDungeonAdventureResultAsync(GuildId guildId, DungeonId dungeonId,
         CharacterId characterId,
-        ActivityDuration activityDuration, TransactionContext parentContext, CancellationToken token = default)
+        ActivityDuration activityDuration, TransactionContext context, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        logger.Context(context).Information("Calculating adventure Result for Character {CharId} with Dungeon {DungId}",
+            characterId.Value, dungeonId.Value);
+        var cmd = new CalculateAdventureResultCommand(guildId, dungeonId, characterId, activityDuration, context);
+        var result = await bus.PublishAsync(cmd, token);
+
+        if (!result.IsSuccess)
+        {
+            logger.Context(context).Error("Failed to calculate adventure result");
+            return Result.Failure("Failed to calculate");
+        }
+
+        return Result.Success();
     }
 
     public async Task<Result> DecreaseExplorationsAsync(GuildId guildId, DungeonId dungeonId,

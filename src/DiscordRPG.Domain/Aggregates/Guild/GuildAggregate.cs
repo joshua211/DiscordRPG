@@ -25,11 +25,12 @@ public class GuildAggregate : AggregateRoot<GuildAggregate, GuildId>
     }
 
     public IEnumerable<Character> Characters => state.Characters;
+    public IEnumerable<Dungeon> Dungeons => state.Dungeons;
 
     public void Create(GuildId id, GuildName name, ChannelId guildHallId, ChannelId dungeonHallId, ChannelId innId,
         TransactionContext context)
     {
-        Emit(new GuildCreated(id, name, guildHallId, dungeonHallId, innId));
+        Emit(new GuildCreated(id, name, guildHallId, dungeonHallId, innId), new Metadata(context.AsMetadata()));
     }
 
     public void Delete(TransactionContext context)
@@ -127,5 +128,16 @@ public class GuildAggregate : AggregateRoot<GuildAggregate, GuildId>
     public void RemoveShopInventory(ShopId shopId, CharacterId charId, TransactionContext context)
     {
         Emit(new ShopInventoryRemoved(shopId, charId), new Metadata(context.AsMetadata()));
+    }
+
+    public void PublishAdventureResult(AdventureResult result, CharacterId characterId, DungeonId dungeonId,
+        TransactionContext context)
+    {
+        Emit(new AdventureResultCalculated(result, characterId, dungeonId), new Metadata(context.AsMetadata()));
+    }
+
+    public void ChangeWounds(CharacterId characterId, List<Wound> wounds, TransactionContext context)
+    {
+        Emit(new WoundsChanged(characterId, wounds), new Metadata(context.AsMetadata()));
     }
 }

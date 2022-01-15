@@ -2,9 +2,12 @@
 
 namespace DiscordRPG.Domain.Entities.Dungeon;
 
-public class DungeonId : Identity<DungeonId>
+public class DungeonId : IIdentity
 {
-    public DungeonId(string value) : base(value)
+    public DungeonId(string value)
     {
+        Value = value;
     }
+
+    public string Value { get; }
 }

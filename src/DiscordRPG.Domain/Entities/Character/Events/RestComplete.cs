@@ -1,14 +1,15 @@
-﻿using DiscordRPG.Domain.Aggregates.Guild;
+﻿using DiscordRPG.Common;
+using DiscordRPG.Domain.Aggregates.Guild;
 using EventFlow.Aggregates;
 
 namespace DiscordRPG.Domain.Entities.Character.Events;
 
-public class RestComplete : AggregateEvent<GuildAggregate, GuildId>
+public class RestComplete : AggregateEvent<GuildAggregate, GuildId>, IEntityEvent<CharacterId>
 {
-    public RestComplete(CharacterId characterId)
+    public RestComplete(CharacterId entityId)
     {
-        CharacterId = characterId;
+        EntityId = entityId;
     }
 
-    public CharacterId CharacterId { get; private set; }
+    public CharacterId EntityId { get; private set; }
 }

@@ -1,14 +1,16 @@
-﻿using DiscordRPG.Domain.Aggregates.Guild;
+﻿using DiscordRPG.Common;
+using DiscordRPG.Domain.Aggregates.Guild;
 using EventFlow.Aggregates;
 
 namespace DiscordRPG.Domain.Entities.Character.Events;
 
-public class CharacterDied : AggregateEvent<GuildAggregate, GuildId>
+public class CharacterDied : AggregateEvent<GuildAggregate, GuildId>, IEntityEvent<CharacterId>
 {
     public CharacterDied(CharacterId characterId)
     {
-        CharacterId = characterId;
+        EntityId = characterId;
     }
 
-    public CharacterId CharacterId { get; private set; }
+
+    public CharacterId EntityId { get; }
 }

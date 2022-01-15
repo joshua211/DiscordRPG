@@ -15,4 +15,9 @@ public class Money : ValueObject
     {
         return new Money(Value + amount);
     }
+
+    public override string ToString()
+    {
+        return Value.ToString();
+    }
 }

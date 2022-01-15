@@ -20,7 +20,7 @@ public abstract class DialogCommandBase<T> : CommandBase where T : Dialog
 
     protected override async Task HandleAsync(SocketSlashCommand command, GuildCommandContext context)
     {
-        var dialog = (T) Activator.CreateInstance(typeof(T), command.User.Id)!;
+        var dialog = (T) Activator.CreateInstance(typeof(T), command.User.Id, context.Context)!;
         dialogs[dialog.UserId] = dialog;
         logger.Debug("Initiated new dialog: {@Dialog}", dialog);
         await HandleDialogAsync(command, context, dialog);

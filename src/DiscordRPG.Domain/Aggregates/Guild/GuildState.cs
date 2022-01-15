@@ -32,7 +32,8 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
     IApply<ExplorationsDecreased>,
     IApply<ShopAdded>,
     IApply<ShopInventoryUpdated>,
-    IApply<ShopInventoryRemoved>
+    IApply<ShopInventoryRemoved>,
+    IApply<AdventureResultCalculated>
 
 {
     public GuildState()
@@ -60,12 +61,16 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
 
     public void Apply(ActivityCancelled aggregateEvent)
     {
-        Activities.RemoveAll(a => a.Id == aggregateEvent.ActivityId);
+        Activities.RemoveAll(a => a.Id.Value == aggregateEvent.EntityId.Value);
     }
 
     public void Apply(ActivityCompleted aggregateEvent)
     {
-        Activities.RemoveAll(a => a.Id == aggregateEvent.ActivityId);
+        Activities.RemoveAll(a => a.Id.Value == aggregateEvent.EntityId.Value);
+    }
+
+    public void Apply(AdventureResultCalculated aggregateEvent)
+    {
     }
 
     public void Apply(CharacterCreated aggregateEvent)
@@ -75,7 +80,7 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
 
     public void Apply(CharacterDied aggregateEvent)
     {
-        Characters.RemoveAll(c => c.Id == aggregateEvent.CharacterId);
+        Characters.RemoveAll(c => c.Id.Value == aggregateEvent.EntityId.Value);
     }
 
     public void Apply(DungeonAdded aggregateEvent)
@@ -85,12 +90,12 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
 
     public void Apply(DungeonDeleted aggregateEvent)
     {
-        Dungeons.RemoveAll(d => d.Id == aggregateEvent.Id);
+        Dungeons.RemoveAll(d => d.Id == aggregateEvent.EntityId);
     }
 
     public void Apply(ExplorationsDecreased aggregateEvent)
     {
-        var dungeon = Dungeons.First(d => d.Id == aggregateEvent.DungeonId);
+        var dungeon = Dungeons.First(d => d.Id.Value == aggregateEvent.EntityId.Value);
         dungeon.DecreaseExplorations();
     }
 
@@ -109,31 +114,31 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
 
     public void Apply(InventoryChanged aggregateEvent)
     {
-        var character = Characters.First(c => c.Id == aggregateEvent.CharacterId);
+        var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
         character.ChangeInventory(aggregateEvent.NewInventory);
     }
 
     public void Apply(ItemBought aggregateEvent)
     {
-        var character = Characters.First(c => c.Id == aggregateEvent.CharacterId);
+        var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
         character.AddMoney(-aggregateEvent.Item.Worth);
     }
 
     public void Apply(ItemEquipped aggregateEvent)
     {
-        var character = Characters.First(c => c.Id == aggregateEvent.CharacterId);
+        var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
         character.EquipItem(aggregateEvent.ItemId);
     }
 
     public void Apply(ItemUnequipped aggregateEvent)
     {
-        var character = Characters.First(c => c.Id == aggregateEvent.CharacterId);
+        var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
         character.UnequipItem(aggregateEvent.ItemId);
     }
 
     public void Apply(LevelGained aggregateEvent)
     {
-        var character = Characters.First(c => c.Id == aggregateEvent.CharacterId);
+        var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
         character.SetLevel(aggregateEvent.NewLevel);
     }
 
@@ -148,19 +153,19 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
 
     public void Apply(ShopInventoryRemoved aggregateEvent)
     {
-        var shop = Shops.First(s => s.Id == aggregateEvent.ShopId);
+        var shop = Shops.First(s => s.Id.Value == aggregateEvent.EntityId.Value);
         shop.RemoveInventory(aggregateEvent.CharacterId);
     }
 
     public void Apply(ShopInventoryUpdated aggregateEvent)
     {
-        var shop = Shops.First(s => s.Id == aggregateEvent.ShopId);
+        var shop = Shops.First(s => s.Id.Value == aggregateEvent.EntityId.Value);
         shop.UpdateInventoryForCharacter(aggregateEvent.CharacterId, aggregateEvent.NewItems);
     }
 
     public void Apply(WoundsChanged aggregateEvent)
     {
-        var character = Characters.First(c => c.Id == aggregateEvent.CharacterId);
+        var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
         character.ChangeWounds(aggregateEvent.NewWounds);
     }
 }

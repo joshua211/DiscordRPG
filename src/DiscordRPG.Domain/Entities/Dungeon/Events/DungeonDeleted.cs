@@ -1,14 +1,15 @@
-﻿using DiscordRPG.Domain.Aggregates.Guild;
+﻿using DiscordRPG.Common;
+using DiscordRPG.Domain.Aggregates.Guild;
 using EventFlow.Aggregates;
 
 namespace DiscordRPG.Domain.Entities.Dungeon.Events;
 
-public class DungeonDeleted : AggregateEvent<GuildAggregate, GuildId>
+public class DungeonDeleted : AggregateEvent<GuildAggregate, GuildId>, IEntityEvent<DungeonId>
 {
-    public DungeonDeleted(DungeonId id)
+    public DungeonDeleted(DungeonId entityId)
     {
-        Id = id;
+        EntityId = entityId;
     }
 
-    public DungeonId Id { get; private set; }
+    public DungeonId EntityId { get; private set; }
 }

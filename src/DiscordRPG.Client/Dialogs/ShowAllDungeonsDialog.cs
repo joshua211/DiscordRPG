@@ -1,8 +1,10 @@
-﻿namespace DiscordRPG.Client.Dialogs;
+﻿using DiscordRPG.Common;
+
+namespace DiscordRPG.Client.Dialogs;
 
 public class ShowAllDungeonsDialog : Dialog
 {
-    public ShowAllDungeonsDialog(ulong userId) : base(userId)
+    public ShowAllDungeonsDialog(ulong userId, TransactionContext context) : base(userId, context)
     {
     }
 }

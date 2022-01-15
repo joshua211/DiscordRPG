@@ -14,7 +14,7 @@ public static class Equip
         EquipmentCategory.Armor, EquipmentPosition.Armor, ItemType.Equipment, CharacterAttribute.Agility,
         DamageType.Magical, 1, 1, 2, 1, 1, 0, 0, 0, 0, 0, true);
 
-    public static Item StarterWeapon => new Item(new ItemId("starterweapon"), "Rusty Dagger", "An old and rusty dagger",
+    public static Item StarterWeapon => new Item(ItemId.New, "Rusty Dagger", "An old and rusty dagger",
         1,
         Rarity.Common,
         EquipmentCategory.Dagger, EquipmentPosition.Weapon, ItemType.Weapon, CharacterAttribute.Strength,

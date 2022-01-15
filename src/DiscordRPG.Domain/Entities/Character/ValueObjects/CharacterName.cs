@@ -14,4 +14,9 @@ public class CharacterName : ValueObject
     }
 
     public string Value { get; private set; }
+
+    public override string ToString()
+    {
+        return Value;
+    }
 }

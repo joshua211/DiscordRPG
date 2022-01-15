@@ -21,4 +21,9 @@ public class Explorations : ValueObject
 
         return new Explorations(Value--);
     }
+
+    public override string ToString()
+    {
+        return Value.ToString();
+    }
 }

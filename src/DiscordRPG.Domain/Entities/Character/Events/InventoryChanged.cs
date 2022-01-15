@@ -1,17 +1,19 @@
-﻿using DiscordRPG.Domain.Aggregates.Guild;
+﻿using DiscordRPG.Common;
+using DiscordRPG.Domain.Aggregates.Guild;
 using DiscordRPG.Domain.Entities.Character.ValueObjects;
 using EventFlow.Aggregates;
 
 namespace DiscordRPG.Domain.Entities.Character.Events;
 
-public class InventoryChanged : AggregateEvent<GuildAggregate, GuildId>
+public class InventoryChanged : AggregateEvent<GuildAggregate, GuildId>, IEntityEvent<CharacterId>
 {
-    public InventoryChanged(CharacterId characterId, List<Item> newInventory)
+    public InventoryChanged(CharacterId entityId, List<Item> newInventory)
     {
-        CharacterId = characterId;
+        EntityId = entityId;
         NewInventory = newInventory;
     }
 
-    public CharacterId CharacterId { get; private set; }
     public List<Item> NewInventory { get; private set; }
+
+    public CharacterId EntityId { get; private set; }
 }

@@ -2,9 +2,12 @@
 
 namespace DiscordRPG.Domain.Entities.Character;
 
-public class CharacterId : Identity<CharacterId>
+public class CharacterId : IIdentity
 {
-    public CharacterId(string value) : base(value)
+    public CharacterId(string value)
     {
+        Value = value;
     }
+
+    public string Value { get; }
 }

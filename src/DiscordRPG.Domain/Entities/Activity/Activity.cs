@@ -8,13 +8,14 @@ namespace DiscordRPG.Domain.Entities.Activity;
 public class Activity : Entity<ActivityId>
 {
     public Activity(ActivityId id, ActivityDuration duration, ActivityType type, JobId jobId,
-        ActivityData activityData, CharacterId characterId) : base(id)
+        ActivityData activityData, CharacterId characterId, ActivityStartTime startTime) : base(id)
     {
         Duration = duration;
         Type = type;
         JobId = jobId;
         ActivityData = activityData;
         CharacterId = characterId;
+        StartTime = startTime;
     }
 
     public CharacterId CharacterId { get; private set; }
@@ -22,4 +23,5 @@ public class Activity : Entity<ActivityId>
     public ActivityType Type { get; set; }
     public JobId JobId { get; set; }
     public ActivityData ActivityData { get; private set; }
+    public ActivityStartTime StartTime { get; private set; }
 }

@@ -29,4 +29,9 @@ public class CharacterRace : ValueObject
     public float AgilityModifier { get; init; } = 1;
     public float IntelligenceModifier { get; init; } = 1;
     public float LuckModifier { get; init; } = 1;
+
+    public override string ToString()
+    {
+        return Name;
+    }
 }

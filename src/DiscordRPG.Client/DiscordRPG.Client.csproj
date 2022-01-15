@@ -9,13 +9,16 @@
 
     <PropertyGroup>
         <VersionSuffix>$([System.DateTime]::UtcNow.ToString(MMdd)).$([System.DateTime]::UtcNow.ToString(HHmm))</VersionSuffix>
-        <Version>0.4.$(VersionSuffix)</Version>
+        <Version>0.5.$(VersionSuffix)</Version>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Discord.Net.Labs" Version="3.4.7"/>
+        <PackageReference Include="EventFlow" Version="0.83.4713"/>
+        <PackageReference Include="EventFlow.AspNetCore" Version="0.83.4713"/>
+        <PackageReference Include="EventFlow.DependencyInjection" Version="0.83.4713"/>
+        <PackageReference Include="EventFlow.MongoDB" Version="0.83.4713"/>
         <PackageReference Include="Hangfire.Mongo" Version="0.7.27"/>
-        <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="9.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0"/>

@@ -8,21 +8,19 @@ namespace DiscordRPG.Domain.Entities.Activity.ValueObjects;
 
 public class ActivityData : ValueObject
 {
-    public ActivityData(uint playerLevel, GuildId serverId, ChannelId channelId, ChannelId threadId,
+    public ActivityData(uint playerLevel, GuildId guildId, ChannelId channelId,
         DungeonId dungeonId, CharacterId userId)
     {
         PlayerLevel = playerLevel;
-        ServerId = serverId;
+        GuildId = guildId;
         ChannelId = channelId;
-        ThreadId = threadId;
         DungeonId = dungeonId;
         UserId = userId;
     }
 
     public uint PlayerLevel { get; set; }
-    public GuildId ServerId { get; set; }
+    public GuildId GuildId { get; set; }
     public ChannelId ChannelId { get; set; }
-    public ChannelId ThreadId { get; set; }
     public DungeonId DungeonId { get; set; }
     public CharacterId UserId { get; set; }
 }

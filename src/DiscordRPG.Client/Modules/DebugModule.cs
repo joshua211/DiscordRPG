@@ -1,16 +1,6 @@
-﻿using Discord;
-using Discord.Commands;
-using DiscordRPG.Application.Interfaces.Services;
-using DiscordRPG.Application.Worker;
-using DiscordRPG.Common.Extensions;
-using DiscordRPG.Core.DomainServices.Generators;
-using DiscordRPG.Core.Enums;
-using DiscordRPG.Core.ValueObjects;
-using Serilog;
+﻿namespace DiscordRPG.Client.Modules;
 
-namespace DiscordRPG.Client.Modules;
-
-public class DebugModule
+/*public class DebugModule
 {
     [RequireOwner]
     [Group("rpg test")]
@@ -18,11 +8,11 @@ public class DebugModule
     {
         private readonly IGuildService guildService;
         private readonly ILogger logger;
-        private readonly IRarityGenerator rarityGenerator;
-        private readonly IShopService shopService;
-        private readonly ShopWorker shopWorker;
+        private readonly RarityGenerator rarityGenerator;
+        /*private readonly IShopService shopService;
+        private readonly ShopWorker shopWorker;#1#
 
-        public Test(IRarityGenerator rarityGenerator, ILogger logger, ShopWorker shopWorker, IGuildService guildService,
+        public Test(RarityGenerator rarityGenerator, ILogger logger, ShopWorker shopWorker, IGuildService guildService,
             IShopService shopService)
         {
             this.rarityGenerator = rarityGenerator;
@@ -32,10 +22,11 @@ public class DebugModule
             this.logger = logger.WithContext<DebugModule>();
         }
 
-        [Command("force-shopCreation")]
+        /*[Command("force-shopCreation")]
         public async Task ForceShopCreation()
         {
-            var guild = await guildService.GetGuildWithDiscordIdAsync(Context.Guild.Id.ToString());
+            var context = TransactionContext.New();
+            var guild = await guildService.GetGuildAsync(new GuildId(Context.Guild.Id.ToString()), context);
             if (!guild.WasSuccessful)
                 logger.Here().Warning("No guild found");
 
@@ -72,7 +63,7 @@ public class DebugModule
             {
                 logger.Here().Error(e, "Failed force shop update ");
             }
-        }
+        }#1#
 
 
         [Command("activity-rarityDistribution")]
@@ -130,4 +121,4 @@ public class DebugModule
             }
         }
     }
-}
+}*/

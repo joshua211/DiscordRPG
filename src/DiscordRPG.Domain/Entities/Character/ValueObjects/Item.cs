@@ -17,7 +17,6 @@ public class Item : Entity<ItemId>
         if (string.IsNullOrEmpty(name))
             DomainError.With(nameof(name));
 
-        ItemId = id;
         Name = name;
         Description = description;
         Amount = amount;
@@ -40,7 +39,6 @@ public class Item : Entity<ItemId>
         IsEquipped = isEquipped;
     }
 
-    public ItemId ItemId { get; private set; }
     public string Name { get; private set; }
     public string Description { get; private set; }
     public int Amount { get; private set; }
@@ -85,6 +83,11 @@ public class Item : Entity<ItemId>
             DamageType, DamageAttribute
         };
     }
+
+    public override string ToString() => ItemType switch
+    {
+        _ => $"[{Rarity} {ItemType}] {Name} (Lvl: {Level} | {Worth}$)"
+    };
 }
 
 public class ItemId : Identity<ItemId>

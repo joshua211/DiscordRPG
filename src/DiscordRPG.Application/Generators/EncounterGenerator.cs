@@ -1,11 +1,12 @@
-﻿using DiscordRPG.Application.Models;
-using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
+﻿using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
+using DiscordRPG.Domain.DomainServices.Generators;
 using DiscordRPG.Domain.Entities.Character.Enums;
 using DiscordRPG.Domain.Entities.Character.ValueObjects;
+using DiscordRPG.Domain.Entities.Dungeon;
 
 namespace DiscordRPG.Application.Generators;
 
-public class EncounterGenerator : GeneratorBase
+public class EncounterGenerator : GeneratorBase, IEncounterGenerator
 {
     private readonly ILogger logger;
     private readonly IWorthCalculator worthCalculator;
@@ -16,7 +17,7 @@ public class EncounterGenerator : GeneratorBase
         this.logger = logger.WithContext(GetType());
     }
 
-    public Encounter CreateDungeonEncounter(DungeonReadModel dungeon)
+    public Encounter CreateDungeonEncounter(Dungeon dungeon)
     {
         var worth = worthCalculator.CalculateWorth(dungeon.Rarity, dungeon.Level.Value);
 

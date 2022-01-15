@@ -10,4 +10,9 @@ public class DungeonLevel : ValueObject
     }
 
     public uint Value { get; private set; }
+
+    public override string ToString()
+    {
+        return Value.ToString();
+    }
 }

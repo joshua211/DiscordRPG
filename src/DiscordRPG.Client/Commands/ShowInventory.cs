@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿/*using System.Text;
 using Discord;
 using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
@@ -187,4 +187,5 @@ public class ShowInventory : DialogCommandBase<InventoryDialog>
             properties.Content = text;
         });
     }
-}
+}*/
+

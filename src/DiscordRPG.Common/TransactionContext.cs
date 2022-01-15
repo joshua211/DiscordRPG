@@ -47,12 +47,9 @@ public class TransactionContext : IDisposable
     public static TransactionContext New([CallerMemberName] string transactionName = "") =>
         new TransactionContext(GenerateNewTransactionId(), transactionName, Log.Logger, DateTime.UtcNow);
 
-    public static TransactionContext With(TransactionContext parent, [CallerMemberName] string transactionName = "")
+    public static TransactionContext With(string id, [CallerMemberName] string transactionName = "")
     {
-        var newContext = TransactionContext.New(transactionName);
-        parent.SetChild(newContext);
-
-        return parent;
+        return new TransactionContext(id, transactionName, Log.Logger, DateTime.UtcNow);
     }
 
     private static string GenerateNewTransactionId() => Guid.NewGuid().ToString().Split('-').Last();

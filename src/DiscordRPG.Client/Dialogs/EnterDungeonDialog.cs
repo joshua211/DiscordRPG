@@ -1,16 +1,17 @@
-﻿using DiscordRPG.Core.Entities;
-using DiscordRPG.Core.Enums;
+﻿using DiscordRPG.Application.Models;
+using DiscordRPG.Common;
+using DiscordRPG.Domain.Entities.Activity.Enums;
 
 namespace DiscordRPG.Client.Dialogs;
 
 public class EnterDungeonDialog : Dialog
 {
-    public EnterDungeonDialog(ulong userId) : base(userId)
+    public EnterDungeonDialog(ulong userId, TransactionContext context) : base(userId, context)
     {
     }
 
-
-    public Dungeon Dungeon { get; set; }
+    public string GuildId { get; set; }
+    public DungeonReadModel Dungeon { get; set; }
     public string CharId { get; set; }
     public ActivityDuration Duration { get; set; }
 }

@@ -28,7 +28,7 @@ public class GuildService : IGuildService
         logger.Context(context).Information("Querying guild with id {ID}", identity.Value);
         var query = new GetGuildQuery(identity);
         var result = await processor.ProcessAsync(query, cancellationToken);
-        logger.Context(context).Information("Found guild: {@Guild}", result);
+        logger.Context(context).Information("Found guild: {Guild}", result?.GuildName.Value ?? "null");
 
         return Result<GuildReadModel>.Success(result);
     }

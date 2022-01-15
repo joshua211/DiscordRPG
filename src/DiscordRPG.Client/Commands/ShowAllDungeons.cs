@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿/*using System.Text;
 using Discord;
 using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
@@ -64,4 +64,5 @@ public class ShowAllDungeons : DialogCommandBase<ShowAllDungeonsDialog>
 
         await command.RespondAsync(sb.ToString(), ephemeral: true);
     }
-}
+}*/
+

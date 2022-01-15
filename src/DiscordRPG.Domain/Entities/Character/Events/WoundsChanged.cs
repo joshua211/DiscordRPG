@@ -1,17 +1,19 @@
-﻿using DiscordRPG.Domain.Aggregates.Guild;
+﻿using DiscordRPG.Common;
+using DiscordRPG.Domain.Aggregates.Guild;
 using DiscordRPG.Domain.Entities.Character.ValueObjects;
 using EventFlow.Aggregates;
 
 namespace DiscordRPG.Domain.Entities.Character.Events;
 
-public class WoundsChanged : AggregateEvent<GuildAggregate, GuildId>
+public class WoundsChanged : AggregateEvent<GuildAggregate, GuildId>, IEntityEvent<CharacterId>
 {
-    public WoundsChanged(CharacterId characterId, List<Wound> newWounds)
+    public WoundsChanged(CharacterId entityId, List<Wound> newWounds)
     {
-        CharacterId = characterId;
+        EntityId = entityId;
         NewWounds = newWounds;
     }
 
-    public CharacterId CharacterId { get; private set; }
     public List<Wound> NewWounds { get; private set; }
+
+    public CharacterId EntityId { get; private set; }
 }

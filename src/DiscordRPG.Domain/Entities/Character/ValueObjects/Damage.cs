@@ -13,4 +13,9 @@ public class Damage : ValueObject
 
     public DamageType DamageType { get; private set; }
     public int Value { get; private set; }
+
+    public override string ToString()
+    {
+        return Value + " " + DamageType;
+    }
 }

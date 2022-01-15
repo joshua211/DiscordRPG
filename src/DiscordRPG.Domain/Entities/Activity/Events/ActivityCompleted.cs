@@ -1,16 +1,18 @@
-﻿using DiscordRPG.Domain.Aggregates.Guild;
+﻿using DiscordRPG.Common;
+using DiscordRPG.Domain.Aggregates.Guild;
 using EventFlow.Aggregates;
 
 namespace DiscordRPG.Domain.Entities.Activity.Events;
 
-public class ActivityCompleted : AggregateEvent<GuildAggregate, GuildId>
+public class ActivityCompleted : AggregateEvent<GuildAggregate, GuildId>, IEntityEvent<ActivityId>
 {
-    public ActivityCompleted(ActivityId activityId, bool wasSuccessfully)
+    public ActivityCompleted(ActivityId entityId, bool wasSuccessfully)
     {
-        ActivityId = activityId;
+        EntityId = entityId;
         WasSuccessfully = wasSuccessfully;
     }
 
-    public ActivityId ActivityId { get; private set; }
     public bool WasSuccessfully { get; private set; }
+
+    public ActivityId EntityId { get; private set; }
 }

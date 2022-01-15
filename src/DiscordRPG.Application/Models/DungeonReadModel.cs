@@ -12,11 +12,11 @@ public class DungeonReadModel : IMongoDbReadModel, IAmReadModelFor<GuildAggregat
     IAmReadModelFor<GuildAggregate, GuildId, DungeonDeleted>,
     IAmReadModelFor<GuildAggregate, GuildId, ExplorationsDecreased>
 {
-    public DungeonName Name { get; private set; }
-    public Explorations Explorations { get; private set; }
-    public DungeonLevel Level { get; private set; }
-    public Rarity Rarity { get; private set; }
-    public Aspect Aspect { get; private set; }
+    public DungeonName Name { get; set; }
+    public Explorations Explorations { get; set; }
+    public DungeonLevel Level { get; set; }
+    public Rarity Rarity { get; set; }
+    public Aspect Aspect { get; set; }
 
     public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, DungeonAdded> domainEvent)
     {

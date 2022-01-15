@@ -39,7 +39,7 @@ public class ActivityWorker
         logger.Context(context).Information("Executing activity with id {Id}", activityId);
 
         var activityResult = await activityService.GetActivityAsync(activityId, context);
-        if (!activityResult.WasSuccessful)
+        if (activityResult.Value is null)
         {
             logger.Context(context).Warning("No activity found, aborting execution");
             return;
@@ -96,14 +96,14 @@ public class ActivityWorker
         var embed = new EmbedBuilder().WithTitle("Rest complete")
             .WithDescription($"<@{activity.ActivityData.UserId}> you are done resting!").Build();
 
-        await channelManager.SendToInn(activity.ActivityData.ServerId, String.Empty, context, embed);
+        await channelManager.SendToInn(activity.ActivityData.GuildId, String.Empty, context, embed);
     }
 
     private async Task ExecuteEnterDungeon(ActivityReadModel activity, TransactionContext context)
     {
         var executionResult =
             await dungeonService.CalculateDungeonAdventureResultAsync(new GuildId(activity.GuildId),
-                new DungeonId(activity.ActivityData.ThreadId.Value), new CharacterId(activity.CharacterId),
+                new DungeonId(activity.ActivityData.DungeonId.Value), new CharacterId(activity.CharacterId),
                 activity.Duration, context);
     }
 
@@ -120,7 +120,7 @@ public class ActivityWorker
         var character = charResult.Value;
 
         var createDungeonResult =
-            await dungeonService.CreateDungeonAsync(new GuildId(activity.ActivityData.ServerId.ToString()),
+            await dungeonService.CreateDungeonAsync(new GuildId(activity.ActivityData.GuildId.Value),
                 new CharacterId(character.Id), character.Level.CurrentLevel, character.Luck, activity.Duration,
                 context);
 

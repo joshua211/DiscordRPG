@@ -1,6 +1,8 @@
 ﻿using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Common;
 using DiscordRPG.Common.Extensions;
+using DiscordRPG.Domain.Aggregates.Guild;
 using Serilog;
 
 namespace DiscordRPG.Client.Handlers;
@@ -41,8 +43,9 @@ public class ServerHandler : IHandler
     {
         try
         {
-            logger.Here().Debug("Cleaning server {Id}", socketGuild.Id);
-            var result = await guildService.GetGuildWithDiscordIdAsync(socketGuild.Id.ToString());
+            var context = TransactionContext.New();
+            logger.Context(context).Debug("Cleaning server {Id}", socketGuild.Id);
+            var result = await guildService.GetGuildAsync(new GuildId(socketGuild.Id.ToString()), context);
             if (!result.WasSuccessful)
             {
                 return;
@@ -50,11 +53,11 @@ public class ServerHandler : IHandler
 
             await socketGuild.GetChannel(result.Value.GuildHallId).DeleteAsync();
             await socketGuild.GetChannel(result.Value.DungeonHallId).DeleteAsync();
-            await socketGuild.GetChannel(result.Value.InnChannel).DeleteAsync();
+            await socketGuild.GetChannel(result.Value.InnId).DeleteAsync();
             var cat = socketGuild.CategoryChannels.FirstOrDefault(c => c.Name == CategoryName);
             await cat?.DeleteAsync();
 
-            await guildService.DeleteGuildAsync(socketGuild.Id.ToString());
+            await guildService.DeleteGuildAsync(new GuildId(socketGuild.Id.ToString()), context);
         }
         catch (Exception e)
         {
@@ -66,11 +69,13 @@ public class ServerHandler : IHandler
     {
         try
         {
+            var context = TransactionContext.New();
             logger.Here().Debug("Installing guild commands");
             await InstallGuildCommands(socketGuild);
 
             logger.Here().Debug("Setting up channels for Guild {Id}", socketGuild.Id);
-            await guildService.DeleteGuildAsync(socketGuild.Id.ToString());
+            /*await guildService.DeleteGuildAsync(new GuildId(socketGuild.Id.ToString()), context);*/
+
 
             var category = await socketGuild.CreateCategoryChannelAsync(CategoryName);
 
@@ -86,7 +91,7 @@ public class ServerHandler : IHandler
 
             var result =
                 await guildService.CreateGuildAsync(socketGuild.Id.ToString(), socketGuild.Name,
-                    guildHall.Id.ToString(), dungeonHall.Id.ToString(), inn.Id.ToString());
+                    guildHall.Id.ToString(), dungeonHall.Id.ToString(), inn.Id.ToString(), context);
 
             if (result.WasSuccessful)
             {

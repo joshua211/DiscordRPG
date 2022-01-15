@@ -22,7 +22,6 @@ public class ActivityService : IActivityService
     private readonly ILogger logger;
     private readonly IQueryProcessor processor;
 
-
     public ActivityService(IQueryProcessor processor, ICommandBus bus, ILogger logger, IHostEnvironment hostEnvironment)
     {
         this.processor = processor;
@@ -43,7 +42,8 @@ public class ActivityService : IActivityService
         var id = ActivityId.New;
         var jobId = BackgroundJob.Schedule<ActivityWorker>(x => x.ExecuteActivityAsync(id), timespan);
 
-        var activity = new Activity(ActivityId.New, duration, type, new JobId(jobId), data, characterId);
+        var activity = new Activity(id, duration, type, new JobId(jobId), data, characterId,
+            new ActivityStartTime(DateTime.UtcNow));
         var cmd = new AddActivityCommand(guildId, activity, context);
         var result = await bus.PublishAsync(cmd, cancellationToken);
 
@@ -64,7 +64,7 @@ public class ActivityService : IActivityService
         logger.Context(context).Information("Querying Activity for Character with id {Id}", characterId.Value);
         var query = new GetCharacterActivityQuery(characterId);
         var result = await processor.ProcessAsync(query, token);
-        logger.Context(context).Information("Found Activity: {@Activity}", result);
+        logger.Context(context).Information("Found Activity: {Activity}", result?.Type);
 
         return Result<ActivityReadModel>.Success(result);
     }
@@ -75,7 +75,7 @@ public class ActivityService : IActivityService
         logger.Context(context).Information("Querying Activity with id {Id}", id.Value);
         var query = new GetActivityQuery(id);
         var result = await processor.ProcessAsync(query, token);
-        logger.Context(context).Information("Found Activity: {@Activity}", result);
+        logger.Context(context).Information("Found Activity: {Activity}", result?.Type);
 
         return Result<ActivityReadModel>.Success(result);
     }

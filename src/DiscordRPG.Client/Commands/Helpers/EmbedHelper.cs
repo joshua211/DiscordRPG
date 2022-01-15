@@ -1,19 +1,15 @@
-﻿using Discord;
-using DiscordRPG.Core.Entities;
-using DiscordRPG.Core.ValueObjects;
-
-namespace DiscordRPG.Client.Commands.Helpers;
+﻿namespace DiscordRPG.Client.Commands.Helpers;
 
 public static class EmbedHelper
 {
-    public static Embed GetItemAsEmbed(Item? item, float worthMulti = 1, Equipment comparison = null)
+    /*public static Embed GetItemAsEmbed(Item? item, float worthMulti = 1, Equipment comparison = null)
     {
         if (item is null)
             return new EmbedBuilder().WithColor(Color.DarkGrey).WithDescription("Nothing equipped").Build();
 
         var worth = (int) (item.Worth * worthMulti);
 
-        if (item is Weapon weapon)
+        if (item.)
             return new EmbedBuilder()
                 .WithColor(Color.DarkBlue)
                 .WithTitle(weapon.Name + $" (Lvl {weapon.Level})")
@@ -116,5 +112,5 @@ public static class EmbedHelper
     private static string CompareValue(int value1, int value2)
     {
         return value1 > value2 ? $"+{value1 - value2}" : $"{value1 - value2}";
-    }
+    }*/
 }

@@ -1,18 +1,6 @@
-﻿using Discord;
-using Discord.WebSocket;
-using DiscordRPG.Application.Interfaces.Services;
-using DiscordRPG.Client.Commands.Attributes;
-using DiscordRPG.Client.Commands.Base;
-using DiscordRPG.Client.Commands.Helpers;
-using DiscordRPG.Client.Dialogs;
-using DiscordRPG.Common.Extensions;
-using DiscordRPG.Core.Enums;
-using DiscordRPG.Core.ValueObjects;
-using Serilog;
+﻿namespace DiscordRPG.Client.Commands;
 
-namespace DiscordRPG.Client.Commands;
-
-[RequireCharacter]
+/*[RequireCharacter]
 [RequireGuild]
 public class Equip : DialogCommandBase<EquipDialog>
 {
@@ -216,4 +204,4 @@ public class Equip : DialogCommandBase<EquipDialog>
             properties.Components = menu;
         });
     }
-}
+}*/

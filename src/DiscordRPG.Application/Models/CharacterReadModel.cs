@@ -18,13 +18,13 @@ public class CharacterReadModel : IMongoDbReadModel,
     IAmReadModelFor<GuildAggregate, GuildId, LevelGained>,
     IAmReadModelFor<GuildAggregate, GuildId, WoundsChanged>
 {
-    public CharacterClass Class { get; private set; }
-    public CharacterRace Race { get; private set; }
-    public CharacterName Name { get; private set; }
-    public Level Level { get; private set; }
-    public Money Money { get; private set; }
-    public List<Item> Inventory { get; private set; }
-    public List<Wound> Wounds { get; private set; }
+    public CharacterClass Class { get; set; }
+    public CharacterRace Race { get; set; }
+    public CharacterName Name { get; set; }
+    public Level Level { get; set; }
+    public Money Money { get; set; }
+    public List<Item> Inventory { get; set; }
+    public List<Wound> Wounds { get; set; }
 
     public int Strength
     {
@@ -67,7 +67,7 @@ public class CharacterReadModel : IMongoDbReadModel,
         get
         {
             var totalMod = Class.IntelligenceModifier + Race.IntelligenceModifier;
-            var charAttr = (int) (Class.IntelligenceModifier + (1 * Level.CurrentLevel * totalMod));
+            var charAttr = (int) (Class.BaseIntelligence + (1 * Level.CurrentLevel * totalMod));
             var equipAttr = Inventory.Where(i => i.IsEquipped).Sum(i => i.Intelligence);
 
             return charAttr + equipAttr;
@@ -129,6 +129,7 @@ public class CharacterReadModel : IMongoDbReadModel,
     {
         var character = domainEvent.AggregateEvent.Character;
         Id = character.Id.Value;
+        //Id = domainEvent.AggregateIdentity.Value;
         Name = character.Name;
         Class = character.Class;
         Race = character.Race;

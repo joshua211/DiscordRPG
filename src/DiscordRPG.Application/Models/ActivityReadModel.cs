@@ -18,6 +18,7 @@ public class ActivityReadModel : IMongoDbReadModel, IAmReadModelFor<GuildAggrega
     public ActivityType Type { get; set; }
     public JobId JobId { get; set; }
     public ActivityData ActivityData { get; private set; }
+    public DateTime StartTime { get; private set; }
 
     public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, ActivityAdded> domainEvent)
     {
@@ -29,6 +30,7 @@ public class ActivityReadModel : IMongoDbReadModel, IAmReadModelFor<GuildAggrega
         Type = activity.Type;
         JobId = activity.JobId;
         ActivityData = activity.ActivityData;
+        StartTime = activity.StartTime.Value;
     }
 
     public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, ActivityCancelled> domainEvent)

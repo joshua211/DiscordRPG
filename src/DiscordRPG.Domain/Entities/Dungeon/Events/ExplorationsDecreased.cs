@@ -1,14 +1,15 @@
-﻿using DiscordRPG.Domain.Aggregates.Guild;
+﻿using DiscordRPG.Common;
+using DiscordRPG.Domain.Aggregates.Guild;
 using EventFlow.Aggregates;
 
 namespace DiscordRPG.Domain.Entities.Dungeon.Events;
 
-public class ExplorationsDecreased : AggregateEvent<GuildAggregate, GuildId>
+public class ExplorationsDecreased : AggregateEvent<GuildAggregate, GuildId>, IEntityEvent<DungeonId>
 {
-    public ExplorationsDecreased(DungeonId dungeonId)
+    public ExplorationsDecreased(DungeonId entityId)
     {
-        DungeonId = dungeonId;
+        EntityId = entityId;
     }
 
-    public DungeonId DungeonId { get; private set; }
+    public DungeonId EntityId { get; private set; }
 }

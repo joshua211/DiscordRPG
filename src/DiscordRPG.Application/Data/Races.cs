@@ -73,4 +73,6 @@ public static class Races
 
         return list;
     }
+
+    public static IEnumerable<CharacterRace> GetAllRaces() => races.Values.ToList();
 }

@@ -2,13 +2,15 @@
 using Discord;
 using Discord.Net;
 using Discord.WebSocket;
+using DiscordRPG.Application.Data;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Client.Handlers;
 using DiscordRPG.Common.Extensions;
-using DiscordRPG.Core.DomainServices;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Entities.Character;
 using Serilog;
 
 namespace DiscordRPG.Client.Commands;
@@ -17,16 +19,10 @@ namespace DiscordRPG.Client.Commands;
 [RequireGuild]
 public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
 {
-    private readonly IClassService classService;
-    private readonly IRaceService raceService;
-
     public CreateCharacter(DiscordSocketClient client, ILogger logger, IActivityService activityService,
-        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService,
-        IClassService classService, IRaceService raceService) : base(client,
+        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService) : base(client,
         logger, activityService, characterService, dungeonService, guildService)
     {
-        this.classService = classService;
-        this.raceService = raceService;
     }
 
     public override string CommandName => "create-character";
@@ -53,8 +49,8 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
         CreateCharacterDialog dialog)
     {
         var user = command.User as IGuildUser;
-        var result = await characterService.GetUsersCharacterAsync(user.Id.ToString(), context.Guild.ID);
-        if (result.WasSuccessful)
+        var result = await characterService.GetCharacterAsync(new CharacterId(user.Id.ToString()), context.Context);
+        if (result.Value != null)
         {
             await command.RespondAsync("You can only create one character on each server!");
             EndDialog(user.Id);
@@ -63,7 +59,7 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
 
         var name = command.Data.Options.First().Value as string;
         dialog.Name = name;
-        dialog.GuildId = context.Guild.ID;
+        dialog.GuildId = context.Guild.Id;
 
         var menu = GetMenu(dialog);
         var embed = GetDisplayEmbed(dialog);
@@ -73,27 +69,27 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
 
     private Embed GetDisplayEmbed(CreateCharacterDialog dialog)
     {
-        if (dialog.RaceId == 0)
+        if (dialog.Race is null)
         {
             return new EmbedBuilder().WithDescription($"Alright {dialog.Name}, choose a race first!").Build();
         }
 
-        if (dialog.ClassId == 0)
+        if (dialog.Class is null)
         {
             return new EmbedBuilder()
-                .WithDescription($"A {raceService.GetRace(dialog.RaceId).RaceName} huh? Anyway, choose your path next!")
+                .WithDescription($"A {dialog.Race.Name} huh? Anyway, choose your path next!")
                 .Build();
         }
 
-        var race = raceService.GetRace(dialog.RaceId);
-        var charClass = classService.GetClass(dialog.ClassId);
+        var race = dialog.Race;
+        var charClass = dialog.Class;
 //race
         var builder = new EmbedBuilder()
             .WithTitle("Character Creation")
             .WithDescription("A summary of your choices. Change them as you wish")
-            .AddField("Race", race.RaceName, true)
+            .AddField("Race", race.Name, true)
             .AddField("Description", race.Description);
-        var strengths = raceService.GetStrengths(race).ToList();
+        var strengths = Races.GetStrengths(race).ToList();
         var sb = new StringBuilder();
         for (var i = 0; i < strengths.Count; i++)
         {
@@ -104,7 +100,7 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
 
         builder.AddField("Strengths", sb.ToString());
 
-        var weaknesses = raceService.GetWeaknesses(race).ToList();
+        var weaknesses = Races.GetWeaknesses(race).ToList();
         sb = new StringBuilder();
         for (var i = 0; i < weaknesses.Count; i++)
         {
@@ -117,9 +113,9 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
 //class
         builder
             .AddField("\u200B", "\u200B")
-            .AddField("Class", charClass.ClassName, true)
+            .AddField("Class", charClass.Name, true)
             .AddField("Description", charClass.Description);
-        strengths = classService.GetStrengths(charClass).ToList();
+        strengths = Classes.GetStrengths(charClass).ToList();
         sb = new StringBuilder();
         for (var i = 0; i < strengths.Count; i++)
         {
@@ -130,7 +126,7 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
 
         builder.AddField("Strengths", sb.ToString());
 
-        weaknesses = classService.GetWeaknesses(charClass).ToList();
+        weaknesses = Classes.GetWeaknesses(charClass).ToList();
         sb = new StringBuilder();
         for (var i = 0; i < weaknesses.Count; i++)
         {
@@ -153,29 +149,28 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
 
     private MessageComponent GetMenu(CreateCharacterDialog dialog)
     {
-        if (dialog.RaceId == 0)
+        if (dialog.Race is null)
         {
             var menuBuilder = new SelectMenuBuilder()
                 .WithPlaceholder("Choose your race")
                 .WithCustomId(GetCommandId("race-select"));
 
-            foreach (var (id, race) in raceService.GetAllRaces())
+            foreach (var race in Races.GetAllRaces())
             {
-                menuBuilder.AddOption(race.RaceName, id.ToString(), race.Description);
+                menuBuilder.AddOption(race.Name, race.Name, race.Description);
             }
 
             return new ComponentBuilder().WithSelectMenu(menuBuilder).Build();
         }
 
-        if (dialog.ClassId == 0)
+        if (dialog.Class is null)
         {
             var menuBuilder = new SelectMenuBuilder()
                 .WithPlaceholder("Choose your class")
                 .WithCustomId(GetCommandId("class-select"));
-            foreach (var item in classService.GetAllClasses())
+            foreach (var item in Classes.GetAllClasses())
             {
-                var @class = item.@class;
-                menuBuilder.AddOption(@class.ClassName, item.id.ToString(), @class.Description);
+                menuBuilder.AddOption(item.Name, item.Name, item.Description);
             }
 
             return new ComponentBuilder().WithSelectMenu(menuBuilder).Build();
@@ -191,8 +186,8 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
     [Handler("race-select")]
     public async Task RaceSelectHandler(SocketMessageComponent component, CreateCharacterDialog dialog)
     {
-        var raceId = int.Parse(component.Data.Values.FirstOrDefault());
-        dialog.RaceId = raceId;
+        var raceName = component.Data.Values.FirstOrDefault();
+        dialog.Race = Races.GetRace(raceName);
 
         var menu = GetMenu(dialog);
         var embed = GetDisplayEmbed(dialog);
@@ -207,8 +202,8 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
     [Handler("class-select")]
     public async Task ClassSelectHandler(SocketMessageComponent component, CreateCharacterDialog dialog)
     {
-        var classId = int.Parse(component.Data.Values.FirstOrDefault());
-        dialog.ClassId = classId;
+        var className = component.Data.Values.FirstOrDefault();
+        dialog.Class = Classes.GetClass(className);
 
         var menu = GetMenu(dialog);
         var embed = GetDisplayEmbed(dialog);
@@ -225,9 +220,10 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
     {
         var guildUser = component.User as SocketGuildUser;
         var result =
-            await characterService.CreateCharacterAsync(guildUser.Id.ToString(), dialog.GuildId, dialog.Name,
-                dialog.ClassId,
-                dialog.RaceId);
+            await characterService.CreateCharacterAsync(new CharacterId(guildUser.Id.ToString()),
+                new GuildId(dialog.GuildId), dialog.Name,
+                dialog.Class,
+                dialog.Race, dialog.Context);
         if (!result.WasSuccessful)
         {
             await component.RespondAsync("Something went wrong! " + result.ErrorMessage);
@@ -248,8 +244,8 @@ public class CreateCharacter : DialogCommandBase<CreateCharacterDialog>
     [Handler("restart")]
     private async Task HandleRestart(SocketMessageComponent component, CreateCharacterDialog dialog)
     {
-        dialog.ClassId = 0;
-        dialog.RaceId = 0;
+        dialog.Class = null;
+        dialog.Race = null;
 
         var menu = GetMenu(dialog);
         var embed = GetDisplayEmbed(dialog);

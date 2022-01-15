@@ -1,14 +1,15 @@
-﻿using DiscordRPG.Domain.Aggregates.Guild;
+﻿using DiscordRPG.Common;
+using DiscordRPG.Domain.Aggregates.Guild;
 using EventFlow.Aggregates;
 
 namespace DiscordRPG.Domain.Entities.Activity.Events;
 
-public class ActivityCancelled : AggregateEvent<GuildAggregate, GuildId>
+public class ActivityCancelled : AggregateEvent<GuildAggregate, GuildId>, IEntityEvent<ActivityId>
 {
-    public ActivityCancelled(ActivityId activityId)
+    public ActivityCancelled(ActivityId entityId)
     {
-        ActivityId = activityId;
+        EntityId = entityId;
     }
 
-    public ActivityId ActivityId { get; private set; }
+    public ActivityId EntityId { get; private set; }
 }

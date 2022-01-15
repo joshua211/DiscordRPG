@@ -73,4 +73,6 @@ public static class Classes
 
         return list;
     }
+
+    public static IEnumerable<CharacterClass> GetAllClasses() => classes.Values.ToList();
 }

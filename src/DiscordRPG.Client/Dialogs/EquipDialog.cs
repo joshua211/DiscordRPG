@@ -1,17 +1,19 @@
 ﻿using Discord;
-using DiscordRPG.Core.Entities;
-using DiscordRPG.Core.Enums;
-using DiscordRPG.Core.ValueObjects;
+using DiscordRPG.Application.Models;
+using DiscordRPG.Common;
+using DiscordRPG.Domain.Entities.Character.Enums;
+using DiscordRPG.Domain.Entities.Character.ValueObjects;
 
 namespace DiscordRPG.Client.Dialogs;
 
 public class EquipDialog : Dialog, IShareableDialog, IPageableDialog
 {
-    public EquipDialog(ulong userId) : base(userId)
+    public EquipDialog(ulong userId, TransactionContext context) : base(userId, context)
     {
     }
 
-    public Character Character { get; set; }
+
+    public CharacterReadModel Character { get; set; }
     public Item CurrentItem { get; set; }
     public EquipmentPosition Position { get; set; }
     public int CurrentPage { get; set; } = 1;
