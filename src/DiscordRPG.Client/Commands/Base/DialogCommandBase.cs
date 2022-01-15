@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Discord;
 using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Commands.Attributes;
@@ -28,13 +29,37 @@ public abstract class DialogCommandBase<T> : CommandBase where T : Dialog
 
     protected override async Task HandleSelectionAsync(SocketMessageComponent component, MethodInfo method)
     {
-        var dialog = dialogs[component.User.Id];
+        if (!dialogs.TryGetValue(component.User.Id, out var dialog))
+        {
+            await component.UpdateAsync(properties =>
+            {
+                properties.Components = null;
+                properties.Content = null;
+                properties.Embeds = null;
+                properties.Embed = new EmbedBuilder().WithTitle("This dialog has been closed!").Build();
+            });
+
+            return;
+        }
+
         await (Task) method.Invoke(this, new object[] {component, dialog});
     }
 
     protected override async Task HandleButtonAsync(SocketMessageComponent component, MethodInfo method)
     {
-        var dialog = dialogs[component.User.Id];
+        if (!dialogs.TryGetValue(component.User.Id, out var dialog))
+        {
+            await component.UpdateAsync(properties =>
+            {
+                properties.Components = null;
+                properties.Content = null;
+                properties.Embeds = null;
+                properties.Embed = new EmbedBuilder().WithTitle("This dialog has been closed!").Build();
+            });
+
+            return;
+        }
+
         await (Task) method.Invoke(this, new object[] {component, dialog});
     }
 
