@@ -19,7 +19,7 @@ public class Explorations : ValueObject
         if (Value == 0)
             throw new ArgumentException(nameof(Value));
 
-        return new Explorations(Value--);
+        return new Explorations(--Value);
     }
 
     public override string ToString()
