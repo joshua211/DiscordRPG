@@ -1,6 +1,19 @@
-﻿namespace DiscordRPG.Client.Commands;
+﻿using Discord;
+using Discord.WebSocket;
+using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Client.Commands.Attributes;
+using DiscordRPG.Client.Commands.Base;
+using DiscordRPG.Client.Commands.Helpers;
+using DiscordRPG.Client.Dialogs;
+using DiscordRPG.Common.Extensions;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Entities.Character;
+using DiscordRPG.Domain.Entities.Character.Enums;
+using Serilog;
 
-/*[RequireCharacter]
+namespace DiscordRPG.Client.Commands;
+
+[RequireCharacter]
 [RequireGuild]
 public class Equip : DialogCommandBase<EquipDialog>
 {
@@ -16,21 +29,9 @@ public class Equip : DialogCommandBase<EquipDialog>
     {
         try
         {
-            var optionBuilder = new SlashCommandOptionBuilder()
-                .WithName("type")
-                .WithDescription("Choose which equipment you want to replace")
-                .WithType(ApplicationCommandOptionType.Integer)
-                .AddChoice("weapon", (int) EquipmentPosition.Weapon)
-                .AddChoice("helmet", (int) EquipmentPosition.Helmet)
-                .AddChoice("armor", (int) EquipmentPosition.Armor)
-                .AddChoice("pants", (int) EquipmentPosition.Pants)
-                .AddChoice("amulet", (int) EquipmentPosition.Amulet)
-                .AddChoice("ring", (int) EquipmentPosition.Ring);
-
             var command = new SlashCommandBuilder()
                 .WithName(CommandName)
-                .WithDescription("Display or change your equipment")
-                .AddOption(optionBuilder);
+                .WithDescription("Display or change your current equipment");
 
             await guild.CreateApplicationCommandAsync(command.Build());
         }
@@ -44,66 +45,179 @@ public class Equip : DialogCommandBase<EquipDialog>
         EquipDialog dialog)
     {
         dialog.Character = context.Character;
+        dialog.GuildId = new GuildId(context.Guild.Id);
 
-        var category = command.Data.Options.FirstOrDefault()?.Value;
-        if (category is null)
-        {
-            var equip = context.Character.Equipment;
-            var embed = new EmbedBuilder()
-                .WithTitle($"{context.Character.CharacterName}'s equipment")
-                .WithColor(Color.Green)
-                .AddField("Weapon", equip.Weapon?.ToString() ?? "Nothing equipped")
-                .AddField("Helmet", equip.Helmet?.ToString() ?? "Nothing equipped")
-                .AddField("Armor", equip.Armor?.ToString() ?? "Nothing equipped")
-                .AddField("Pants", equip.Pants?.ToString() ?? "Nothing equipped")
-                .AddField("Amulet", equip.Amulet?.ToString() ?? "Nothing equipped")
-                .AddField("Ring", equip.Ring?.ToString() ?? "Nothing equipped")
-                .AddField("\u200B", "\u200B")
-                .AddField("Total Damage",
-                    $"{context.Character.TotalDamage.Value} {context.Character.TotalDamage.DamageType}", true)
-                .AddField("Total Armor", context.Character.Armor, true)
-                .AddField("Total Magic Armor", context.Character.MagicArmor, true)
-                .Build();
-
-            dialog.ShareableEmbed = embed;
-            var component = new ComponentBuilder().WithButton("Share", GetCommandId("share"))
-                .WithButton("Close", GetCommandId("cancel"), ButtonStyle.Secondary).Build();
-            await command.RespondAsync(embed: embed, component: component, ephemeral: true);
-        }
-        else
-        {
-            var value = (long) category;
-            dialog.Position = (EquipmentPosition) (int) value;
-            await HandleSelectEquipment(command, dialog);
-        }
-    }
-
-    private async Task HandleSelectEquipment(SocketSlashCommand command, EquipDialog dialog)
-    {
         var embed = GetDisplayEmbed(dialog);
         var menu = GetMenu(dialog);
+
 
         await command.RespondAsync(embed: embed, component: menu, ephemeral: true);
     }
 
-    private Embed GetDisplayEmbed(EquipDialog dialog)
+    private MessageComponent GetMenu(EquipDialog dialog)
     {
-        var embed = dialog.CurrentItem is null
-            ? new EmbedBuilder().WithDescription("Choose your new equipment").Build()
-            : EmbedHelper.GetItemAsEmbed(dialog.CurrentItem,
-                comparison: dialog.Character.Equipment.CurrentEquipment[dialog.Position]);
+        if (dialog.Position is null)
+        {
+            var positionSelect = new SelectMenuBuilder()
+                .WithPlaceholder("Choose equipment type")
+                .WithCustomId(GetCommandId("select-position"));
+            foreach (var pos in Enum.GetValues<EquipmentPosition>())
+            {
+                positionSelect.AddOption(pos.ToString(), pos.ToString());
+            }
 
-        dialog.ShareableEmbed = embed;
-        return embed;
+            return new ComponentBuilder()
+                .WithButton("Share", GetCommandId("share"))
+                .WithButton("Close", GetCommandId("cancel"), ButtonStyle.Secondary)
+                .WithSelectMenu(positionSelect)
+                .Build();
+        }
+
+        var position = dialog.Position;
+        var items = dialog.Character.Inventory.Where(i =>
+            i.Position == position && i.ItemType is ItemType.Equipment or ItemType.Weapon);
+
+        var menuBuilder = new SelectMenuBuilder()
+            .WithPlaceholder($"Choose a new {dialog.Position}")
+            .WithCustomId(GetCommandId("select-item"));
+        var displayItems = items.Skip((dialog.CurrentPage - 1) * 10)
+            .Take(10);
+
+        foreach (var i in displayItems)
+        {
+            menuBuilder.AddOption(i.ToString(), i.Id.Value);
+        }
+
+        var messageComponentBuilder = new ComponentBuilder();
+        if (displayItems.Any()) messageComponentBuilder.WithSelectMenu(menuBuilder);
+
+        if (dialog.CurrentItem?.Id.Value != dialog.Character.Inventory
+                .FirstOrDefault(i => i.Position == dialog.Position && i.IsEquipped)?.Id.Value)
+        {
+            messageComponentBuilder.WithButton("Equip", GetCommandId("equip"), ButtonStyle.Success,
+                disabled: dialog.CurrentItem == null);
+        }
+        else
+        {
+            messageComponentBuilder.WithButton("Unequip", GetCommandId("unequip"), ButtonStyle.Success,
+                disabled: dialog.CurrentItem == null);
+        }
+
+        return messageComponentBuilder
+            .WithButton("Share", GetCommandId("share"), disabled: dialog.CurrentItem == null)
+            .WithButton("Back", GetCommandId("back"), ButtonStyle.Secondary)
+            .WithButton("Cancel", GetCommandId("cancel"), ButtonStyle.Danger)
+            .WithButton("<", GetCommandId("prev-page"), ButtonStyle.Secondary, disabled: dialog.CurrentPage <= 0,
+                row: 1)
+            .WithButton(">", GetCommandId("next-page"), ButtonStyle.Secondary, row: 1)
+            .Build();
     }
 
-    [Handler("select")]
+    private Embed GetDisplayEmbed(EquipDialog dialog)
+    {
+        if (dialog.Position is null)
+        {
+            var embed = new EmbedBuilder()
+                .WithTitle($"{dialog.Character.Name}'s equipment")
+                .WithColor(Color.Green)
+                .AddField("Weapon", dialog.Character.Weapon?.ToString() ?? "Nothing equipped")
+                .AddField("Helmet", dialog.Character.Helmet?.ToString() ?? "Nothing equipped")
+                .AddField("Armor", dialog.Character.TorsoArmor?.ToString() ?? "Nothing equipped")
+                .AddField("Pants", dialog.Character.Pants?.ToString() ?? "Nothing equipped")
+                .AddField("Amulet", dialog.Character.Amulet?.ToString() ?? "Nothing equipped")
+                .AddField("Ring", dialog.Character.Ring?.ToString() ?? "Nothing equipped")
+                .AddField("\u200B", "\u200B")
+                .AddField("Total Damage",
+                    $"{dialog.Character.TotalDamage.Value} {dialog.Character.TotalDamage.DamageType}", true)
+                .AddField("Total Armor", dialog.Character.Armor, true)
+                .AddField("Total Magic Armor", dialog.Character.MagicArmor, true)
+                .Build();
+
+            dialog.ShareableEmbed = embed;
+
+            return embed;
+        }
+
+        var itemEmbed = EmbedHelper.GetItemAsEmbed(dialog.CurrentItem);
+        dialog.ShareableEmbed = itemEmbed;
+
+        return itemEmbed;
+    }
+
+    [Handler("select-position")]
+    public async Task HandleSelectPosition(SocketMessageComponent component, EquipDialog dialog)
+    {
+        var position = Enum.Parse<EquipmentPosition>(component.Data.Values.FirstOrDefault());
+        var equipped = dialog.Character.Inventory.FirstOrDefault(i => i.IsEquipped && i.Position == position);
+        dialog.CurrentItem = equipped;
+        dialog.Position = position;
+
+        var menu = GetMenu(dialog);
+        var embed = GetDisplayEmbed(dialog);
+
+        await component.UpdateAsync(properties =>
+        {
+            properties.Embed = embed;
+            properties.Components = menu;
+        });
+    }
+
+    [Handler("select-item")]
     public async Task HandleSelect(SocketMessageComponent component, EquipDialog dialog)
     {
-        var itemCode = component.Data.Values.FirstOrDefault();
-        var item = dialog.Character.Inventory.FirstOrDefault(i => i.GetItemCode() == itemCode);
+        var id = component.Data.Values.FirstOrDefault();
+        var item = dialog.Character.Inventory.FirstOrDefault(i => i.Id.Value == id);
 
         dialog.CurrentItem = item;
+
+        var menu = GetMenu(dialog);
+        var embed = GetDisplayEmbed(dialog);
+
+        await component.UpdateAsync(properties =>
+        {
+            properties.Embed = embed;
+            properties.Components = menu;
+        });
+    }
+
+    [Handler("back")]
+    public async Task HandleBack(SocketMessageComponent component, EquipDialog dialog)
+    {
+        dialog.Position = null;
+        dialog.CurrentItem = null;
+        var menu = GetMenu(dialog);
+        var embed = GetDisplayEmbed(dialog);
+
+        await component.UpdateAsync(properties =>
+        {
+            properties.Embed = embed;
+            properties.Components = menu;
+        });
+    }
+
+    [Handler("unequip")]
+    public async Task HandleUnequip(SocketMessageComponent component, EquipDialog dialog)
+    {
+        var result = await characterService.UnequipItemAsync(dialog.GuildId, new CharacterId(dialog.Character.Id),
+            dialog.CurrentItem.Id, dialog.Context);
+        if (!result.WasSuccessful)
+        {
+            await component.UpdateAsync(properties =>
+            {
+                properties.Embed = null;
+                properties.Components = null;
+                properties.Content = $"Something went wrong, please try again!";
+            });
+
+            return;
+        }
+
+        var updatedChar =
+            await characterService.GetCharacterAsync(new CharacterId(dialog.Character.Id), dialog.Context);
+        dialog.Character = updatedChar.Value;
+
+        dialog.Position = null;
+        dialog.CurrentItem = null;
 
         var menu = GetMenu(dialog);
         var embed = GetDisplayEmbed(dialog);
@@ -118,13 +232,8 @@ public class Equip : DialogCommandBase<EquipDialog>
     [Handler("equip")]
     public async Task HandleEquip(SocketMessageComponent component, EquipDialog dialog)
     {
-        EndDialog(dialog.UserId);
-
-        var id = dialog.Character.ID;
-        var equip = dialog.Character.Equipment;
-        equip.CurrentEquipment[dialog.Position] = (Equipment) dialog.CurrentItem;
-
-        var result = await characterService.UpdateEquipmentAsync(id, equip);
+        var result = await characterService.EquipItemAsync(dialog.GuildId, new CharacterId(dialog.Character.Id),
+            dialog.CurrentItem.Id, dialog.Context);
         if (!result.WasSuccessful)
         {
             await component.UpdateAsync(properties =>
@@ -137,42 +246,21 @@ public class Equip : DialogCommandBase<EquipDialog>
             return;
         }
 
+        var updatedChar =
+            await characterService.GetCharacterAsync(new CharacterId(dialog.Character.Id), dialog.Context);
+        dialog.Character = updatedChar.Value;
+
+        dialog.Position = null;
+        dialog.CurrentItem = null;
+
+        var menu = GetMenu(dialog);
+        var embed = GetDisplayEmbed(dialog);
+
         await component.UpdateAsync(properties =>
         {
-            properties.Embed = null;
-            properties.Components = null;
-            properties.Content = $"You've equipped {dialog.CurrentItem.Name}!";
+            properties.Embed = embed;
+            properties.Components = menu;
         });
-    }
-
-    private MessageComponent GetMenu(EquipDialog dialog)
-    {
-        var current = dialog.Character.Equipment.CurrentEquipment[dialog.Position];
-        var items = dialog.Character.Inventory.Where(i =>
-            i is Equipment e && e.Position == dialog.Position && !e.Equals(current));
-
-        var menuBuilder = new SelectMenuBuilder()
-            .WithPlaceholder($"Choose a new {dialog.Position}")
-            .WithCustomId(GetCommandId("select"));
-        var displayItems = items.Skip((dialog.CurrentPage - 1) * 10)
-            .Take(10);
-
-        foreach (Equipment w in displayItems)
-        {
-            menuBuilder.AddOption($"[{w.Rarity}] {w.Name} (Lvl: {w.Level} | {w.Worth}$)]", w.GetItemCode());
-        }
-
-        var messageComponentBuilder = new ComponentBuilder();
-        if (displayItems.Any()) messageComponentBuilder.WithSelectMenu(menuBuilder);
-
-        return messageComponentBuilder
-            .WithButton("Equip", GetCommandId("equip"),
-                disabled: dialog.CurrentItem == null)
-            .WithButton("<", GetCommandId("prev-page"), ButtonStyle.Secondary, disabled: dialog.CurrentPage <= 0)
-            .WithButton(">", GetCommandId("next-page"), ButtonStyle.Secondary)
-            .WithButton("Share", GetCommandId("share"), disabled: dialog.CurrentItem == null)
-            .WithButton("Cancel", GetCommandId("cancel"), ButtonStyle.Secondary)
-            .Build();
     }
 
     [Handler("prev-page")]
@@ -204,4 +292,4 @@ public class Equip : DialogCommandBase<EquipDialog>
             properties.Components = menu;
         });
     }
-}*/
+}

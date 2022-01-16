@@ -23,4 +23,10 @@ public interface ICharacterService
     Task<Result<IEnumerable<CharacterReadModel>>> GetAllCharactersInGuild(GuildId guildId,
         TransactionContext context,
         CancellationToken cancellationToken = default);
+
+    Task<Result> EquipItemAsync(GuildId guildId, CharacterId characterId, ItemId currentItemId,
+        TransactionContext dialogContext, CancellationToken cancellationToken = default);
+
+    Task<Result> UnequipItemAsync(GuildId dialogGuildId, CharacterId characterId, ItemId currentItemId,
+        TransactionContext dialogContext, CancellationToken cancellationToken = default);
 }

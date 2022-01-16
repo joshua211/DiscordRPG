@@ -1,7 +1,9 @@
 ﻿using System.Reflection;
 using Discord.Commands;
 using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Application.Models;
 using DiscordRPG.Client.Handlers;
+using EventFlow.ReadStores;
 
 namespace DiscordRPG.Client.Modules;
 
@@ -10,12 +12,20 @@ namespace DiscordRPG.Client.Modules;
 public class SettingsModule : ModuleBase<SocketCommandContext>
 {
     private readonly IGuildService guildService;
+    private readonly IReadModelPopulator populator;
     private readonly ServerHandler serverHandler;
 
-    public SettingsModule(ServerHandler serverHandler, IGuildService guildService)
+    public SettingsModule(ServerHandler serverHandler, IGuildService guildService, IReadModelPopulator populator)
     {
         this.serverHandler = serverHandler;
         this.guildService = guildService;
+        this.populator = populator;
+    }
+
+    [Command("refresh-readmodels")]
+    public async Task ForceReadModels()
+    {
+        await populator.PopulateAsync<CharacterReadModel>(CancellationToken.None);
     }
 
     [Command("delete")]

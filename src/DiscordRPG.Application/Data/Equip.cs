@@ -11,7 +11,7 @@ public static class Equip
         DamageType.Magical, 1, 1, 3, 2, 0, 1, 1, 0, 0, 0, true);
 
     public static Item StarterLeg => new Item(ItemId.New, "Leather Pants", "Some basic leather pants", 1, Rarity.Common,
-        EquipmentCategory.Armor, EquipmentPosition.Armor, ItemType.Equipment, CharacterAttribute.Agility,
+        EquipmentCategory.Armor, EquipmentPosition.Pants, ItemType.Equipment, CharacterAttribute.Agility,
         DamageType.Magical, 1, 1, 2, 1, 1, 0, 0, 0, 0, 0, true);
 
     public static Item StarterWeapon => new Item(ItemId.New, "Rusty Dagger", "An old and rusty dagger",

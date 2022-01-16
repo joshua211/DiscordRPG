@@ -81,4 +81,37 @@ public class CharacterService : ICharacterService
     {
         throw new NotImplementedException();
     }
+
+    public async Task<Result> EquipItemAsync(GuildId guildId, CharacterId characterId, ItemId itemId,
+        TransactionContext context,
+        CancellationToken cancellationToken = default)
+    {
+        logger.Context(context).Information("Equipping Item {id} for Character {CharId}", itemId, characterId);
+        var cmd = new EquipItemCommand(guildId, characterId, itemId, context);
+        var result = await bus.PublishAsync(cmd, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            logger.Context(context).Error("Failed to equip item");
+            return Result.Failure("Failed to equip item!");
+        }
+
+        return Result.Success();
+    }
+
+    public async Task<Result> UnequipItemAsync(GuildId guildId, CharacterId characterId, ItemId itemId,
+        TransactionContext context, CancellationToken cancellationToken = default)
+    {
+        logger.Context(context).Information("Unequipping Item {id} for Character {CharId}", itemId, characterId);
+        var cmd = new UnequipItemCommand(guildId, characterId, itemId, context);
+        var result = await bus.PublishAsync(cmd, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            logger.Context(context).Error("Failed to unequip item");
+            return Result.Failure("Failed to unequip item!");
+        }
+
+        return Result.Success();
+    }
 }

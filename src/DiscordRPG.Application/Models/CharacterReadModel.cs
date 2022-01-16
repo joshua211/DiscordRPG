@@ -26,6 +26,13 @@ public class CharacterReadModel : IMongoDbReadModel,
     public List<Item> Inventory { get; set; }
     public List<Wound> Wounds { get; set; }
 
+    public Item? Weapon => Inventory.FirstOrDefault(i => i.IsEquipped && i.Position == EquipmentPosition.Weapon);
+    public Item? Helmet => Inventory.FirstOrDefault(i => i.IsEquipped && i.Position == EquipmentPosition.Helmet);
+    public Item? TorsoArmor => Inventory.FirstOrDefault(i => i.IsEquipped && i.Position == EquipmentPosition.Armor);
+    public Item? Pants => Inventory.FirstOrDefault(i => i.IsEquipped && i.Position == EquipmentPosition.Pants);
+    public Item? Amulet => Inventory.FirstOrDefault(i => i.IsEquipped && i.Position == EquipmentPosition.Amulet);
+    public Item? Ring => Inventory.FirstOrDefault(i => i.IsEquipped && i.Position == EquipmentPosition.Ring);
+
     public int Strength
     {
         get

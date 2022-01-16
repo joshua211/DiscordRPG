@@ -38,6 +38,9 @@ public class Character : Entity<CharacterId>
     public void EquipItem(ItemId id)
     {
         var item = Inventory.First(i => i.Id == id);
+        var alreadyEquipped = Inventory.FirstOrDefault(i => i.IsEquipped && i.Position == item.Position);
+        if (alreadyEquipped is not null)
+            alreadyEquipped.Unequip();
         item.Equip();
     }
 
