@@ -7,8 +7,8 @@ public class Explorations : ValueObject
 {
     public Explorations(byte value)
     {
-        if (value <= 0)
-            DomainError.With(nameof(value));
+        if (Value <= 0)
+            DomainError.With("Explorations is already 0");
         Value = value;
     }
 
