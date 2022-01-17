@@ -78,8 +78,9 @@ public class WoundGenerator : GeneratorBase, IWoundGenerator
             charHasFirstStrike = !charHasFirstStrike;
         }
 
+        wounds.Add(new Wound(nameGenerator.GenerateWoundName(), totalDmg));
         logger.Verbose("Generated wounds {@Wounds} for encounter {@Encounter}", wounds, encounter);
 
-        return new[] {new Wound(nameGenerator.GenerateWoundName(), totalDmg)};
+        return wounds;
     }
 }

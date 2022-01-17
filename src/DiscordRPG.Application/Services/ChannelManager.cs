@@ -22,6 +22,7 @@ public class ChannelManager : IChannelManager
         this.client = client;
         this.guildService = guildService;
         this.logger = logger.WithContext(GetType());
+
         policy = Policy.Handle<Exception>().WaitAndRetryAsync(new[]
             {
                 TimeSpan.FromSeconds(1),

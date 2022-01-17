@@ -22,6 +22,8 @@ public static class EmbedHelper
                     .WithTitle(item.Name + $" (Lvl {item.Level})")
                     .WithDescription(item.Description)
                     .AddField("Rarity", item.Rarity)
+                    .AddField(item.ItemEffect.Name,
+                        $"{item.ItemEffect.StatusEffectType} ({item.ItemEffect.Modifier * 100}%)")
                     .AddField("Armor",
                         comparison is null
                             ? $"{item.Armor}"

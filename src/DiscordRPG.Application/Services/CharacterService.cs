@@ -42,7 +42,7 @@ public class CharacterService : ICharacterService
             new Level(1, 0, experienceCurve.GetRequiredExperienceForLevel(1)),
             new List<Item>
             {
-                Equip.StarterArmor, Equip.StarterLeg, Equip.StarterWeapon,
+                Equip.StarterArmor, Equip.StarterLeg, Equip.StarterWeapon, Equip.StarterAmulet,
                 itemGenerator.GetHealthPotion(Rarity.Common, 1)
             }, new List<Wound>(), new Money(10));
         var cmd = new CreateCharacterCommand(guildId, character, context);

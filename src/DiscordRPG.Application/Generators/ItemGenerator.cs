@@ -87,7 +87,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         return new Item(ItemId.New, name,
             $"A potion that can restore {Math.Round(level * 20 * (1 + (int) rarity * 0.2f))} health points", 1, rarity,
             EquipmentCategory.Amulet, EquipmentPosition.Amulet, ItemType.Consumable, CharacterAttribute.Intelligence,
-            DamageType.Magical, worth, level, 0, 0, 0, 0, 0, 0, 0, 0, false);
+            DamageType.Magical, null, worth, level, 0, 0, 0, 0, 0, 0, 0, 0, false);
     }
 
     public Item GenerateRandomWeapon(Rarity rarity, uint level, Aspect aspect)
@@ -112,7 +112,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         return new Item(ItemId.New, name,
             descr, amount, rarity,
             EquipmentCategory.Amulet, EquipmentPosition.Amulet, ItemType.Item, CharacterAttribute.Vitality,
-            DamageType.Physical, worth, level, 0, 0, 0, 0, 0, 0, 0, 0, false);
+            DamageType.Physical, null, worth, level, 0, 0, 0, 0, 0, 0, 0, 0, false);
     }
 
     public Item GenerateEquipment(Rarity rarity, uint level, Aspect aspect, EquipmentCategory category)
@@ -141,7 +141,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         return new Item(ItemId.New, name,
             "", 1, rarity,
             category, position, ItemType.Weapon, CharacterAttribute.Vitality,
-            DamageType.Physical, totalWorth, level, armor, marmor, s, v, a, i, l, 0, false);
+            DamageType.Physical, null, totalWorth, level, armor, marmor, s, v, a, i, l, 0, false);
     }
 
     public Item GenerateWeapon(Rarity rarity, uint level, Aspect aspect, EquipmentCategory category)
@@ -160,7 +160,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         return new Item(ItemId.New, name,
             "", 1, rarity,
             category, EquipmentPosition.Weapon, ItemType.Weapon, charAttr,
-            dmgType, totalWorth, level, 0, 0, s, v, a, i, l, dmgValue, false);
+            dmgType, null, totalWorth, level, 0, 0, s, v, a, i, l, dmgValue, false);
     }
 
     /*public Item GenerateFromRecipe(Recipe recipe)

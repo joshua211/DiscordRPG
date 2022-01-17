@@ -10,7 +10,8 @@ public class Item : Entity<ItemId>
 {
     public Item(ItemId id, string name, string description, int amount, Rarity rarity,
         EquipmentCategory equipmentCategory, EquipmentPosition position, ItemType itemType,
-        CharacterAttribute damageAttribute, DamageType damageType, int worth, uint level, int armor,
+        CharacterAttribute damageAttribute, DamageType damageType, StatusEffect itemEffect, int worth, uint level,
+        int armor,
         int magicArmor, int strength, int vitality, int agility, int intelligence, int luck, int damageValue,
         bool isEquipped) : base(id)
     {
@@ -26,6 +27,7 @@ public class Item : Entity<ItemId>
         ItemType = itemType;
         DamageAttribute = damageAttribute;
         DamageType = damageType;
+        ItemEffect = itemEffect;
         Worth = worth;
         Level = level;
         Armor = armor;
@@ -48,6 +50,7 @@ public class Item : Entity<ItemId>
     public ItemType ItemType { get; private set; }
     public CharacterAttribute DamageAttribute { get; private set; }
     public DamageType DamageType { get; private set; }
+    public StatusEffect ItemEffect { get; private set; }
     public int Worth { get; private set; }
     public uint Level { get; private set; }
     public int Armor { get; private set; }

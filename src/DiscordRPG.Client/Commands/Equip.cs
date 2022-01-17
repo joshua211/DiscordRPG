@@ -47,11 +47,11 @@ public class Equip : DialogCommandBase<EquipDialog>
         dialog.Character = context.Character;
         dialog.GuildId = new GuildId(context.Guild.Id);
 
-        var embed = GetDisplayEmbed(dialog);
+        var embed = GetDisplayEmbeds(dialog);
         var menu = GetMenu(dialog);
 
 
-        await command.RespondAsync(embed: embed, component: menu, ephemeral: true);
+        await command.RespondAsync(embeds: embed, component: menu, ephemeral: true);
     }
 
     private MessageComponent GetMenu(EquipDialog dialog)
@@ -113,7 +113,7 @@ public class Equip : DialogCommandBase<EquipDialog>
             .Build();
     }
 
-    private Embed GetDisplayEmbed(EquipDialog dialog)
+    private Embed[] GetDisplayEmbeds(EquipDialog dialog)
     {
         if (dialog.Position is null)
         {
@@ -133,15 +133,29 @@ public class Equip : DialogCommandBase<EquipDialog>
                 .AddField("Total Magic Armor", dialog.Character.MagicArmor, true)
                 .Build();
 
+            var effects = dialog.Character.GetCurrentStatusEffects();
+            if (effects.Any())
+            {
+                var statusEmbedBuilder = new EmbedBuilder();
+                statusEmbedBuilder.WithTitle("Status effects");
+                foreach (var effect in effects)
+                {
+                    statusEmbedBuilder.AddField(effect.Name, $"{effect.StatusEffectType} ({effect.Modifier * 100}%)",
+                        true);
+
+                    return new[] {embed, statusEmbedBuilder.Build()};
+                }
+            }
+
             dialog.ShareableEmbed = embed;
 
-            return embed;
+            return new[] {embed};
         }
 
         var itemEmbed = EmbedHelper.GetItemAsEmbed(dialog.CurrentItem);
         dialog.ShareableEmbed = itemEmbed;
 
-        return itemEmbed;
+        return new[] {itemEmbed};
     }
 
     [Handler("select-position")]
@@ -153,11 +167,11 @@ public class Equip : DialogCommandBase<EquipDialog>
         dialog.Position = position;
 
         var menu = GetMenu(dialog);
-        var embed = GetDisplayEmbed(dialog);
+        var embed = GetDisplayEmbeds(dialog);
 
         await component.UpdateAsync(properties =>
         {
-            properties.Embed = embed;
+            properties.Embeds = embed;
             properties.Components = menu;
         });
     }
@@ -171,11 +185,11 @@ public class Equip : DialogCommandBase<EquipDialog>
         dialog.CurrentItem = item;
 
         var menu = GetMenu(dialog);
-        var embed = GetDisplayEmbed(dialog);
+        var embed = GetDisplayEmbeds(dialog);
 
         await component.UpdateAsync(properties =>
         {
-            properties.Embed = embed;
+            properties.Embeds = embed;
             properties.Components = menu;
         });
     }
@@ -186,11 +200,11 @@ public class Equip : DialogCommandBase<EquipDialog>
         dialog.Position = null;
         dialog.CurrentItem = null;
         var menu = GetMenu(dialog);
-        var embed = GetDisplayEmbed(dialog);
+        var embed = GetDisplayEmbeds(dialog);
 
         await component.UpdateAsync(properties =>
         {
-            properties.Embed = embed;
+            properties.Embeds = embed;
             properties.Components = menu;
         });
     }
@@ -220,11 +234,11 @@ public class Equip : DialogCommandBase<EquipDialog>
         dialog.CurrentItem = null;
 
         var menu = GetMenu(dialog);
-        var embed = GetDisplayEmbed(dialog);
+        var embed = GetDisplayEmbeds(dialog);
 
         await component.UpdateAsync(properties =>
         {
-            properties.Embed = embed;
+            properties.Embeds = embed;
             properties.Components = menu;
         });
     }
@@ -254,11 +268,11 @@ public class Equip : DialogCommandBase<EquipDialog>
         dialog.CurrentItem = null;
 
         var menu = GetMenu(dialog);
-        var embed = GetDisplayEmbed(dialog);
+        var embed = GetDisplayEmbeds(dialog);
 
         await component.UpdateAsync(properties =>
         {
-            properties.Embed = embed;
+            properties.Embeds = embed;
             properties.Components = menu;
         });
     }
@@ -270,11 +284,11 @@ public class Equip : DialogCommandBase<EquipDialog>
             dialog.CurrentPage--;
 
         var menu = GetMenu(dialog);
-        var embed = GetDisplayEmbed(dialog);
+        var embed = GetDisplayEmbeds(dialog);
 
         await component.UpdateAsync(properties =>
         {
-            properties.Embed = embed;
+            properties.Embeds = embed;
             properties.Components = menu;
         });
     }
@@ -284,11 +298,11 @@ public class Equip : DialogCommandBase<EquipDialog>
     {
         dialog.CurrentPage++;
         var menu = GetMenu(dialog);
-        var embed = GetDisplayEmbed(dialog);
+        var embed = GetDisplayEmbeds(dialog);
 
         await component.UpdateAsync(properties =>
         {
-            properties.Embed = embed;
+            properties.Embeds = embed;
             properties.Components = menu;
         });
     }

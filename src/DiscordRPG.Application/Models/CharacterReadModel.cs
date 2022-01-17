@@ -187,4 +187,10 @@ public class CharacterReadModel : IMongoDbReadModel,
 
     public string Id { get; private set; }
     public long? Version { get; set; }
+
+    public IEnumerable<StatusEffect> GetCurrentStatusEffects() =>
+        Inventory.Where(i => i.IsEquipped && i.ItemEffect is not null).Select(i => i.ItemEffect);
+
+    public float GetTotalStatusModifier(StatusEffectType type) =>
+        GetCurrentStatusEffects().Where(s => s.StatusEffectType == type).Sum(s => s.Modifier);
 }

@@ -6,6 +6,7 @@ using DiscordRPG.Domain.Aggregates.Guild;
 using DiscordRPG.Domain.Aggregates.Guild.Events;
 using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
 using DiscordRPG.Domain.Entities.Character.Commands;
+using DiscordRPG.Domain.Entities.Character.Enums;
 using DiscordRPG.Domain.Services;
 using EventFlow;
 using EventFlow.Aggregates;
@@ -104,14 +105,19 @@ public class
         var invCmd = new ChangeInventoryCommand(domainEvent.AggregateIdentity, ev.CharacterId, newItems, context);
         await bus.PublishAsync(invCmd, cancellationToken);
 
-        var newLevel = character.Value.Level.Add(ev.AdventureResult.Experience, experienceCurve);
+        var modifier = character.Value.GetTotalStatusModifier(StatusEffectType.ExpBoost);
+        var totalExp = (ulong) (ev.AdventureResult.Experience + ev.AdventureResult.Experience * modifier);
+        logger.Context(context).Verbose("Increased exp from {Base} to {Total} with a {Mod} modifier",
+            ev.AdventureResult.Experience, totalExp, modifier);
+
+        var newLevel = character.Value.Level.Add(totalExp, experienceCurve);
         var expCommand = new GainLevelCommand(domainEvent.AggregateIdentity, ev.CharacterId, newLevel, context);
         await bus.PublishAsync(expCommand, cancellationToken);
 
         var sb = new StringBuilder();
         sb.AppendLine(
             $"<@{character.Value.Id}> You've completed the level {dungeon.Value.Level.Value} dungeon **{dungeon.Value.Name.Value}**!");
-        sb.Append($"You gained {ev.AdventureResult.Experience} exp");
+        sb.Append($"You gained {totalExp} exp");
         if (ev.AdventureResult.Experience >= character.Value.Level.RequiredExp)
             sb.Append($" and leveled up to level {character.Value.Level.CurrentLevel + 1}");
         sb.AppendLine("!");
