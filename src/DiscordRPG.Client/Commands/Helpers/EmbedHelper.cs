@@ -121,6 +121,17 @@ public static class EmbedHelper
             .Build();
     }
 
+    public static Embed RecipeAsEmbed(Recipe recipe)
+    {
+        var builder = new EmbedBuilder().WithTitle(recipe.Name).WithDescription(recipe.Description);
+        foreach (var ingredient in recipe.Ingredients)
+        {
+            builder.AddField($"{ingredient.Rarity} {ingredient.Name} Lvl. {ingredient.Level}", ingredient.Amount);
+        }
+
+        return builder.Build();
+    }
+
     private static string CompareValue(int value1, int value2)
     {
         return value1 > value2 ? $"-{value1 - value2}" : $"+{value2 - value1}";

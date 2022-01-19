@@ -1,57 +1,46 @@
-﻿namespace DiscordRPG.Application.Generators;
+﻿/*using DiscordRPG.Application.Data;
+using DiscordRPG.Application.Data.Models;
+using DiscordRPG.Domain.DomainServices.Generators;
+using DiscordRPG.Domain.Entities.Character.Enums;
+using DiscordRPG.Domain.Enums;
+
+namespace DiscordRPG.Application.Generators;
 
 public class RecipeGenerator : GeneratorBase
 {
-    /*private readonly IItemGenerator itemGenerator;
-    private readonly INameGenerator nameGenerator;
+    private readonly IItemGenerator itemGenerator;
+    private readonly NameGenerator nameGenerator;
 
-    public RecipeGenerator(IItemGenerator itemGenerator, INameGenerator nameGenerator)
+    public RecipeGenerator(IItemGenerator itemGenerator, NameGenerator nameGenerator)
     {
         this.itemGenerator = itemGenerator;
         this.nameGenerator = nameGenerator;
     }
 
-    public IEnumerable<Recipe> GetAllItemRecipes(uint maxLevel)
+    public IEnumerable<Recipe> GetAllItemRecipes(RecipeCategory category, int maxLevel)
     {
-        foreach (var rarity in Enum.GetValues<Rarity>())
+        return GetHealthPotionRecipes(maxLevel);
+    }
+    
+    private IEnumerable<Recipe> GetHealthPotionRecipes(int level)
+    {
+        for (uint i = 1; i <= level; i = (i + 10).RoundOff())
         {
-            if (rarity == Rarity.Divine)
-                yield break;
-
-            for (uint level = 1; level <= maxLevel; level = (level + 10).RoundOff())
+            foreach (var rarity in Enum.GetValues<Rarity>())
             {
-                yield return new Recipe(rarity, level, nameGenerator.GenerateHealthPotionName(rarity, level),
-                    $"A potion that can restore  {Math.Round(level * 20 * (1 + (int) rarity * 0.2f))} health points",
-                    itemGenerator.GetHealthPotion(rarity, level),
-                    new List<(string ingredientName, int amount)>()
-                    {
-                        (Items.ItemNamesByRarity[rarity][2].name, 5),
-                        (Items.ItemNamesByRarity[rarity][3].name, 5)
-                    });
+                if (rarity == Rarity.Divine)
+                    yield break;
+
+                var name = nameGenerator.GenerateHealthPotionName(rarity, i);
+                yield return new Recipe(rarity, i, name, RecipeCategory.HealthPotion, new List<(Rarity, string, uint, int)>
+                {
+                    new (rarity,Items.ItemNamesByRarity[rarity][2].name, i, 5),
+                    new (rarity,Items.ItemNamesByRarity[rarity][3].name, i, 5)
+                });
             }
         }
     }
 
-    public IEnumerable<Recipe> GetAllEquipmentRecipes(uint maxLevel)
-    {
-        foreach (var rarity in Enum.GetValues<Rarity>())
-        {
-            if (rarity == Rarity.Divine)
-                yield break;
+   
+}*/
 
-            foreach (var category in Enum.GetValues<EquipmentCategory>())
-            {
-                for (uint i = 1; i <= maxLevel; i++)
-                {
-                    yield return new Recipe(rarity, i,
-                        $"[{rarity.ToString()}] Crafted {category.ToString()} (Lvl. {i})", "Crafted Equipment", null,
-                        new List<(string ingredientName, int amount)>()
-                        {
-                            (Items.ItemNamesByRarity[rarity][0].name, 10),
-                            (Items.ItemNamesByRarity[rarity][1].name, 10)
-                        }, category);
-                }
-            }
-        }
-    }*/
-}

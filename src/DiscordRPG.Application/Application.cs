@@ -28,7 +28,7 @@ public static class Application
             .AddTransient<IItemGenerator, ItemGenerator>()
             .AddTransient<NameGenerator>()
             .AddTransient<RarityGenerator>()
-            .AddTransient<RecipeGenerator>()
+            //.AddTransient<RecipeGenerator>()
             .AddTransient<IWorthCalculator, WorthCalculator>()
             .AddTransient<IRandomizer, Randomizer>()
             .AddTransient<IReadModelLocator, ReadModelLocator>()

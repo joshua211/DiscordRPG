@@ -6,7 +6,8 @@ namespace DiscordRPG.Domain.Entities.Character;
 public class Character : Entity<CharacterId>
 {
     public Character(CharacterId id, CharacterClass @class, CharacterRace race, CharacterName name,
-        Level characterLevel, List<Item> inventory, List<Wound> wounds, Money money) : base(id)
+        Level characterLevel, List<Item> inventory, List<Wound> wounds, Money money,
+        List<Recipe> knownRecipes) : base(id)
     {
         Class = @class;
         Race = race;
@@ -15,6 +16,7 @@ public class Character : Entity<CharacterId>
         Inventory = inventory;
         Wounds = wounds;
         Money = money;
+        KnownRecipes = knownRecipes;
     }
 
     public CharacterClass Class { get; private set; }
@@ -24,6 +26,7 @@ public class Character : Entity<CharacterId>
     public Money Money { get; private set; }
     public List<Item> Inventory { get; private set; }
     public List<Wound> Wounds { get; private set; }
+    public List<Recipe> KnownRecipes { get; private set; }
 
     public void ChangeInventory(List<Item> aggregateEventNewInventory)
     {
@@ -58,5 +61,10 @@ public class Character : Entity<CharacterId>
     public void ChangeWounds(List<Wound> aggregateEventNewWounds)
     {
         Wounds = aggregateEventNewWounds;
+    }
+
+    public void LearnRecipe(Recipe recipe)
+    {
+        KnownRecipes.Add(recipe);
     }
 }

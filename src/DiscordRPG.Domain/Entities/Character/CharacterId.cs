@@ -11,8 +11,16 @@ public class CharacterId : IIdentity
 
     public string Value { get; }
 
-    /*public override string ToString()
+    public override string ToString()
     {
         return Value;
-    }*/
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is CharacterId id)
+            return id.Value == Value;
+
+        return false;
+    }
 }

@@ -7,6 +7,7 @@ using DiscordRPG.Domain.DomainServices.Generators;
 using DiscordRPG.Domain.Entities.Activity.Enums;
 using DiscordRPG.Domain.Entities.Character;
 using DiscordRPG.Domain.Entities.Character.Commands;
+using DiscordRPG.Domain.Entities.Character.Enums;
 using DiscordRPG.Domain.Entities.Character.ValueObjects;
 using DiscordRPG.Domain.Enums;
 using DiscordRPG.Domain.Services;
@@ -44,7 +45,16 @@ public class CharacterService : ICharacterService
             {
                 Equip.StarterArmor, Equip.StarterLeg, Equip.StarterWeapon, Equip.StarterAmulet,
                 itemGenerator.GetHealthPotion(Rarity.Common, 1)
-            }, new List<Wound>(), new Money(10));
+            }, new List<Wound>(), new Money(10), new List<Recipe>
+            {
+                new Recipe(RecipeId.New, "Health Potion I", "test", Rarity.Common, 1, RecipeCategory.HealthPotion,
+                    new List<Ingredient>
+                    {
+                        new(Rarity.Common, Items.ItemNamesByRarity[Rarity.Common][2].name, 1, 5),
+                        new(Rarity.Common, Items.ItemNamesByRarity[Rarity.Common][3].name, 1, 5)
+                    })
+            });
+
         var cmd = new CreateCharacterCommand(guildId, character, context);
         var result = await bus.PublishAsync(cmd, cancellationToken);
 
@@ -110,6 +120,23 @@ public class CharacterService : ICharacterService
         {
             logger.Context(context).Error("Failed to unequip item");
             return Result.Failure("Failed to unequip item!");
+        }
+
+        return Result.Success();
+    }
+
+    public async Task<Result> CraftItemAsync(GuildId guildId, CharacterId characterId, RecipeId recipeId,
+        TransactionContext context,
+        CancellationToken cancellationToken = default)
+    {
+        logger.Context(context).Information("Crafting recipe {RecId} for character {CharId}", recipeId, characterId);
+        var cmd = new CraftItemCommand(guildId, characterId, recipeId, context);
+        var result = await bus.PublishAsync(cmd, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            logger.Context(context).Error("Failed to craft item");
+            return Result.Failure("Failed to craft item!");
         }
 
         return Result.Success();

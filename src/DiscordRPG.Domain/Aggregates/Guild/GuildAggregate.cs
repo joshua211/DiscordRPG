@@ -140,4 +140,9 @@ public class GuildAggregate : AggregateRoot<GuildAggregate, GuildId>
     {
         Emit(new WoundsChanged(characterId, wounds), new Metadata(context.AsMetadata()));
     }
+
+    public void LearnRecipe(CharacterId id, Recipe recipe, TransactionContext context)
+    {
+        Emit(new RecipeLearned(id, recipe), new Metadata(context.AsMetadata()));
+    }
 }

@@ -16,7 +16,8 @@ public class CharacterReadModel : IMongoDbReadModel,
     IAmReadModelFor<GuildAggregate, GuildId, ItemEquipped>,
     IAmReadModelFor<GuildAggregate, GuildId, ItemUnequipped>,
     IAmReadModelFor<GuildAggregate, GuildId, LevelGained>,
-    IAmReadModelFor<GuildAggregate, GuildId, WoundsChanged>
+    IAmReadModelFor<GuildAggregate, GuildId, WoundsChanged>,
+    IAmReadModelFor<GuildAggregate, GuildId, RecipeLearned>
 {
     public CharacterClass Class { get; set; }
     public CharacterRace Race { get; set; }
@@ -25,6 +26,7 @@ public class CharacterReadModel : IMongoDbReadModel,
     public Money Money { get; set; }
     public List<Item> Inventory { get; set; }
     public List<Wound> Wounds { get; set; }
+    public List<Recipe> KnownRecipes { get; private set; }
 
     public Item? Weapon => Inventory.FirstOrDefault(i => i.IsEquipped && i.Position == EquipmentPosition.Weapon);
     public Item? Helmet => Inventory.FirstOrDefault(i => i.IsEquipped && i.Position == EquipmentPosition.Helmet);
@@ -136,7 +138,6 @@ public class CharacterReadModel : IMongoDbReadModel,
     {
         var character = domainEvent.AggregateEvent.Character;
         Id = character.Id.Value;
-        //Id = domainEvent.AggregateIdentity.Value;
         Name = character.Name;
         Class = character.Class;
         Race = character.Race;
@@ -144,6 +145,7 @@ public class CharacterReadModel : IMongoDbReadModel,
         Money = character.Money;
         Inventory = character.Inventory;
         Wounds = character.Wounds;
+        KnownRecipes = character.KnownRecipes;
     }
 
     public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, CharacterDied> domainEvent)
@@ -180,6 +182,11 @@ public class CharacterReadModel : IMongoDbReadModel,
         Level = domainEvent.AggregateEvent.NewLevel;
     }
 
+    public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, RecipeLearned> domainEvent)
+    {
+        KnownRecipes.Add(domainEvent.AggregateEvent.Recipe);
+    }
+
     public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, WoundsChanged> domainEvent)
     {
         Wounds = domainEvent.AggregateEvent.NewWounds;
@@ -193,4 +200,13 @@ public class CharacterReadModel : IMongoDbReadModel,
 
     public float GetTotalStatusModifier(StatusEffectType type) =>
         GetCurrentStatusEffects().Where(s => s.StatusEffectType == type).Sum(s => s.Modifier);
+
+    public IEnumerable<Recipe> GetAvailableRecipes()
+    {
+        foreach (var recipe in KnownRecipes)
+        {
+            if (recipe.IsCraftableWith(Inventory))
+                yield return recipe;
+        }
+    }
 }

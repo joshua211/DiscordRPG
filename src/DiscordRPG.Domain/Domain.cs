@@ -12,6 +12,7 @@ public static class Domain
     {
         return serviceCollection
             .AddTransient<IExperienceCurve, ExperienceCurve>()
+            .AddTransient<ICraftingService, CraftingService>()
             .AddTransient<IAdventureResultService, AdventureResultService>();
     }
 
