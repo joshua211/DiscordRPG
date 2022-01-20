@@ -111,7 +111,8 @@ public class
             ev.AdventureResult.Experience, totalExp, modifier);
 
         var newLevel = character.Value.Level.Add(totalExp, experienceCurve);
-        var expCommand = new GainLevelCommand(domainEvent.AggregateIdentity, ev.CharacterId, newLevel, context);
+        var expCommand = new GainLevelCommand(domainEvent.AggregateIdentity, ev.CharacterId, newLevel,
+            character.Value.Level, context);
         await bus.PublishAsync(expCommand, cancellationToken);
 
         var sb = new StringBuilder();

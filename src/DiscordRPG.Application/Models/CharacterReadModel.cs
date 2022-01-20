@@ -17,7 +17,7 @@ public class CharacterReadModel : IMongoDbReadModel,
     IAmReadModelFor<GuildAggregate, GuildId, ItemUnequipped>,
     IAmReadModelFor<GuildAggregate, GuildId, LevelGained>,
     IAmReadModelFor<GuildAggregate, GuildId, WoundsChanged>,
-    IAmReadModelFor<GuildAggregate, GuildId, RecipeLearned>
+    IAmReadModelFor<GuildAggregate, GuildId, RecipesLearned>
 {
     public CharacterClass Class { get; set; }
     public CharacterRace Race { get; set; }
@@ -182,9 +182,9 @@ public class CharacterReadModel : IMongoDbReadModel,
         Level = domainEvent.AggregateEvent.NewLevel;
     }
 
-    public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, RecipeLearned> domainEvent)
+    public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, RecipesLearned> domainEvent)
     {
-        KnownRecipes.Add(domainEvent.AggregateEvent.Recipe);
+        KnownRecipes.AddRange(domainEvent.AggregateEvent.Recipes);
     }
 
     public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, WoundsChanged> domainEvent)

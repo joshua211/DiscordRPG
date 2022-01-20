@@ -27,7 +27,7 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
     IApply<LevelGained>,
     IApply<RestComplete>,
     IApply<WoundsChanged>,
-    IApply<RecipeLearned>,
+    IApply<RecipesLearned>,
     IApply<DungeonAdded>,
     IApply<DungeonDeleted>,
     IApply<ExplorationsDecreased>,
@@ -143,10 +143,10 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
         character.SetLevel(aggregateEvent.NewLevel);
     }
 
-    public void Apply(RecipeLearned aggregateEvent)
+    public void Apply(RecipesLearned aggregateEvent)
     {
         var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
-        character.LearnRecipe(aggregateEvent.Recipe);
+        character.LearnRecipes(aggregateEvent.Recipes);
     }
 
     public void Apply(RestComplete aggregateEvent)

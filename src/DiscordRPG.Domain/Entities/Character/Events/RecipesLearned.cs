@@ -5,14 +5,14 @@ using EventFlow.Aggregates;
 
 namespace DiscordRPG.Domain.Entities.Character.Events;
 
-public class RecipeLearned : AggregateEvent<GuildAggregate, GuildId>, IEntityEvent<CharacterId>
+public class RecipesLearned : AggregateEvent<GuildAggregate, GuildId>, IEntityEvent<CharacterId>
 {
-    public RecipeLearned(CharacterId entityId, Recipe recipe)
+    public RecipesLearned(CharacterId entityId, IEnumerable<Recipe> recipes)
     {
         EntityId = entityId;
-        Recipe = recipe;
+        Recipes = recipes;
     }
 
-    public Recipe Recipe { get; private set; }
+    public IEnumerable<Recipe> Recipes { get; private set; }
     public CharacterId EntityId { get; }
 }

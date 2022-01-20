@@ -63,8 +63,8 @@ public class Character : Entity<CharacterId>
         Wounds = aggregateEventNewWounds;
     }
 
-    public void LearnRecipe(Recipe recipe)
+    public void LearnRecipes(IEnumerable<Recipe> recipes)
     {
-        KnownRecipes.Add(recipe);
+        KnownRecipes.AddRange(recipes);
     }
 }

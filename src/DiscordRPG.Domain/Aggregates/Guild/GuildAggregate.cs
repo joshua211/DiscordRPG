@@ -82,9 +82,10 @@ public class GuildAggregate : AggregateRoot<GuildAggregate, GuildId>
         Emit(new ItemUnequipped(commandItemId, commandCharacterId), new Metadata(context.AsMetadata()));
     }
 
-    public void SetCharacterLevel(CharacterId commandCharacterId, Level commandLevel, TransactionContext context)
+    public void SetCharacterLevel(CharacterId commandCharacterId, Level newLevel, Level oldLevel,
+        TransactionContext context)
     {
-        Emit(new LevelGained(commandCharacterId, commandLevel), new Metadata(context.AsMetadata()));
+        Emit(new LevelGained(commandCharacterId, newLevel, oldLevel), new Metadata(context.AsMetadata()));
     }
 
     public void CompleteCharacterRest(CharacterId commandCharacterId, TransactionContext context)
@@ -141,8 +142,8 @@ public class GuildAggregate : AggregateRoot<GuildAggregate, GuildId>
         Emit(new WoundsChanged(characterId, wounds), new Metadata(context.AsMetadata()));
     }
 
-    public void LearnRecipe(CharacterId id, Recipe recipe, TransactionContext context)
+    public void LearnRecipes(CharacterId id, IEnumerable<Recipe> recipes, TransactionContext context)
     {
-        Emit(new RecipeLearned(id, recipe), new Metadata(context.AsMetadata()));
+        Emit(new RecipesLearned(id, recipes), new Metadata(context.AsMetadata()));
     }
 }
