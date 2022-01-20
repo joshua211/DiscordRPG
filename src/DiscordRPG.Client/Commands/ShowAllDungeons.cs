@@ -22,7 +22,7 @@ public class ShowAllDungeons : DialogCommandBase<ShowAllDungeonsDialog>
     {
     }
 
-    public override string CommandName => "all-dungeons";
+    public override string CommandName => "dungeonlist";
 
     public override async Task InstallAsync(SocketGuild guild)
     {
@@ -54,7 +54,8 @@ public class ShowAllDungeons : DialogCommandBase<ShowAllDungeonsDialog>
         }
 
         var sb = new StringBuilder();
-        foreach (var dungeon in allDungeonsResult.Value)
+        foreach (var dungeon in allDungeonsResult.Value.OrderByDescending(d => d.Level.Value)
+                     .ThenByDescending(d => d.Rarity))
         {
             sb.AppendLine(
                 $"[{dungeon.Rarity}] Lvl.{dungeon.Level} <#{dungeon.Id}> ({dungeon.Explorations})");
