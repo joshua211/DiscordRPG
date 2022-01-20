@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Client.Commands.Base;
+using DiscordRPG.Client.Commands.Helpers;
 using DiscordRPG.Common.Extensions;
 using Serilog;
 
@@ -38,8 +39,7 @@ public class DungeonInfo : CommandBase
 
     protected override async Task HandleAsync(SocketSlashCommand command, GuildCommandContext context)
     {
-        //var embed = EmbedHelper.DungeonAsEmbed(context.Dungeon);
-        var embed = new EmbedBuilder().WithDescription("Dungeon").Build();
+        var embed = EmbedHelper.DungeonAsEmbed(context.Dungeon);
         await command.RespondAsync(embed: embed, ephemeral: true);
     }
 }

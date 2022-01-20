@@ -84,6 +84,8 @@ public class ActivityService : IActivityService
         CancellationToken token = default)
     {
         logger.Context(context).Information("Stopping Activity with ID {Id}", activityId.Value);
+        var activity = (await GetActivityAsync(activityId, context, token)).Value;
+
         var cmd = new CancelActivityCommand(guildId, activityId, context);
         var result = await bus.PublishAsync(cmd, token);
 
@@ -92,6 +94,8 @@ public class ActivityService : IActivityService
             logger.Context(context).Error("Failed to stop activity");
             return Result.Failure("Failed to stop activity");
         }
+
+        BackgroundJob.Delete(activity.JobId.Value);
 
         return Result.Success();
     }

@@ -1,14 +1,15 @@
-﻿/*using Discord;
+﻿using Discord;
 using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Application.Models;
 using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Common.Extensions;
-using DiscordRPG.Core.Entities;
-using DiscordRPG.Core.ValueObjects;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Entities.Activity;
 using Serilog;
-using ActivityType = DiscordRPG.Core.Enums.ActivityType;
+using ActivityType = DiscordRPG.Domain.Entities.Activity.Enums.ActivityType;
 
 namespace DiscordRPG.Client.Commands;
 
@@ -47,9 +48,9 @@ public class ShowActivity : DialogCommandBase<ShowActivityDialog>
     {
         dialog.Activity = context.Activity;
         dialog.Character = context.Character;
+        dialog.GuildId = new GuildId(context.Guild.Id);
 
-
-        var embed = await GetActivityAsEmbedAsync(dialog.Activity);
+        var embed = await GetActivityAsEmbedAsync(dialog.Activity, dialog);
 
         var component = new ComponentBuilder()
             .WithButton("Stop activity", CommandName + ".stop", ButtonStyle.Danger)
@@ -59,45 +60,44 @@ public class ShowActivity : DialogCommandBase<ShowActivityDialog>
         await command.RespondAsync(embed: embed, component: component, ephemeral: true);
     }
 
-    private async Task<Embed> GetActivityAsEmbedAsync(Activity dialogActivity)
+    private async Task<Embed> GetActivityAsEmbedAsync(ActivityReadModel activity, ShowActivityDialog dialog)
     {
-        var timeLeft = dialogActivity.StartTime +
-                       TimeSpan.FromMinutes((int) dialogActivity.Duration) -
+        var timeLeft = activity.StartTime +
+                       TimeSpan.FromMinutes((int) activity.Duration) -
                        DateTime.UtcNow;
 
-        switch (dialogActivity.Type)
+        switch (activity.Type)
         {
             case ActivityType.Dungeon:
                 var dungeon =
-                    await dungeonService.GetDungeonFromChannelIdAsync(
-                        new DiscordId(dialogActivity.Data.ThreadId.ToString()));
-                var description = "You are currently explore a dungeon!";
+                    await dungeonService.GetDungeonAsync(activity.ActivityData.DungeonId, dialog.Context);
+                var description = "You are currently exploring a dungeon!";
                 if (dungeon.WasSuccessful)
                     description =
-                        $"You are currently exploring the {dungeon.Value.Rarity.ToString()} dungeon {dungeon.Value.Name} (Lvl: {dungeon.Value.DungeonLevel})";
+                        $"You are currently exploring the {dungeon.Value.Rarity.ToString()} dungeon {dungeon.Value.Name} (Lvl: {dungeon.Value.Level})";
 
                 return new EmbedBuilder()
                     .WithTitle("Exploring a dungeon")
                     .WithDescription(description)
-                    .AddField("Start Time", dialogActivity.StartTime.ToString("dd.MM.yyyy HH:mm:ss"))
+                    .AddField("Start Time", activity.StartTime.ToString("dd.MM.yyyy HH:mm:ss"))
                     .AddField("Minutes left", (int) timeLeft.TotalMinutes).Build();
             case ActivityType.Rest:
                 return new EmbedBuilder()
                     .WithTitle("Resting")
                     .WithDescription("You are currently resting!")
-                    .AddField("Start Time", dialogActivity.StartTime.ToString("dd.MM.yyyy HH:mm:ss"))
+                    .AddField("Start Time", activity.StartTime.ToString("dd.MM.yyyy HH:mm:ss"))
                     .AddField("Minutes left", (int) timeLeft.TotalMinutes).Build();
             case ActivityType.SearchDungeon:
                 return new EmbedBuilder()
                     .WithTitle("Searching for a dungeon")
                     .WithDescription("You are currently searching for a dungeon")
-                    .AddField("Start Time", dialogActivity.StartTime.ToString("dd.MM.yyyy HH:mm:ss"))
+                    .AddField("Start Time", activity.StartTime.ToString("dd.MM.yyyy HH:mm:ss"))
                     .AddField("Minutes left", (int) timeLeft.TotalMinutes).Build();
             default:
                 return new EmbedBuilder()
                     .WithTitle("???")
                     .WithDescription("???")
-                    .AddField("Start Time", dialogActivity.StartTime.ToString("dd.MM.yyyy HH:mm:ss"))
+                    .AddField("Start Time", activity.StartTime.ToString("dd.MM.yyyy HH:mm:ss"))
                     .AddField("Minutes left", (int) timeLeft.TotalMinutes).Build();
         }
     }
@@ -105,7 +105,7 @@ public class ShowActivity : DialogCommandBase<ShowActivityDialog>
     [Handler("accept-prompt")]
     public async Task HandleAcceptPrompt(SocketMessageComponent component, ShowActivityDialog dialog)
     {
-        await activityService.StopActivityAsync(dialog.Activity);
+        await activityService.StopActivityAsync(dialog.GuildId, new ActivityId(dialog.Activity.Id), dialog.Context);
         await component.UpdateAsync(properties =>
         {
             properties.Components = null;
@@ -128,5 +128,4 @@ public class ShowActivity : DialogCommandBase<ShowActivityDialog>
             properties.Components = msgComponent;
         });
     }
-}*/
-
+}
