@@ -99,10 +99,13 @@ public class DungeonService : IDungeonService
         return Result.Success();
     }
 
-    public Task<Result<IEnumerable<DungeonReadModel>>> GetAllDungeonsAsync(TransactionContext parentContext,
-        CancellationToken token = default)
+    public async Task<Result<IEnumerable<DungeonReadModel>>> GetAllDungeonsAsync(GuildId guildId,
+        TransactionContext context, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        var query = new GetAllDungeonsQuery(guildId);
+        var result = await processor.ProcessAsync(query, token);
+
+        return Result<IEnumerable<DungeonReadModel>>.Success(result);
     }
 
     public async Task<Result> DeleteDungeonAsync(GuildId guildId, DungeonId dungeonId, TransactionContext context,

@@ -12,6 +12,7 @@ public class DungeonReadModel : IMongoDbReadModel, IAmReadModelFor<GuildAggregat
     IAmReadModelFor<GuildAggregate, GuildId, DungeonDeleted>,
     IAmReadModelFor<GuildAggregate, GuildId, ExplorationsDecreased>
 {
+    public string GuildId { get; private set; }
     public DungeonName Name { get; set; }
     public Explorations Explorations { get; set; }
     public DungeonLevel Level { get; set; }
@@ -22,6 +23,7 @@ public class DungeonReadModel : IMongoDbReadModel, IAmReadModelFor<GuildAggregat
     {
         var dungeon = domainEvent.AggregateEvent.Dungeon;
         Id = dungeon.Id.Value;
+        GuildId = domainEvent.AggregateIdentity.Value;
         Name = dungeon.Name;
         Explorations = dungeon.Explorations;
         Level = dungeon.Level;

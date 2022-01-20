@@ -23,7 +23,7 @@ public interface IDungeonService
     Task<Result> DecreaseExplorationsAsync(GuildId guildId, DungeonId dungeonId, TransactionContext parentContext,
         CancellationToken token = default);
 
-    Task<Result<IEnumerable<DungeonReadModel>>> GetAllDungeonsAsync(TransactionContext parentContext,
+    Task<Result<IEnumerable<DungeonReadModel>>> GetAllDungeonsAsync(GuildId guildId, TransactionContext context,
         CancellationToken token = default);
 
     Task<Result> DeleteDungeonAsync(GuildId guildId, DungeonId dungeonId, TransactionContext parentContext,

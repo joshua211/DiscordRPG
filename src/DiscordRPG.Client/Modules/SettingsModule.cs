@@ -26,6 +26,7 @@ public class SettingsModule : ModuleBase<SocketCommandContext>
     public async Task ForceReadModels()
     {
         await populator.PopulateAsync<CharacterReadModel>(CancellationToken.None);
+        await populator.PopulateAsync<DungeonReadModel>(CancellationToken.None);
     }
 
     [Command("delete")]
