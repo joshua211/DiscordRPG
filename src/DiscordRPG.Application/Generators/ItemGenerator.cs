@@ -143,7 +143,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
 
         return new Item(ItemId.New, name,
             "", 1, rarity,
-            category, position, ItemType.Weapon, CharacterAttribute.Vitality,
+            category, position, ItemType.Equipment, CharacterAttribute.Vitality,
             DamageType.Physical, null, totalWorth, level, armor, marmor, s, v, a, i, l, 0, false, UsageEffect.None);
     }
 
