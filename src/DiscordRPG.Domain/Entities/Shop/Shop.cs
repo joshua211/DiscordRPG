@@ -17,8 +17,14 @@ public class Shop : Entity<ShopId>
 
     public void UpdateInventoryForCharacter(CharacterId characterId, List<Item> newItems)
     {
-        var charInventory = Inventory.First(i => i.CharacterId == characterId);
-        Inventory[Inventory.IndexOf(charInventory)] = charInventory.UpdateItems(newItems);
+        var charInventory = Inventory.FirstOrDefault(i => Equals(i.CharacterId, characterId));
+        if (charInventory is null)
+        {
+            charInventory = new SalesInventory(characterId, newItems);
+            Inventory.Add(charInventory);
+        }
+        else
+            Inventory[Inventory.IndexOf(charInventory)] = charInventory.UpdateItems(newItems);
     }
 
     public void RemoveInventory(CharacterId characterId)

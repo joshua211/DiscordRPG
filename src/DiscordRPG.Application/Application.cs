@@ -20,6 +20,7 @@ public static class Application
             .AddTransient<IActivityService, ActivityService>()
             .AddTransient<IDungeonService, DungeonService>()
             .AddTransient<IGuildService, GuildService>()
+            .AddTransient<IShopService, ShopService>()
             .AddTransient<IChannelManager, ChannelManager>()
             .AddTransient<AspectGenerator>()
             .AddTransient<DungeonGenerator>()

@@ -32,6 +32,9 @@ public class SettingsModule : ModuleBase<SocketCommandContext>
     {
         await populator.PopulateAsync<CharacterReadModel>(CancellationToken.None);
         await populator.PopulateAsync<DungeonReadModel>(CancellationToken.None);
+        await populator.PopulateAsync<ShopReadModel>(CancellationToken.None);
+        await populator.PopulateAsync<GuildReadModel>(CancellationToken.None);
+        await populator.PopulateAsync<ActivityReadModel>(CancellationToken.None);
     }
 
     [Command("uninstallcommands")]
