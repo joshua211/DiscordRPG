@@ -50,6 +50,8 @@ public class ActivityService : IActivityService
         if (!result.IsSuccess)
         {
             logger.Context(context).Error("Failed to queue activity with ID {Id} and JobId {JobId}", id.Value, jobId);
+            BackgroundJob.Delete(jobId);
+
             return Result.Failure("Failed to queue activity");
         }
 

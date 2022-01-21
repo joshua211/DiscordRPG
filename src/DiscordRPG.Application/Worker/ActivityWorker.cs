@@ -94,9 +94,9 @@ public class ActivityWorker
         }
 
         var embed = new EmbedBuilder().WithTitle("Rest complete")
-            .WithDescription($"<@{activity.ActivityData.UserId}> you are done resting!").Build();
+            .WithDescription("You are done resting!").Build();
 
-        await channelManager.SendToInn(activity.ActivityData.GuildId, String.Empty, context, embed);
+        await channelManager.SendToInn(new GuildId(activity.GuildId), $"<@{activity.CharacterId}>", context, embed);
     }
 
     private async Task ExecuteEnterDungeon(ActivityReadModel activity, TransactionContext context)

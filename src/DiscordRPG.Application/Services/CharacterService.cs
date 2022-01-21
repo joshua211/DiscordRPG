@@ -78,11 +78,49 @@ public class CharacterService : ICharacterService
         return Result<CharacterReadModel>.Success(result);
     }
 
-    public Task<Result> RestoreWoundsFromRestAsync(GuildId guildId, CharacterId charId,
+    public async Task<Result> RestoreWoundsFromRestAsync(GuildId guildId, CharacterId charId,
         ActivityDuration activityDuration, TransactionContext context,
         CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        var percent = activityDuration switch
+        {
+            ActivityDuration.Quick => 0.05f,
+            ActivityDuration.Short => 0.25f,
+            ActivityDuration.Medium => 0.5f,
+            ActivityDuration.Long => 0.75f
+        };
+
+        var character = (await GetCharacterAsync(charId, context, token)).Value;
+        var hpToHeal = (int) (character.MaxHealth * percent);
+        var newWounds = character.Wounds.ToList();
+        while (hpToHeal > 0)
+        {
+            var wound = newWounds.LastOrDefault();
+            if (wound is null)
+                break;
+
+            if (wound.DamageValue <= hpToHeal)
+                newWounds.Remove(wound);
+            else
+            {
+                newWounds.Remove(wound);
+                newWounds.Add(wound.DecreaseDamage(hpToHeal));
+            }
+
+            hpToHeal -= wound.DamageValue;
+        }
+
+        var cmd = new ChangeWoundsCommand(guildId, charId, newWounds, context);
+        var result = await bus.PublishAsync(cmd, token);
+
+        if (!result.IsSuccess)
+        {
+            logger.Context(context).Error("Failed to restore wounds");
+
+            return Result.Failure("Failed to restore wounds");
+        }
+
+        return Result.Success();
     }
 
     public Task<Result<IEnumerable<CharacterReadModel>>> GetAllCharactersInGuild(GuildId guildId,

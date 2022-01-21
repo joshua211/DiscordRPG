@@ -16,10 +16,15 @@ public class Wound : ValueObject
     }
 
     public string Description { get; private set; }
-    public int DamageValue { get; set; }
+    public int DamageValue { get; private set; }
 
     public override string ToString()
     {
         return $"{Description} (-{DamageValue})";
+    }
+
+    public Wound DecreaseDamage(int decreaseAmount)
+    {
+        return new Wound(Description, DamageValue - decreaseAmount);
     }
 }

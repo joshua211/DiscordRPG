@@ -1,6 +1,21 @@
-﻿namespace DiscordRPG.Client.Commands;
+﻿using Discord;
+using Discord.WebSocket;
+using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Client.Commands.Attributes;
+using DiscordRPG.Client.Commands.Base;
+using DiscordRPG.Client.Commands.Helpers;
+using DiscordRPG.Client.Dialogs;
+using DiscordRPG.Client.Handlers;
+using DiscordRPG.Common.Extensions;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Entities.Activity.Enums;
+using DiscordRPG.Domain.Entities.Character;
+using Serilog;
+using ActivityType = DiscordRPG.Domain.Entities.Activity.Enums.ActivityType;
 
-/*[RequireCharacter]
+namespace DiscordRPG.Client.Commands;
+
+[RequireCharacter]
 [RequireNoCurrentActivity]
 [RequireChannelName(ServerHandler.Inn)]
 [RequireGuild]
@@ -36,8 +51,8 @@ public class Rest : DialogCommandBase<RestDialog>
     protected override async Task HandleDialogAsync(SocketSlashCommand command, GuildCommandContext context,
         RestDialog dialog)
     {
-        dialog.CharId = context.Character.ID;
-        dialog.ServerId = context.Guild.ServerId;
+        dialog.CharId = context.Character.Id;
+        dialog.GuildId = context.Guild.Id;
         var value = (long) command.Data.Options.FirstOrDefault().Value;
         var duration = (ActivityDuration) (int) value;
         dialog.Duration = duration;
@@ -56,12 +71,10 @@ public class Rest : DialogCommandBase<RestDialog>
     [Handler("rest")]
     public async Task HandleRest(SocketMessageComponent component, RestDialog dialog)
     {
-        var result = await activityService.QueueActivityAsync(dialog.CharId, dialog.Duration,
-            ActivityType.Rest, new ActivityData
-            {
-                UserId = dialog.UserId,
-                ServerId = dialog.ServerId
-            });
+        var guildId = new GuildId(dialog.GuildId);
+        var charId = new CharacterId(dialog.CharId);
+        var result = await activityService.QueueActivityAsync(guildId, charId, dialog.Duration, ActivityType.Rest, null,
+            dialog.Context, CancellationToken.None);
 
         await component.UpdateAsync(properties =>
         {
@@ -75,4 +88,4 @@ public class Rest : DialogCommandBase<RestDialog>
 
         EndDialog(dialog.UserId);
     }
-}*/
+}
