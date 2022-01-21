@@ -55,3 +55,8 @@ public class CraftingService : ICraftingService
         }
     }
 }
+
+public interface ICraftingService
+{
+    void CraftItem(GuildAggregate aggregate, CharacterId characterId, RecipeId recipeId, TransactionContext context);
+}

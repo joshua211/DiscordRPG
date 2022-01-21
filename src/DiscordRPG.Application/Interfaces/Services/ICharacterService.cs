@@ -32,4 +32,7 @@ public interface ICharacterService
 
     Task<Result> CraftItemAsync(GuildId guildId, CharacterId characterId, RecipeId recipeId, TransactionContext context,
         CancellationToken cancellationToken = default);
+
+    Task<Result> UseItemAsync(GuildId guildId, CharacterId characterId, ItemId itemId, TransactionContext context,
+        CancellationToken cancellationToken = default);
 }

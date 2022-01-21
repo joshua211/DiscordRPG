@@ -1,4 +1,5 @@
 ﻿using DiscordRPG.Application.Models;
+using DiscordRPG.Domain.DomainServices;
 using DiscordRPG.Domain.DomainServices.Generators;
 using DiscordRPG.Domain.Entities.Character;
 using DiscordRPG.Domain.Entities.Character.Enums;
@@ -13,12 +14,15 @@ namespace DiscordRPG.Application.Generators;
 public class ItemGenerator : GeneratorBase, IItemGenerator
 {
     private readonly NameGenerator nameGenerator;
+    private readonly IHealthPotionCalculator potionCalculator;
     private IWorthCalculator worthCalculator;
 
-    public ItemGenerator(NameGenerator nameGenerator, IWorthCalculator worthCalculator)
+    public ItemGenerator(NameGenerator nameGenerator, IWorthCalculator worthCalculator,
+        IHealthPotionCalculator potionCalculator)
     {
         this.nameGenerator = nameGenerator;
         this.worthCalculator = worthCalculator;
+        this.potionCalculator = potionCalculator;
     }
 
     public IEnumerable<Item> GenerateItems(Character characterEntity, Dungeon dungeonEntity)
@@ -81,13 +85,12 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
 
     public Item GetHealthPotion(Rarity rarity, uint level)
     {
-        //TODO heal amount auslagern
         var name = nameGenerator.GenerateHealthPotionName(rarity, level);
         var worth = worthCalculator.CalculateWorth(rarity, level);
         return new Item(ItemId.New, name,
-            $"A potion that can restore {Math.Round(level * 20 * (1 + (int) rarity * 0.2f))} health points", 1, rarity,
+            $"A potion that can restore {potionCalculator.CalculateHealAmount(rarity, level)} health points", 1, rarity,
             EquipmentCategory.Amulet, EquipmentPosition.Amulet, ItemType.Consumable, CharacterAttribute.Intelligence,
-            DamageType.Magical, null, worth, level, 0, 0, 0, 0, 0, 0, 0, 0, false);
+            DamageType.Magical, null, worth, level, 0, 0, 0, 0, 0, 0, 0, 0, false, UsageEffect.RestoreHealth);
     }
 
     public Item GenerateRandomWeapon(Rarity rarity, uint level, Aspect aspect)
@@ -112,7 +115,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         return new Item(ItemId.New, name,
             descr, amount, rarity,
             EquipmentCategory.Amulet, EquipmentPosition.Amulet, ItemType.Item, CharacterAttribute.Vitality,
-            DamageType.Physical, null, worth, level, 0, 0, 0, 0, 0, 0, 0, 0, false);
+            DamageType.Physical, null, worth, level, 0, 0, 0, 0, 0, 0, 0, 0, false, UsageEffect.None);
     }
 
     public Item GenerateEquipment(Rarity rarity, uint level, Aspect aspect, EquipmentCategory category)
@@ -141,7 +144,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         return new Item(ItemId.New, name,
             "", 1, rarity,
             category, position, ItemType.Weapon, CharacterAttribute.Vitality,
-            DamageType.Physical, null, totalWorth, level, armor, marmor, s, v, a, i, l, 0, false);
+            DamageType.Physical, null, totalWorth, level, armor, marmor, s, v, a, i, l, 0, false, UsageEffect.None);
     }
 
     public Item GenerateWeapon(Rarity rarity, uint level, Aspect aspect, EquipmentCategory category)
@@ -160,16 +163,8 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         return new Item(ItemId.New, name,
             "", 1, rarity,
             category, EquipmentPosition.Weapon, ItemType.Weapon, charAttr,
-            dmgType, null, totalWorth, level, 0, 0, s, v, a, i, l, dmgValue, false);
+            dmgType, null, totalWorth, level, 0, 0, s, v, a, i, l, dmgValue, false, UsageEffect.None);
     }
-
-    /*public Item GenerateFromRecipe(Recipe recipe)
-    {
-        var aspect = Aspects.CraftedAspect;
-        return (int) recipe.EquipmentCategory.Value > 4
-            ? GenerateWeapon(recipe.Rarity, recipe.Level, aspect, recipe.EquipmentCategory.Value)
-            : GenerateEquipment(recipe.Rarity, recipe.Level, aspect, recipe.EquipmentCategory.Value);
-    }*/
 
     private int GetDamageValue(int availableWorth) => availableWorth / 3;
 

@@ -13,7 +13,7 @@ public class Item : Entity<ItemId>
         CharacterAttribute damageAttribute, DamageType damageType, StatusEffect itemEffect, int worth, uint level,
         int armor,
         int magicArmor, int strength, int vitality, int agility, int intelligence, int luck, int damageValue,
-        bool isEquipped) : base(id)
+        bool isEquipped, UsageEffect usageEffect) : base(id)
     {
         if (string.IsNullOrEmpty(name))
             DomainError.With(nameof(name));
@@ -39,6 +39,7 @@ public class Item : Entity<ItemId>
         Luck = luck;
         DamageValue = damageValue;
         IsEquipped = isEquipped;
+        UsageEffect = usageEffect;
     }
 
     public string Name { get; private set; }
@@ -51,6 +52,7 @@ public class Item : Entity<ItemId>
     public CharacterAttribute DamageAttribute { get; private set; }
     public DamageType DamageType { get; private set; }
     public StatusEffect ItemEffect { get; private set; }
+    public UsageEffect UsageEffect { get; private set; }
     public int Worth { get; private set; }
     public uint Level { get; private set; }
     public int Armor { get; private set; }

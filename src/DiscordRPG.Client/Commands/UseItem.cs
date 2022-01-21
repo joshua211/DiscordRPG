@@ -1,10 +1,14 @@
-﻿/*using Discord;
+﻿using Discord;
 using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Common.Extensions;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Entities.Character;
+using DiscordRPG.Domain.Entities.Character.Enums;
+using DiscordRPG.Domain.Entities.Character.ValueObjects;
 using Serilog;
 
 namespace DiscordRPG.Client.Commands;
@@ -42,16 +46,17 @@ public class UseItem : DialogCommandBase<UseItemDialog>
         UseItemDialog dialog)
     {
         dialog.Character = context.Character;
+        dialog.GuildId = new GuildId(context.Guild.Id);
         var menu = GetMenu(dialog);
         var embeds = GetDisplayEmbeds(dialog);
 
-        await command.RespondAsync("Choose which item you want to use.", embeds, component: menu, ephemeral: true);
+        await command.RespondAsync(string.Empty, embeds, component: menu, ephemeral: true);
     }
 
     private Embed[] GetDisplayEmbeds(UseItemDialog dialog)
     {
         if (dialog.SelectedItem is null)
-            return null;
+            return new[] {new EmbedBuilder().WithDescription("Choose which item you want to use").Build()};
 
         return new[]
         {
@@ -67,9 +72,13 @@ public class UseItem : DialogCommandBase<UseItemDialog>
     {
         var menuBuilder = new SelectMenuBuilder();
         menuBuilder.WithCustomId(CommandName + ".select-item");
-        foreach (var item in dialog.Character.Inventory.Where(i => i.IsUsable))
+        var pagedConsumables = dialog.Character.Inventory.Where(i => i.ItemType == ItemType.Consumable)
+            .Skip((dialog.CurrentPage - 1) * 10).Take(10).OrderByDescending(i => i.Level)
+            .ThenByDescending(i => i.Rarity);
+
+        foreach (var item in pagedConsumables)
         {
-            menuBuilder.AddOption(item.Name, item.Name, item.Description);
+            menuBuilder.AddOption(item.Name, item.Id.Value, item.Description);
         }
 
         var componentBuilder = new ComponentBuilder();
@@ -86,8 +95,8 @@ public class UseItem : DialogCommandBase<UseItemDialog>
     [Handler("select-item")]
     public async Task HandleSelectItem(SocketMessageComponent component, UseItemDialog dialog)
     {
-        var itemName = component.Data.Values.First();
-        dialog.SelectedItem = dialog.Character.Inventory.FirstOrDefault(i => i.Name == itemName);
+        var id = new ItemId(component.Data.Values.First());
+        dialog.SelectedItem = dialog.Character.Inventory.FirstOrDefault(i => i.Id == id);
 
         var menu = GetMenu(dialog);
         var embeds = GetDisplayEmbeds(dialog);
@@ -99,11 +108,27 @@ public class UseItem : DialogCommandBase<UseItemDialog>
         });
     }
 
+    [Handler("back")]
+    public async Task HandleBack(SocketMessageComponent component, UseItemDialog dialog)
+    {
+        dialog.SelectedItem = null;
+
+        var menu = GetMenu(dialog);
+        var embeds = GetDisplayEmbeds(dialog);
+
+        await component.UpdateAsync(properties =>
+        {
+            properties.Components = menu;
+            properties.Embeds = embeds;
+            properties.Embed = null;
+        });
+    }
+
     [Handler("use")]
     public async Task HandleUseItem(SocketMessageComponent component, UseItemDialog dialog)
     {
-        EndDialog(dialog.UserId);
-        var result = await characterService.UseItemAsync(dialog.Character, dialog.SelectedItem);
+        var result = await characterService.UseItemAsync(dialog.GuildId, new CharacterId(dialog.Character.Id),
+            dialog.SelectedItem.Id, dialog.Context);
         Embed embed;
         if (!result.WasSuccessful)
             embed = new EmbedBuilder().WithTitle("Something went wrong!").WithDescription(result.ErrorMessage).Build();
@@ -111,13 +136,18 @@ public class UseItem : DialogCommandBase<UseItemDialog>
             embed = new EmbedBuilder().WithTitle("Success!")
                 .WithDescription($"You have successfully used {dialog.SelectedItem.Name}!").Build();
 
+        var character = await characterService.GetCharacterAsync(new CharacterId(dialog.Character.Id), dialog.Context);
+        dialog.Character = character.Value;
+
+        var menu = new ComponentBuilder().WithButton("Back", GetCommandId("back"), ButtonStyle.Secondary)
+            .WithButton("Close", GetCommandId("cancel"), ButtonStyle.Secondary).Build();
+
         await component.UpdateAsync(properties =>
         {
-            properties.Components = null;
+            properties.Components = menu;
             properties.Content = null;
             properties.Embeds = null;
             properties.Embed = embed;
         });
     }
-}*/
-
+}

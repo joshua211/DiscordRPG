@@ -13,6 +13,9 @@ public static class Domain
         return serviceCollection
             .AddTransient<IExperienceCurve, ExperienceCurve>()
             .AddTransient<ICraftingService, CraftingService>()
+            .AddTransient<IUseItemService, UseItemService>()
+            .AddTransient<IWoundReducer, WoundReducer>()
+            .AddTransient<IHealthPotionCalculator, HealthPotionCalculator>()
             .AddTransient<IAdventureResultService, AdventureResultService>();
     }
 

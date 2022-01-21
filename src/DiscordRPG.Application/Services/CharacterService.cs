@@ -3,6 +3,7 @@ using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Models;
 using DiscordRPG.Application.Queries;
 using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.DomainServices;
 using DiscordRPG.Domain.DomainServices.Generators;
 using DiscordRPG.Domain.Entities.Activity.Enums;
 using DiscordRPG.Domain.Entities.Character;
@@ -23,15 +24,17 @@ public class CharacterService : ICharacterService
     private readonly IItemGenerator itemGenerator;
     private readonly ILogger logger;
     private readonly IQueryProcessor processor;
+    private readonly IWoundReducer woundReducer;
 
     public CharacterService(IQueryProcessor processor, ICommandBus bus, ILogger logger, IItemGenerator itemGenerator,
-        IExperienceCurve experienceCurve)
+        IExperienceCurve experienceCurve, IWoundReducer woundReducer)
     {
         this.processor = processor;
         this.bus = bus;
         this.logger = logger.WithContext(GetType());
         this.itemGenerator = itemGenerator;
         this.experienceCurve = experienceCurve;
+        this.woundReducer = woundReducer;
     }
 
     public async Task<Result> CreateCharacterAsync(CharacterId characterId, GuildId guildId, string name,
@@ -92,23 +95,7 @@ public class CharacterService : ICharacterService
 
         var character = (await GetCharacterAsync(charId, context, token)).Value;
         var hpToHeal = (int) (character.MaxHealth * percent);
-        var newWounds = character.Wounds.ToList();
-        while (hpToHeal > 0)
-        {
-            var wound = newWounds.LastOrDefault();
-            if (wound is null)
-                break;
-
-            if (wound.DamageValue <= hpToHeal)
-                newWounds.Remove(wound);
-            else
-            {
-                newWounds.Remove(wound);
-                newWounds.Add(wound.DecreaseDamage(hpToHeal));
-            }
-
-            hpToHeal -= wound.DamageValue;
-        }
+        var newWounds = woundReducer.ReduceDamageFromWounds(character.Wounds, hpToHeal).ToList();
 
         var cmd = new ChangeWoundsCommand(guildId, charId, newWounds, context);
         var result = await bus.PublishAsync(cmd, token);
@@ -175,6 +162,25 @@ public class CharacterService : ICharacterService
         {
             logger.Context(context).Error("Failed to craft item");
             return Result.Failure("Failed to craft item!");
+        }
+
+        return Result.Success();
+    }
+
+    public async Task<Result> UseItemAsync(GuildId guildId, CharacterId characterId, ItemId itemId,
+        TransactionContext context,
+        CancellationToken cancellationToken = default)
+    {
+        logger.Context(context).Information("Using Item {ItemId} for character {CharacterId}", itemId, characterId);
+        var cmd = new UseItemCommand(guildId, characterId, itemId, context);
+        var result = await bus.PublishAsync(cmd, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            logger.Context(context)
+                .Error("Failed to use item {ItemId} for character {CharacterId}", itemId, characterId);
+
+            return Result.Failure("Failed to use item!");
         }
 
         return Result.Success();
