@@ -3,7 +3,9 @@ using Discord.Commands;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Models;
 using DiscordRPG.Client.Handlers;
+using DiscordRPG.Common.Extensions;
 using EventFlow.ReadStores;
+using Serilog;
 
 namespace DiscordRPG.Client.Modules;
 
@@ -12,14 +14,17 @@ namespace DiscordRPG.Client.Modules;
 public class SettingsModule : ModuleBase<SocketCommandContext>
 {
     private readonly IGuildService guildService;
+    private readonly ILogger logger;
     private readonly IReadModelPopulator populator;
     private readonly ServerHandler serverHandler;
 
-    public SettingsModule(ServerHandler serverHandler, IGuildService guildService, IReadModelPopulator populator)
+    public SettingsModule(ServerHandler serverHandler, IGuildService guildService, IReadModelPopulator populator,
+        ILogger logger)
     {
         this.serverHandler = serverHandler;
         this.guildService = guildService;
         this.populator = populator;
+        this.logger = logger.WithContext(GetType());
     }
 
     [Command("refresh-readmodels")]
@@ -27,6 +32,13 @@ public class SettingsModule : ModuleBase<SocketCommandContext>
     {
         await populator.PopulateAsync<CharacterReadModel>(CancellationToken.None);
         await populator.PopulateAsync<DungeonReadModel>(CancellationToken.None);
+    }
+
+    [Command("uninstallcommands")]
+    public async Task UninstallCommands()
+    {
+        await Context.Guild.DeleteApplicationCommandsAsync();
+        logger.Here().Debug("Uninstalled Commands");
     }
 
     [Command("delete")]
