@@ -13,6 +13,7 @@ public class CharacterReadModel : IMongoDbReadModel,
     IAmReadModelFor<GuildAggregate, GuildId, CharacterDied>,
     IAmReadModelFor<GuildAggregate, GuildId, InventoryChanged>,
     IAmReadModelFor<GuildAggregate, GuildId, ItemBought>,
+    IAmReadModelFor<GuildAggregate, GuildId, ItemSold>,
     IAmReadModelFor<GuildAggregate, GuildId, ItemEquipped>,
     IAmReadModelFor<GuildAggregate, GuildId, ItemUnequipped>,
     IAmReadModelFor<GuildAggregate, GuildId, LevelGained>,
@@ -168,6 +169,13 @@ public class CharacterReadModel : IMongoDbReadModel,
         var id = domainEvent.AggregateEvent.ItemId;
         var item = Inventory.First(i => i.Id == id);
         item.Equip();
+    }
+
+    public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, ItemSold> domainEvent)
+    {
+        var item = Inventory.FirstOrDefault(i => i.Id == domainEvent.AggregateEvent.ItemId);
+        Money = Money.Add((int) (item.Worth * item.Amount * 0.7f));
+        Inventory.Remove(item);
     }
 
     public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, ItemUnequipped> domainEvent)

@@ -185,4 +185,21 @@ public class CharacterService : ICharacterService
 
         return Result.Success();
     }
+
+    public async Task<Result> SellItemAsync(GuildId guildId, CharacterId characterId, ItemId itemId,
+        TransactionContext context,
+        CancellationToken cancellationToken = default)
+    {
+        var cmd = new SellItemCommand(guildId, characterId, itemId, context);
+        var result = await bus.PublishAsync(cmd, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            logger.Context(context).Error("Failed to sell item {Id}", itemId);
+
+            return Result.Failure("Failed to sell item!");
+        }
+
+        return Result.Success();
+    }
 }

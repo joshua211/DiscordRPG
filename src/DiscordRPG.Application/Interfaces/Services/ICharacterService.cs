@@ -35,4 +35,7 @@ public interface ICharacterService
 
     Task<Result> UseItemAsync(GuildId guildId, CharacterId characterId, ItemId itemId, TransactionContext context,
         CancellationToken cancellationToken = default);
+
+    Task<Result> SellItemAsync(GuildId guildId, CharacterId characterId, ItemId itemId, TransactionContext context,
+        CancellationToken cancellationToken = default);
 }

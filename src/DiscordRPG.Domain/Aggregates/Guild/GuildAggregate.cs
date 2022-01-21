@@ -146,4 +146,9 @@ public class GuildAggregate : AggregateRoot<GuildAggregate, GuildId>
     {
         Emit(new RecipesLearned(id, recipes), new Metadata(context.AsMetadata()));
     }
+
+    public void SellItem(CharacterId entityId, ItemId itemId, TransactionContext context)
+    {
+        Emit(new ItemSold(entityId, itemId), new Metadata(context.AsMetadata()));
+    }
 }

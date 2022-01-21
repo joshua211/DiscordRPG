@@ -22,6 +22,7 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
     IApply<CharacterDied>,
     IApply<InventoryChanged>,
     IApply<ItemBought>,
+    IApply<ItemSold>,
     IApply<ItemEquipped>,
     IApply<ItemUnequipped>,
     IApply<LevelGained>,
@@ -123,12 +124,22 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
     {
         var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
         character.AddMoney(-aggregateEvent.Item.Worth);
+        character.Inventory.Add(aggregateEvent.Item);
     }
 
     public void Apply(ItemEquipped aggregateEvent)
     {
         var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
         character.EquipItem(aggregateEvent.ItemId);
+    }
+
+    public void Apply(ItemSold aggregateEvent)
+    {
+        var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
+        var item = character.Inventory.FirstOrDefault(i => i.Id == aggregateEvent.ItemId);
+
+        character.AddMoney((int) (item.Worth * item.Amount * 0.7f)); //TODO calculate sell price modificator
+        character.Inventory.Remove(item);
     }
 
     public void Apply(ItemUnequipped aggregateEvent)
