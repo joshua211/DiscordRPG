@@ -26,6 +26,7 @@ public class GuildAggregate : AggregateRoot<GuildAggregate, GuildId>
 
     public IEnumerable<Character> Characters => state.Characters;
     public IEnumerable<Dungeon> Dungeons => state.Dungeons;
+    public Shop Shop => state.Shops.First();
 
     public void Create(GuildId id, GuildName name, ChannelId guildHallId, ChannelId dungeonHallId, ChannelId innId,
         TransactionContext context)
@@ -121,9 +122,12 @@ public class GuildAggregate : AggregateRoot<GuildAggregate, GuildId>
             new Metadata(context.AsMetadata()));
     }
 
-    public void BuyItem(CharacterId commandCharacterId, Item item, TransactionContext context)
+    public void BuyItem(CharacterId characterId, ItemId itemId, TransactionContext context)
     {
-        Emit(new ItemBought(commandCharacterId, item), new Metadata(context.AsMetadata()));
+        var shopInventory = Shop.Inventory.First(s => s.CharacterId == characterId);
+        var item = shopInventory.ItemsForSale.First(i => i.Id == itemId);
+        Emit(new ItemBought(characterId, item), new Metadata(context.AsMetadata()));
+        Emit(new ItemRemoved(characterId, itemId, Shop.Id));
     }
 
     public void RemoveShopInventory(ShopId shopId, CharacterId charId, TransactionContext context)

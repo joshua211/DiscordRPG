@@ -22,8 +22,10 @@ public static class EmbedHelper
                     .WithTitle(item.Name + $" (Lvl {item.Level})")
                     .WithDescription(item.Description)
                     .AddField("Rarity", item.Rarity)
-                    .AddField(item.ItemEffect.Name,
-                        $"{item.ItemEffect.StatusEffectType} ({item.ItemEffect.Modifier * 100}%)")
+                    .AddField(item.ItemEffect?.Name ?? "No status effect",
+                        item.ItemEffect is null
+                            ? "-"
+                            : $"{item.ItemEffect.StatusEffectType} ({item.ItemEffect.Modifier * 100}%)")
                     .AddField("Armor",
                         comparison is null
                             ? $"{item.Armor}"
@@ -59,6 +61,10 @@ public static class EmbedHelper
                     .WithTitle(item.Name + $" (Lvl {item.Level})")
                     .WithDescription(item.Description)
                     .AddField("Rarity", item.Rarity)
+                    .AddField(item.ItemEffect?.Name ?? "No status effect",
+                        item.ItemEffect is null
+                            ? "-"
+                            : $"{item.ItemEffect.StatusEffectType} ({item.ItemEffect.Modifier * 100}%)")
                     .AddField("Damage",
                         comparison is null
                             ? $"{item.DamageValue} {item.DamageType}"
@@ -134,6 +140,6 @@ public static class EmbedHelper
 
     private static string CompareValue(int value1, int value2)
     {
-        return value1 > value2 ? $"-{value1 - value2}" : $"+{value2 - value1}";
+        return value1 < value2 ? $"{value1 - value2}" : $"+{Math.Abs(value2 - value1)}";
     }
 }

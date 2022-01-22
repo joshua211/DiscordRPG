@@ -162,6 +162,7 @@ public class CharacterReadModel : IMongoDbReadModel,
     public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, ItemBought> domainEvent)
     {
         Money = Money.Add(-domainEvent.AggregateEvent.Item.Worth);
+        Inventory.Add(domainEvent.AggregateEvent.Item);
     }
 
     public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, ItemEquipped> domainEvent)

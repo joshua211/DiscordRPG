@@ -21,9 +21,11 @@ public abstract class CommandBase : IGuildCommand
     protected readonly IDungeonService dungeonService;
     protected readonly IGuildService guildService;
     protected readonly ILogger logger;
+    protected readonly IShopService shopService;
 
     protected CommandBase(DiscordSocketClient client, ILogger logger, IActivityService activityService,
-        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService)
+        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService,
+        IShopService shopService)
     {
         this.client = client;
         this.logger = logger.WithContext(GetType());
@@ -31,6 +33,7 @@ public abstract class CommandBase : IGuildCommand
         this.characterService = characterService;
         this.dungeonService = dungeonService;
         this.guildService = guildService;
+        this.shopService = shopService;
 
         client.SelectMenuExecuted += c => GetHandlerAsync(c, true);
         client.ButtonExecuted += c => GetHandlerAsync(c);
@@ -56,6 +59,8 @@ public abstract class CommandBase : IGuildCommand
                 typeof(RequireActivityAttribute))!;
         var requireDungeon =
             (RequireDungeonAttribute) Attribute.GetCustomAttribute(GetType(), typeof(RequireDungeonAttribute))!;
+        var requireShop =
+            (RequireShopAttribute) Attribute.GetCustomAttribute(GetType(), typeof(RequireShopAttribute))!;
 
         if (requireName is not null)
         {
@@ -142,7 +147,20 @@ public abstract class CommandBase : IGuildCommand
             activity = currentActivityResult.Value;
         }
 
-        await HandleAsync(command, new GuildCommandContext(character, activity, dungeon, guild, context));
+        ShopReadModel shop = null;
+        if (requireShop is not null)
+        {
+            var shopResult = await shopService.GetGuildShopAsync(new GuildId(guild.Id), context);
+            if (shopResult.Value is null)
+            {
+                await command.RespondAsync($"There is no shop for this guild!", ephemeral: true);
+                return;
+            }
+
+            shop = shopResult.Value;
+        }
+
+        await HandleAsync(command, new GuildCommandContext(character, activity, dungeon, guild, context, shop));
     }
 
     private async Task GetHandlerAsync(SocketMessageComponent component, bool isSelection = false)

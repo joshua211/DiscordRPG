@@ -14,6 +14,7 @@ public class ItemBought : AggregateEvent<GuildAggregate, GuildId>, IEntityEvent<
     }
 
     public Item Item { get; private set; }
+    public IEnumerable<string> EntityIds => new string[] {EntityId.Value, Item.Id.Value};
 
     public CharacterId EntityId { get; private set; }
 }

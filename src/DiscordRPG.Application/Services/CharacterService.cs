@@ -48,7 +48,7 @@ public class CharacterService : ICharacterService
             {
                 Equip.StarterArmor, Equip.StarterLeg, Equip.StarterWeapon, Equip.StarterAmulet,
                 itemGenerator.GetHealthPotion(Rarity.Common, 1)
-            }, new List<Wound>(), new Money(10), new List<Recipe>
+            }, new List<Wound>(), new Money(1000), new List<Recipe>
             {
                 new Recipe(RecipeId.New, "Health Potion I", "test", Rarity.Common, 1, RecipeCategory.HealthPotion,
                     new List<Ingredient>
@@ -198,6 +198,22 @@ public class CharacterService : ICharacterService
             logger.Context(context).Error("Failed to sell item {Id}", itemId);
 
             return Result.Failure("Failed to sell item!");
+        }
+
+        return Result.Success();
+    }
+
+    public async Task<Result> BuyItemAsync(GuildId guildId, CharacterId characterId, ItemId itemId,
+        TransactionContext context, CancellationToken cancellationToken = default)
+    {
+        logger.Context(context).Information("Buying Item {ItemId} for character {CharacterId}", itemId, characterId);
+        var cmd = new BuyItemCommand(guildId, characterId, itemId, context);
+        var result = await bus.PublishAsync(cmd, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            logger.Context(context).Error("Failed to buy item");
+            return Result.Failure("Failed to buy item");
         }
 
         return Result.Success();

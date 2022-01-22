@@ -70,12 +70,7 @@ public class ServerHandler : IHandler
         try
         {
             var context = TransactionContext.New();
-            logger.Here().Debug("Installing guild commands");
-            await InstallGuildCommands(socketGuild);
-
             logger.Here().Debug("Setting up channels for Guild {Id}", socketGuild.Id);
-            /*await guildService.DeleteGuildAsync(new GuildId(socketGuild.Id.ToString()), context);*/
-
 
             var category = await socketGuild.CreateCategoryChannelAsync(CategoryName);
 

@@ -7,16 +7,16 @@ namespace DiscordRPG.Domain.Entities.Character.Commands;
 
 public class BuyItemCommand : Command<GuildAggregate, GuildId>
 {
-    public BuyItemCommand(GuildId aggregateId, CharacterId characterId, Item item, TransactionContext context) :
+    public BuyItemCommand(GuildId aggregateId, CharacterId characterId, ItemId itemId, TransactionContext context) :
         base(aggregateId)
     {
         CharacterId = characterId;
-        Item = item;
+        ItemId = itemId;
         Context = context;
     }
 
     public CharacterId CharacterId { get; private set; }
-    public Item Item { get; private set; }
+    public ItemId ItemId { get; private set; }
     public TransactionContext Context { get; private set; }
 }
 
@@ -25,7 +25,7 @@ public class BuyItemCommandHandler : CommandHandler<GuildAggregate, GuildId, Buy
     public override Task ExecuteAsync(GuildAggregate aggregate, BuyItemCommand command,
         CancellationToken cancellationToken)
     {
-        aggregate.BuyItem(command.CharacterId, command.Item, command.Context);
+        aggregate.BuyItem(command.CharacterId, command.ItemId, command.Context);
         return Task.CompletedTask;
     }
 }

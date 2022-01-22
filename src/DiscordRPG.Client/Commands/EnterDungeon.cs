@@ -23,8 +23,9 @@ namespace DiscordRPG.Client.Commands;
 public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
 {
     public EnterDungeon(DiscordSocketClient client, ILogger logger, IActivityService activityService,
-        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService) : base(client,
-        logger, activityService, characterService, dungeonService, guildService)
+        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService,
+        IShopService shopService) : base(client,
+        logger, activityService, characterService, dungeonService, guildService, shopService)
     {
     }
 

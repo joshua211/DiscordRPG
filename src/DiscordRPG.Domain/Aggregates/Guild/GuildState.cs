@@ -35,7 +35,8 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
     IApply<ShopAdded>,
     IApply<ShopInventoryUpdated>,
     IApply<ShopInventoryRemoved>,
-    IApply<AdventureResultCalculated>
+    IApply<AdventureResultCalculated>,
+    IApply<ItemRemoved>
 
 {
     public GuildState()
@@ -131,6 +132,14 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
     {
         var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
         character.EquipItem(aggregateEvent.ItemId);
+    }
+
+    public void Apply(ItemRemoved aggregateEvent)
+    {
+        var shop = Shops.First();
+        var playerSellInv = shop.Inventory.First(i => i.CharacterId == aggregateEvent.CharacterId);
+        var item = playerSellInv.ItemsForSale.First(i => i.Id == aggregateEvent.ItemId);
+        playerSellInv.ItemsForSale.Remove(item);
     }
 
     public void Apply(ItemSold aggregateEvent)

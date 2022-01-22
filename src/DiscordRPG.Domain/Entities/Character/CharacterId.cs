@@ -1,15 +1,13 @@
 ﻿using EventFlow.Core;
+using EventFlow.ValueObjects;
 
 namespace DiscordRPG.Domain.Entities.Character;
 
-public class CharacterId : IIdentity
+public class CharacterId : SingleValueObject<string>, IIdentity
 {
-    public CharacterId(string value)
+    public CharacterId(string value) : base(value)
     {
-        Value = value;
     }
-
-    public string Value { get; }
 
     public override string ToString()
     {

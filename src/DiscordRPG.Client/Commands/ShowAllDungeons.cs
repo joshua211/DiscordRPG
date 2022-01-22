@@ -17,8 +17,9 @@ namespace DiscordRPG.Client.Commands;
 public class ShowAllDungeons : DialogCommandBase<ShowAllDungeonsDialog>
 {
     public ShowAllDungeons(DiscordSocketClient client, ILogger logger, IActivityService activityService,
-        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService) : base(client,
-        logger, activityService, characterService, dungeonService, guildService)
+        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService,
+        IShopService shopService) : base(client,
+        logger, activityService, characterService, dungeonService, guildService, shopService)
     {
     }
 
