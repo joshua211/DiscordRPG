@@ -7,7 +7,7 @@ public class Character : Entity<CharacterId>
 {
     public Character(CharacterId id, CharacterClass @class, CharacterRace race, CharacterName name,
         Level characterLevel, List<Item> inventory, List<Wound> wounds, Money money,
-        List<Recipe> knownRecipes) : base(id)
+        List<Recipe> knownRecipes, List<Title> titles) : base(id)
     {
         Class = @class;
         Race = race;
@@ -17,6 +17,7 @@ public class Character : Entity<CharacterId>
         Wounds = wounds;
         Money = money;
         KnownRecipes = knownRecipes;
+        Titles = titles;
     }
 
     public CharacterClass Class { get; private set; }
@@ -27,6 +28,7 @@ public class Character : Entity<CharacterId>
     public List<Item> Inventory { get; private set; }
     public List<Wound> Wounds { get; private set; }
     public List<Recipe> KnownRecipes { get; private set; }
+    public List<Title> Titles { get; private set; }
 
     public void ChangeInventory(List<Item> aggregateEventNewInventory)
     {
@@ -36,6 +38,18 @@ public class Character : Entity<CharacterId>
     public void AddMoney(int amount)
     {
         Money = Money.Add(amount);
+    }
+
+    public void EquipTitle(TitleId id)
+    {
+        var title = Titles.FirstOrDefault(t => t.Id == id);
+        title.Equip();
+    }
+
+    public void Unequip(TitleId id)
+    {
+        var title = Titles.FirstOrDefault(t => t.Id == id);
+        title.Unequip();
     }
 
     public void EquipItem(ItemId id)

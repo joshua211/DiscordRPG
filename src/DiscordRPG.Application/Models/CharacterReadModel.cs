@@ -18,7 +18,10 @@ public class CharacterReadModel : IMongoDbReadModel,
     IAmReadModelFor<GuildAggregate, GuildId, ItemUnequipped>,
     IAmReadModelFor<GuildAggregate, GuildId, LevelGained>,
     IAmReadModelFor<GuildAggregate, GuildId, WoundsChanged>,
-    IAmReadModelFor<GuildAggregate, GuildId, RecipesLearned>
+    IAmReadModelFor<GuildAggregate, GuildId, RecipesLearned>,
+    IAmReadModelFor<GuildAggregate, GuildId, TitleAcquired>,
+    IAmReadModelFor<GuildAggregate, GuildId, TitleEquipped>,
+    IAmReadModelFor<GuildAggregate, GuildId, TitleUnequipped>
 {
     public CharacterClass Class { get; set; }
     public CharacterRace Race { get; set; }
@@ -28,6 +31,7 @@ public class CharacterReadModel : IMongoDbReadModel,
     public List<Item> Inventory { get; set; }
     public List<Wound> Wounds { get; set; }
     public List<Recipe> KnownRecipes { get; private set; }
+    public List<Title> Titles { get; private set; }
 
     public Item? Weapon => Inventory.FirstOrDefault(i => i.IsEquipped && i.Position == EquipmentPosition.Weapon);
     public Item? Helmet => Inventory.FirstOrDefault(i => i.IsEquipped && i.Position == EquipmentPosition.Helmet);
@@ -35,6 +39,7 @@ public class CharacterReadModel : IMongoDbReadModel,
     public Item? Pants => Inventory.FirstOrDefault(i => i.IsEquipped && i.Position == EquipmentPosition.Pants);
     public Item? Amulet => Inventory.FirstOrDefault(i => i.IsEquipped && i.Position == EquipmentPosition.Amulet);
     public Item? Ring => Inventory.FirstOrDefault(i => i.IsEquipped && i.Position == EquipmentPosition.Ring);
+    public Title? Title => Titles.FirstOrDefault(t => t.IsEquipped);
 
     public int Strength
     {
@@ -147,6 +152,7 @@ public class CharacterReadModel : IMongoDbReadModel,
         Inventory = character.Inventory;
         Wounds = character.Wounds;
         KnownRecipes = character.KnownRecipes;
+        Titles = character.Titles;
     }
 
     public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, CharacterDied> domainEvent)
@@ -196,6 +202,27 @@ public class CharacterReadModel : IMongoDbReadModel,
         KnownRecipes.AddRange(domainEvent.AggregateEvent.Recipes);
     }
 
+    public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, TitleAcquired> domainEvent)
+    {
+        Titles.Add(domainEvent.AggregateEvent.Title);
+    }
+
+    public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, TitleEquipped> domainEvent)
+    {
+        var current = Titles.FirstOrDefault(t => t.IsEquipped);
+        if (current is not null)
+            current.Unequip();
+
+        var title = Titles.FirstOrDefault(t => t.Id == domainEvent.AggregateEvent.TitleId);
+        title.Equip();
+    }
+
+    public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, TitleUnequipped> domainEvent)
+    {
+        var title = Titles.FirstOrDefault(t => t.Id == domainEvent.AggregateEvent.TitleId);
+        title.Unequip();
+    }
+
     public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, WoundsChanged> domainEvent)
     {
         Wounds = domainEvent.AggregateEvent.NewWounds;
@@ -205,7 +232,8 @@ public class CharacterReadModel : IMongoDbReadModel,
     public long? Version { get; set; }
 
     public IEnumerable<StatusEffect> GetCurrentStatusEffects() =>
-        Inventory.Where(i => i.IsEquipped && i.ItemEffect is not null).Select(i => i.ItemEffect);
+        Inventory.Where(i => i.IsEquipped && i.ItemEffect is not null).Select(i => i.ItemEffect)
+            .Concat(Title?.Effects ?? Array.Empty<StatusEffect>());
 
     public float GetTotalStatusModifier(StatusEffectType type) =>
         GetCurrentStatusEffects().Where(s => s.StatusEffectType == type).Sum(s => s.Modifier);

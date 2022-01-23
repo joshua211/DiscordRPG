@@ -45,7 +45,7 @@ public class GetCharacter : DialogCommandBase<ShowCharacterDialog>
         var character = context.Character!;
         var embed = new EmbedBuilder()
             .WithTitle(character.Name.Value)
-            .WithDescription("No Title equiped")
+            .WithDescription(character.Title?.Name ?? "No title equipped")
             .WithColor(Color.DarkGreen)
             .AddField("Money", $"{character.Money.Value}$")
             .AddField("Race", character.Race.Name, true)

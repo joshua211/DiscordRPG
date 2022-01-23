@@ -41,4 +41,11 @@ public interface ICharacterService
 
     Task<Result> BuyItemAsync(GuildId dialogGuildId, CharacterId dialogCharacterId, ItemId selectedItemId,
         TransactionContext dialogContext, CancellationToken cancellationToken = default);
+
+    Task<Result> EquipTitleAsync(GuildId guildId, CharacterId characterId, TitleId titleId, TransactionContext context,
+        CancellationToken cancellationToken = default);
+
+    Task<Result> UnequipTitleAsync(GuildId guildId, CharacterId characterId, TitleId titleId,
+        TransactionContext context,
+        CancellationToken cancellationToken = default);
 }

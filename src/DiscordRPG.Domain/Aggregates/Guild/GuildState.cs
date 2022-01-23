@@ -36,7 +36,10 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
     IApply<ShopInventoryUpdated>,
     IApply<ShopInventoryRemoved>,
     IApply<AdventureResultCalculated>,
-    IApply<ItemRemoved>
+    IApply<ItemRemoved>,
+    IApply<TitleAcquired>,
+    IApply<TitleEquipped>,
+    IApply<TitleUnequipped>
 
 {
     public GuildState()
@@ -188,6 +191,31 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
     {
         var shop = Shops.First(s => s.Id.Value == aggregateEvent.EntityId.Value);
         shop.UpdateInventoryForCharacter(aggregateEvent.CharacterId, aggregateEvent.NewItems);
+    }
+
+    public void Apply(TitleAcquired aggregateEvent)
+    {
+        var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
+        character.Titles.Add(aggregateEvent.Title);
+    }
+
+    public void Apply(TitleEquipped aggregateEvent)
+    {
+        var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
+        var existing = character.Titles.FirstOrDefault(t => t.IsEquipped);
+        if (existing is not null)
+            existing.Unequip();
+
+        var title = character.Titles.FirstOrDefault(t => t.Id == aggregateEvent.TitleId);
+        title.Equip();
+    }
+
+    public void Apply(TitleUnequipped aggregateEvent)
+    {
+        var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
+        var existing = character.Titles.FirstOrDefault(t => t.IsEquipped);
+        if (existing is not null)
+            existing.Unequip();
     }
 
     public void Apply(WoundsChanged aggregateEvent)

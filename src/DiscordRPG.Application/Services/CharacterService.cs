@@ -1,4 +1,5 @@
 ﻿using DiscordRPG.Application.Data;
+using DiscordRPG.Application.Generators;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Models;
 using DiscordRPG.Application.Queries;
@@ -24,10 +25,11 @@ public class CharacterService : ICharacterService
     private readonly IItemGenerator itemGenerator;
     private readonly ILogger logger;
     private readonly IQueryProcessor processor;
+    private readonly RecipeGenerator recipeGenerator;
     private readonly IWoundReducer woundReducer;
 
     public CharacterService(IQueryProcessor processor, ICommandBus bus, ILogger logger, IItemGenerator itemGenerator,
-        IExperienceCurve experienceCurve, IWoundReducer woundReducer)
+        IExperienceCurve experienceCurve, IWoundReducer woundReducer, RecipeGenerator recipeGenerator)
     {
         this.processor = processor;
         this.bus = bus;
@@ -35,6 +37,7 @@ public class CharacterService : ICharacterService
         this.itemGenerator = itemGenerator;
         this.experienceCurve = experienceCurve;
         this.woundReducer = woundReducer;
+        this.recipeGenerator = recipeGenerator;
     }
 
     public async Task<Result> CreateCharacterAsync(CharacterId characterId, GuildId guildId, string name,
@@ -48,14 +51,10 @@ public class CharacterService : ICharacterService
             {
                 Equip.StarterArmor, Equip.StarterLeg, Equip.StarterWeapon, Equip.StarterAmulet,
                 itemGenerator.GetHealthPotion(Rarity.Common, 1)
-            }, new List<Wound>(), new Money(1000), new List<Recipe>
+            }, new List<Wound>(), new Money(10), recipeGenerator.GenerateRecipesForLevel(1).ToList(), new List<Title>
             {
-                new Recipe(RecipeId.New, "Health Potion I", "test", Rarity.Common, 1, RecipeCategory.HealthPotion,
-                    new List<Ingredient>
-                    {
-                        new(Rarity.Common, Items.ItemNamesByRarity[Rarity.Common][2].name, 1, 5),
-                        new(Rarity.Common, Items.ItemNamesByRarity[Rarity.Common][3].name, 1, 5)
-                    })
+                new(TitleId.New, Rarity.Legendary, "Alpha Tester",
+                    new[] {new StatusEffect(StatusEffectType.ExpBoost, 0.1f, "Experienced Player")}, true)
             });
 
         var cmd = new CreateCharacterCommand(guildId, character, context);
@@ -214,6 +213,40 @@ public class CharacterService : ICharacterService
         {
             logger.Context(context).Error("Failed to buy item");
             return Result.Failure("Failed to buy item");
+        }
+
+        return Result.Success();
+    }
+
+    public async Task<Result> EquipTitleAsync(GuildId guildId, CharacterId characterId, TitleId titleId,
+        TransactionContext context,
+        CancellationToken cancellationToken = default)
+    {
+        logger.Context(context).Information("Equipping title {TitleId} for Character {CharId}", titleId, characterId);
+        var cmd = new EquipTitleCommand(guildId, titleId, characterId, context);
+        var result = await bus.PublishAsync(cmd, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            logger.Context(context).Error("Failed to equip title");
+            return Result.Failure("Failed to equip title");
+        }
+
+        return Result.Success();
+    }
+
+    public async Task<Result> UnequipTitleAsync(GuildId guildId, CharacterId characterId, TitleId titleId,
+        TransactionContext context,
+        CancellationToken cancellationToken = default)
+    {
+        logger.Context(context).Information("Unequipping title {TitleId} for Character {CharId}", titleId, characterId);
+        var cmd = new UnequipTitleCommand(guildId, titleId, characterId, context);
+        var result = await bus.PublishAsync(cmd, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            logger.Context(context).Error("Failed to unequip title");
+            return Result.Failure("Failed to unequip title");
         }
 
         return Result.Success();

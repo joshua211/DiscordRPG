@@ -155,4 +155,19 @@ public class GuildAggregate : AggregateRoot<GuildAggregate, GuildId>
     {
         Emit(new ItemSold(entityId, itemId), new Metadata(context.AsMetadata()));
     }
+
+    public void AddTitle(CharacterId characterId, Title title, TransactionContext context)
+    {
+        Emit(new TitleAcquired(characterId, title), new Metadata(context.AsMetadata()));
+    }
+
+    public void EquipTitle(CharacterId characterId, TitleId titleId, TransactionContext context)
+    {
+        Emit(new TitleEquipped(titleId, characterId), new Metadata(context.AsMetadata()));
+    }
+
+    public void UnequipTitle(CharacterId characterId, TitleId titleId, TransactionContext context)
+    {
+        Emit(new TitleUnequipped(characterId, titleId), new Metadata(context.AsMetadata()));
+    }
 }

@@ -134,6 +134,7 @@ public class Equip : DialogCommandBase<EquipDialog>
                 .AddField("Total Magic Armor", dialog.Character.MagicArmor, true)
                 .Build();
 
+            dialog.ShareableEmbed = embed;
             var effects = dialog.Character.GetCurrentStatusEffects();
             if (effects.Any())
             {
@@ -143,12 +144,10 @@ public class Equip : DialogCommandBase<EquipDialog>
                 {
                     statusEmbedBuilder.AddField(effect.Name, $"{effect.StatusEffectType} ({effect.Modifier * 100}%)",
                         true);
-
-                    return new[] {embed, statusEmbedBuilder.Build()};
                 }
-            }
 
-            dialog.ShareableEmbed = embed;
+                return new[] {embed, statusEmbedBuilder.Build()};
+            }
 
             return new[] {embed};
         }
