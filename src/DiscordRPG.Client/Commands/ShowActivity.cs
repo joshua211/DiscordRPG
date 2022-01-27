@@ -54,8 +54,8 @@ public class ShowActivity : DialogCommandBase<ShowActivityDialog>
         var embed = await GetActivityAsEmbedAsync(dialog.Activity, dialog);
 
         var component = new ComponentBuilder()
-            .WithButton("Stop activity", CommandName + ".stop", ButtonStyle.Danger)
-            .WithButton("Cancel", CommandName + ".cancel", ButtonStyle.Secondary)
+            .WithButton("Stop activity", GetCommandId("stop"), ButtonStyle.Danger)
+            .WithButton("Cancel", GetCommandId("cancel"), ButtonStyle.Secondary)
             .Build();
 
         await command.RespondAsync(embed: embed, component: component, ephemeral: true);

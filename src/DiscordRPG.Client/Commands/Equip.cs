@@ -9,6 +9,7 @@ using DiscordRPG.Common.Extensions;
 using DiscordRPG.Domain.Aggregates.Guild;
 using DiscordRPG.Domain.Entities.Character;
 using DiscordRPG.Domain.Entities.Character.Enums;
+using Humanizer;
 using Serilog;
 
 namespace DiscordRPG.Client.Commands;
@@ -142,7 +143,8 @@ public class Equip : DialogCommandBase<EquipDialog>
                 statusEmbedBuilder.WithTitle("Status effects");
                 foreach (var effect in effects)
                 {
-                    statusEmbedBuilder.AddField(effect.Name, $"{effect.StatusEffectType} ({effect.Modifier * 100}%)",
+                    statusEmbedBuilder.AddField(effect.Name,
+                        $"{effect.StatusEffectType.Humanize()} ({effect.Modifier * 100}%)",
                         true);
                 }
 

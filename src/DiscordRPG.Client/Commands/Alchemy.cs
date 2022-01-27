@@ -9,6 +9,7 @@ using DiscordRPG.Common.Extensions;
 using DiscordRPG.Domain.Aggregates.Guild;
 using DiscordRPG.Domain.Entities.Character;
 using DiscordRPG.Domain.Entities.Character.Enums;
+using Humanizer;
 using Serilog;
 
 namespace DiscordRPG.Client.Commands;
@@ -87,7 +88,7 @@ public class Alchemy : DialogCommandBase<AlchemyDialog>
             catSelectionBuilder.WithCustomId(GetCommandId("select-category"));
             catSelectionBuilder.WithPlaceholder("Choose a category");
             catSelectionBuilder.AddOption(RecipeCategory.HealthPotion.ToString(),
-                RecipeCategory.HealthPotion.ToString());
+                RecipeCategory.HealthPotion.Humanize());
 
             componentBuilder.WithSelectMenu(catSelectionBuilder);
             componentBuilder.WithButton("Close", GetCommandId("cancel"), ButtonStyle.Secondary);
