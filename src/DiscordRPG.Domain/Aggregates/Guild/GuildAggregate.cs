@@ -170,4 +170,11 @@ public class GuildAggregate : AggregateRoot<GuildAggregate, GuildId>
     {
         Emit(new TitleUnequipped(characterId, titleId), new Metadata(context.AsMetadata()));
     }
+
+
+    public void ForgeItem(CharacterId characterId, Item item, List<(ItemId id, int amount)> ingredients,
+        TransactionContext context)
+    {
+        Emit(new ItemForged(characterId, ingredients, item), new Metadata(context.AsMetadata()));
+    }
 }

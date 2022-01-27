@@ -21,7 +21,8 @@ public class CharacterReadModel : IMongoDbReadModel,
     IAmReadModelFor<GuildAggregate, GuildId, RecipesLearned>,
     IAmReadModelFor<GuildAggregate, GuildId, TitleAcquired>,
     IAmReadModelFor<GuildAggregate, GuildId, TitleEquipped>,
-    IAmReadModelFor<GuildAggregate, GuildId, TitleUnequipped>
+    IAmReadModelFor<GuildAggregate, GuildId, TitleUnequipped>,
+    IAmReadModelFor<GuildAggregate, GuildId, ItemForged>
 {
     public CharacterClass Class { get; set; }
     public CharacterRace Race { get; set; }
@@ -176,6 +177,20 @@ public class CharacterReadModel : IMongoDbReadModel,
         var id = domainEvent.AggregateEvent.ItemId;
         var item = Inventory.First(i => i.Id == id);
         item.Equip();
+    }
+
+    public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, ItemForged> domainEvent)
+    {
+        foreach (var ingredient in domainEvent.AggregateEvent.Ingredients)
+        {
+            var item = Inventory.First(i => i.Id == ingredient.id);
+            if (item.Amount > ingredient.amount)
+                item.IncreaseAmount(-ingredient.amount);
+            else
+                Inventory.Remove(item);
+        }
+
+        Inventory.Add(domainEvent.AggregateEvent.Item);
     }
 
     public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, ItemSold> domainEvent)

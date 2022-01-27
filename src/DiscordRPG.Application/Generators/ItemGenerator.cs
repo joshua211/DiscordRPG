@@ -1,4 +1,5 @@
-﻿using DiscordRPG.Application.Models;
+﻿using DiscordRPG.Application.Data;
+using DiscordRPG.Application.Models;
 using DiscordRPG.Domain.DomainServices;
 using DiscordRPG.Domain.DomainServices.Generators;
 using DiscordRPG.Domain.Entities.Character;
@@ -13,16 +14,18 @@ namespace DiscordRPG.Application.Generators;
 
 public class ItemGenerator : GeneratorBase, IItemGenerator
 {
+    private readonly ForgeCalculator forgeCalculator;
     private readonly NameGenerator nameGenerator;
     private readonly IHealthPotionCalculator potionCalculator;
     private IWorthCalculator worthCalculator;
 
     public ItemGenerator(NameGenerator nameGenerator, IWorthCalculator worthCalculator,
-        IHealthPotionCalculator potionCalculator)
+        IHealthPotionCalculator potionCalculator, ForgeCalculator forgeCalculator)
     {
         this.nameGenerator = nameGenerator;
         this.worthCalculator = worthCalculator;
         this.potionCalculator = potionCalculator;
+        this.forgeCalculator = forgeCalculator;
     }
 
     public IEnumerable<Item> GenerateItems(Character characterEntity, Dungeon dungeonEntity)
@@ -106,15 +109,46 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         return GenerateEquipment(rarity, level, aspect, category);
     }
 
+    public Item ForgeItem(EquipmentCategory category, uint level, IEnumerable<(Item item, int amount)> items)
+    {
+        var (str, vit, agi, intel) = forgeCalculator.GetStatsFromIngredients(items,
+            category is EquipmentCategory.Amulet or EquipmentCategory.Ring
+                ? 1
+                : 2);
+
+        var pos = GetPositionFromCategory(category);
+        var rarity = forgeCalculator.GetRarityFromIngredients(items);
+        var totalWorth = worthCalculator.CalculateWorth(rarity, level);
+        var name = nameGenerator.GenerateRandomEquipmentName(rarity, category, Aspects.CraftedAspect);
+
+        if ((int) category <= 4) //Equip
+        {
+            var (armor, marmor) = category is EquipmentCategory.Amulet or EquipmentCategory.Ring
+                ? (0, 0)
+                : GenerateRandomArmor(totalWorth / 2);
+            return new Item(ItemId.New, name, "A forged item", 1, rarity, category, pos, ItemType.Equipment,
+                CharacterAttribute.Vitality, DamageType.Physical, null, totalWorth, level, armor, marmor,
+                str, vit, agi, intel, 0, 0, false, UsageEffect.None);
+        }
+
+        var dmgType = GetDamageType(category);
+        var dmg = GetDamageValue(totalWorth / 2);
+        var attribute = GetScalingAttribute(category);
+
+        return new Item(ItemId.New, name, "A forged item", 1, rarity, category, pos, ItemType.Weapon, attribute,
+            dmgType, null, totalWorth, level, 0, 0, str, vit, agi, intel, 0, dmg, false, UsageEffect.None);
+    }
+
+
     public Item GenerateRandomItem(Rarity rarity, uint level, int amount)
     {
         var roundedLevel = level.RoundOff();
-        var (name, descr) = nameGenerator.GenerateRandomItemName(rarity);
+        var (name, descr, attribute) = nameGenerator.GenerateRandomItemName(rarity);
         var worth = worthCalculator.CalculateWorth(rarity, roundedLevel);
 
         return new Item(ItemId.New, name,
             descr, amount, rarity,
-            EquipmentCategory.Amulet, EquipmentPosition.Amulet, ItemType.Item, CharacterAttribute.Vitality,
+            EquipmentCategory.Amulet, EquipmentPosition.Amulet, ItemType.Item, attribute,
             DamageType.Physical, null, worth, level, 0, 0, 0, 0, 0, 0, 0, 0, false, UsageEffect.None);
     }
 
@@ -175,10 +209,10 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         EquipmentCategory.Dagger => DamageType.Physical,
         EquipmentCategory.Spear => DamageType.Physical,
         EquipmentCategory.Mace => DamageType.Physical,
+        EquipmentCategory.Flail => DamageType.Physical,
         EquipmentCategory.Scepter => DamageType.Magical,
         EquipmentCategory.Staff => DamageType.Magical,
-        EquipmentCategory.Wand => DamageType.Magical,
-        EquipmentCategory.Flail => DamageType.Magical
+        EquipmentCategory.Wand => DamageType.Magical
     };
 
     private CharacterAttribute GetScalingAttribute(EquipmentCategory category) => category switch
@@ -213,7 +247,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
     private EquipmentCategory GenerateRandomWeaponCategory()
     {
         var arr = Enum.GetValues<EquipmentCategory>();
-        return arr[random.Next(5, 13)];
+        return arr[random.Next(5, arr.Length - 1)];
     }
 
     private (int armor, int marmor) GenerateRandomArmor(int availableWorth)
@@ -236,6 +270,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
 
         return new(armor, marmor);
     }
+
 
     private (int str, int vit, int agi, int intel, int lck) GenerateRandomStats(int availableWorth)
     {

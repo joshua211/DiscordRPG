@@ -2,6 +2,7 @@
 using DiscordRPG.Domain.Aggregates.Guild;
 using DiscordRPG.Domain.Entities.Activity.Enums;
 using DiscordRPG.Domain.Entities.Character;
+using DiscordRPG.Domain.Entities.Character.Enums;
 using DiscordRPG.Domain.Entities.Character.ValueObjects;
 
 namespace DiscordRPG.Application.Interfaces.Services;
@@ -31,6 +32,10 @@ public interface ICharacterService
         TransactionContext dialogContext, CancellationToken cancellationToken = default);
 
     Task<Result> CraftItemAsync(GuildId guildId, CharacterId characterId, RecipeId recipeId, TransactionContext context,
+        CancellationToken cancellationToken = default);
+
+    Task<Result> ForgeItemAsync(GuildId guildId, CharacterId characterId, EquipmentCategory category, uint level,
+        List<(ItemId id, int amount)> ingredients, TransactionContext context,
         CancellationToken cancellationToken = default);
 
     Task<Result> UseItemAsync(GuildId guildId, CharacterId characterId, ItemId itemId, TransactionContext context,

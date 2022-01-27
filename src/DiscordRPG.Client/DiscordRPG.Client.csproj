@@ -19,6 +19,7 @@
         <PackageReference Include="EventFlow.DependencyInjection" Version="0.83.4713"/>
         <PackageReference Include="EventFlow.MongoDB" Version="0.83.4713"/>
         <PackageReference Include="Hangfire.Mongo" Version="0.7.27"/>
+        <PackageReference Include="Humanizer" Version="2.13.14"/>
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0"/>

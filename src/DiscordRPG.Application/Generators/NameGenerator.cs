@@ -99,7 +99,7 @@ public class NameGenerator : GeneratorBase
     public string GenerateWoundName() =>
         $"{woundAdjectives[random.Next(woundAdjectives.Count)]} {woundNouns[random.Next(woundNouns.Count)]}";
 
-    public (string name, string descr) GenerateRandomItemName(Rarity rarity)
+    public (string name, string descr, CharacterAttribute attribute) GenerateRandomItemName(Rarity rarity)
     {
         var byRarity = Items.ItemNamesByRarity[rarity];
         return byRarity[random.Next(byRarity.Count)];

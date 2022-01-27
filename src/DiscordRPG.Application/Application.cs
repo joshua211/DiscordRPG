@@ -28,6 +28,7 @@ public static class Application
             .AddTransient<IExperienceGenerator, ExperienceGenerator>()
             .AddTransient<IItemGenerator, ItemGenerator>()
             .AddTransient<NameGenerator>()
+            .AddTransient<ForgeCalculator>()
             .AddTransient<RarityGenerator>()
             .AddTransient<RecipeGenerator>()
             .AddTransient<IWorthCalculator, WorthCalculator>()

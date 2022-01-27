@@ -39,7 +39,8 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
     IApply<ItemRemoved>,
     IApply<TitleAcquired>,
     IApply<TitleEquipped>,
-    IApply<TitleUnequipped>
+    IApply<TitleUnequipped>,
+    IApply<ItemForged>
 
 {
     public GuildState()
@@ -135,6 +136,21 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
     {
         var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
         character.EquipItem(aggregateEvent.ItemId);
+    }
+
+    public void Apply(ItemForged aggregateEvent)
+    {
+        var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
+        foreach (var ingredient in aggregateEvent.Ingredients)
+        {
+            var item = character.Inventory.First(i => i.Id == ingredient.id);
+            if (item.Amount > ingredient.amount)
+                item.IncreaseAmount(-ingredient.amount);
+            else
+                character.Inventory.Remove(item);
+        }
+
+        character.Inventory.Add(aggregateEvent.Item);
     }
 
     public void Apply(ItemRemoved aggregateEvent)

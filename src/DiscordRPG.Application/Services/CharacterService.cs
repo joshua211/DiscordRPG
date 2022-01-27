@@ -166,6 +166,25 @@ public class CharacterService : ICharacterService
         return Result.Success();
     }
 
+    public async Task<Result> ForgeItemAsync(GuildId guildId, CharacterId characterId, EquipmentCategory category,
+        uint level,
+        List<(ItemId id, int amount)> ingredients, TransactionContext context,
+        CancellationToken cancellationToken = default)
+    {
+        logger.Context(context).Information("Forging item for character {CharId}", characterId);
+        var cmd = new ForgeItemCommand(guildId, characterId, ingredients, context, category, level);
+        var result = await bus.PublishAsync(cmd, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            logger.Context(context).Error("Failed to forge item");
+
+            return Result.Failure("Failed to forge item");
+        }
+
+        return Result.Success();
+    }
+
     public async Task<Result> UseItemAsync(GuildId guildId, CharacterId characterId, ItemId itemId,
         TransactionContext context,
         CancellationToken cancellationToken = default)
