@@ -39,7 +39,7 @@ public class DungeonService : IDungeonService
         logger.Context(context).Information("Creating dungeon");
         var id = await channelManager.CreateDungeonThreadAsync(guildId, "Dungeon", context);
         var dungeon = dungeonGenerator.GenerateRandomDungeon(new DungeonId(id.Value), charLevel, charLuck, duration);
-        var cmd = new AddDungeonCommand(guildId, dungeon, context);
+        var cmd = new AddDungeonCommand(guildId, dungeon, character, context);
         var result = await bus.PublishAsync(cmd, token);
 
         if (!result.IsSuccess)

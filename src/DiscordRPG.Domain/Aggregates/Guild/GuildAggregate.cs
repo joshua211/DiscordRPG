@@ -95,9 +95,9 @@ public class GuildAggregate : AggregateRoot<GuildAggregate, GuildId>
         Emit(new RestComplete(commandCharacterId), new Metadata(context.AsMetadata()));
     }
 
-    public void AddDungeon(Dungeon commandDungeon, TransactionContext context)
+    public void AddDungeon(Dungeon dungeon, CharacterId characterId, TransactionContext context)
     {
-        Emit(new DungeonAdded(commandDungeon), new Metadata(context.AsMetadata()));
+        Emit(new DungeonAdded(dungeon, characterId), new Metadata(context.AsMetadata()));
     }
 
     public void RemoveDungeon(DungeonId commandDungeonId, TransactionContext context)

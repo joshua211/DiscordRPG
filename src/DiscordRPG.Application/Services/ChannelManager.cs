@@ -115,7 +115,7 @@ public class ChannelManager : IChannelManager
         });
     }
 
-    public async Task SendToChannelAsync(GuildId guildId, ChannelId channelId, string text, TransactionContext context,
+    public async Task SendToChannelAsync(ChannelId channelId, string text, TransactionContext context,
         Embed embed = null)
     {
         logger.Context(context).Verbose("Sending Message to Channel: {Channel}", channelId.Value);

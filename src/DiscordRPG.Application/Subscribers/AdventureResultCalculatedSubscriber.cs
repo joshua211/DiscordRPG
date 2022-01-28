@@ -67,7 +67,7 @@ public class
                 var deathCmd = new KillCharacterCommand(domainEvent.AggregateIdentity, ev.CharacterId, context);
                 await bus.PublishAsync(deathCmd, cancellationToken);
 
-                await channelManager.SendToChannelAsync(domainEvent.AggregateIdentity, new ChannelId(dungeon.Value.Id),
+                await channelManager.SendToChannelAsync(new ChannelId(dungeon.Value.Id),
                     $"<@{character.Value.Id}>", context, embed);
 
                 return;
@@ -83,7 +83,7 @@ public class
                     new ChangeWoundsCommand(domainEvent.AggregateIdentity, ev.CharacterId, newWounds, context);
                 await bus.PublishAsync(survivedWoundsCommand, cancellationToken);
 
-                await channelManager.SendToChannelAsync(domainEvent.AggregateIdentity, new ChannelId(dungeon.Value.Id),
+                await channelManager.SendToChannelAsync(new ChannelId(dungeon.Value.Id),
                     $"<@{character.Value.Id}>", context, embed);
 
                 return;
@@ -146,7 +146,7 @@ public class
             }
         }
 
-        await channelManager.SendToChannelAsync(domainEvent.AggregateIdentity,
+        await channelManager.SendToChannelAsync(
             new ChannelId(domainEvent.AggregateEvent.DungeonId.Value), sb.ToString(), context);
     }
 }

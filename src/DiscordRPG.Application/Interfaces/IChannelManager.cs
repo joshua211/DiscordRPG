@@ -14,7 +14,7 @@ public interface IChannelManager
 
     Task SendToDungeonHallAsync(GuildId guildId, string text, TransactionContext context, Embed embed = null);
 
-    Task SendToChannelAsync(GuildId guildId, ChannelId channelId, string text, TransactionContext context,
+    Task SendToChannelAsync(ChannelId channelId, string text, TransactionContext context,
         Embed embed = null);
 
     Task DeleteDungeonThreadAsync(ChannelId channelId, TransactionContext context);
