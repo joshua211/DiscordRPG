@@ -1,22 +1,17 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System.Reflection;
-using DiscordRPG.Application.Data;
 using DiscordRPG.Application.Generators;
-using DiscordRPG.Core.DomainServices;
-using DiscordRPG.Core.DomainServices.Generators;
-using DiscordRPG.Core.DomainServices.Progress;
-using DiscordRPG.Core.Events;
-using DiscordRPG.Core.ValueObjects;
 using DiscordRPG.DiagnosticConsole.Commands;
-using DiscordRPG.DiagnosticConsole.Commands.Helper;
 using DiscordRPG.DiagnosticConsole.Importers;
 using DiscordRPG.DiagnosticConsole.Models;
 using DiscordRPG.DiagnosticConsole.Settings;
+using DiscordRPG.Domain.DomainServices;
+using DiscordRPG.Domain.DomainServices.Generators;
+using DiscordRPG.Domain.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using Serilog.Core;
 
@@ -26,14 +21,6 @@ namespace DiscordRPG.DiagnosticConsole
     {
         public static async Task Main()
         {
-            BsonClassMap.RegisterClassMap<DungeonCreated>();
-            BsonClassMap.RegisterClassMap<DungeonDeleted>();
-            BsonClassMap.RegisterClassMap<CharacterDied>();
-            BsonClassMap.RegisterClassMap<ActivityCreated>();
-            BsonClassMap.RegisterClassMap<ActivityDeleted>();
-            BsonClassMap.RegisterClassMap<AdventureResultCalculated>();
-            BsonClassMap.RegisterClassMap<Equipment>();
-            BsonClassMap.RegisterClassMap<Weapon>();
             try
             {
                 var services = new ServiceCollection();
@@ -51,25 +38,19 @@ namespace DiscordRPG.DiagnosticConsole
                     .AddSingleton<IMongoClient>(mongoClient)
                     .AddSingleton<ILiveLogImporter, LiveLogImporter>()
                     .AddTransient<IHistoryLogImporter, HistoryLogImporter>()
-                    .AddTransient<IEventImporter, EventImporter>()
-                    .AddTransient<ICharacterImporter, CharacterImporter>()
-                    .AddTransient<IItemGenerator, ItemGenerator>()
+                    .AddTransient<ItemGenerator>()
                     .AddTransient<IWorthCalculator, WorthCalculator>()
-                    .AddTransient<IDungeonGenerator, DungeonGenerator>()
-                    .AddTransient<INameGenerator, NameGenerator>()
+                    .AddTransient<DungeonGenerator>()
+                    .AddTransient<NameGenerator>()
                     .AddTransient<IItemGenerator, ItemGenerator>()
                     .AddTransient<IRandomizer, Randomizer>()
-                    .AddTransient<CharacterHelper>()
                     .AddTransient<IWoundGenerator, WoundGenerator>()
-                    .AddTransient<IAspectGenerator, AspectGenerator>()
+                    .AddTransient<AspectGenerator>()
                     .AddTransient<IExperienceGenerator, ExperienceGenerator>()
                     .AddTransient<IEncounterGenerator, EncounterGenerator>()
-                    .AddTransient<IRarityGenerator, RarityGenerator>()
+                    .AddTransient<RarityGenerator>()
                     .AddTransient<IAdventureResultService, AdventureResultService>()
                     .AddTransient<IExperienceCurve, ExperienceCurve>()
-                    .AddSingleton<IClassService, Classes>()
-                    .AddSingleton<IRaceService, Races>()
-                    .AddSingleton<INameGenerator, NameGenerator>()
                     .AddSingleton<ConsoleState>()
                     .AddSingleton(Logger.None);
 
