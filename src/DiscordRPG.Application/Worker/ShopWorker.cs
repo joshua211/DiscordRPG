@@ -56,17 +56,14 @@ public class ShopWorker
         var shop =
             await shopService.GetGuildShopAsync(new GuildId(guild.Id), context);
 
-        var tasks = new List<Task>();
         foreach (var character in characters.Value)
         {
             logger.Context(context).Verbose("Updating character shop for character {Id}", character.Id);
             var equip = GetNewEquip(character);
             logger.Here().Verbose("New Equip: {@Equip}", equip);
-            tasks.Add(shopService.UpdateShopInventoryAsync(new GuildId(guild.Id), new CharacterId(character.Id),
-                new ShopId(shop.Value.Id), equip, context));
+            await shopService.UpdateShopInventoryAsync(new GuildId(guild.Id), new CharacterId(character.Id),
+                new ShopId(shop.Value.Id), equip, context);
         }
-
-        await Task.WhenAll(tasks);
     }
 
     private IEnumerable<Item> GetNewEquip(CharacterReadModel character)
