@@ -24,6 +24,7 @@ public class CharacterReadModel : IMongoDbReadModel,
     IAmReadModelFor<GuildAggregate, GuildId, TitleUnequipped>,
     IAmReadModelFor<GuildAggregate, GuildId, ItemForged>
 {
+    public GuildId GuildId { get; private set; }
     public CharacterClass Class { get; set; }
     public CharacterRace Race { get; set; }
     public CharacterName Name { get; set; }
@@ -144,6 +145,7 @@ public class CharacterReadModel : IMongoDbReadModel,
     public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, CharacterCreated> domainEvent)
     {
         var character = domainEvent.AggregateEvent.Character;
+        GuildId = domainEvent.AggregateIdentity;
         Id = character.Id.Value;
         Name = character.Name;
         Class = character.Class;

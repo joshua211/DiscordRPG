@@ -109,11 +109,16 @@ public class CharacterService : ICharacterService
         return Result.Success();
     }
 
-    public Task<Result<IEnumerable<CharacterReadModel>>> GetAllCharactersInGuild(GuildId guildId,
+    public async Task<Result<IEnumerable<CharacterReadModel>>> GetAllCharactersInGuild(GuildId guildId,
         TransactionContext context,
         CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        logger.Context(context).Information("Querying all Characters of Guild {Id}", guildId.Value);
+        var query = new GetAllGuildCharacters(guildId);
+        var result = await processor.ProcessAsync(query, cancellationToken);
+
+        logger.Context(context).Debug("Found {Count} characters", result.Count());
+        return Result<IEnumerable<CharacterReadModel>>.Success(result);
     }
 
     public async Task<Result> EquipItemAsync(GuildId guildId, CharacterId characterId, ItemId itemId,
