@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Discord;
 using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Client.Commands.Attributes;
@@ -12,15 +13,16 @@ public abstract class DialogCommandBase<T> : CommandBase where T : Dialog
     private readonly Dictionary<ulong, T> dialogs;
 
     protected DialogCommandBase(DiscordSocketClient client, ILogger logger, IActivityService activityService,
-        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService) : base(client,
-        logger, activityService, characterService, dungeonService, guildService)
+        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService,
+        IShopService shopService) : base(client,
+        logger, activityService, characterService, dungeonService, guildService, shopService)
     {
         dialogs = new Dictionary<ulong, T>();
     }
 
     protected override async Task HandleAsync(SocketSlashCommand command, GuildCommandContext context)
     {
-        var dialog = (T) Activator.CreateInstance(typeof(T), command.User.Id)!;
+        var dialog = (T) Activator.CreateInstance(typeof(T), command.User.Id, context.Context)!;
         dialogs[dialog.UserId] = dialog;
         logger.Debug("Initiated new dialog: {@Dialog}", dialog);
         await HandleDialogAsync(command, context, dialog);
@@ -28,13 +30,37 @@ public abstract class DialogCommandBase<T> : CommandBase where T : Dialog
 
     protected override async Task HandleSelectionAsync(SocketMessageComponent component, MethodInfo method)
     {
-        var dialog = dialogs[component.User.Id];
+        if (!dialogs.TryGetValue(component.User.Id, out var dialog))
+        {
+            await component.UpdateAsync(properties =>
+            {
+                properties.Components = null;
+                properties.Content = null;
+                properties.Embeds = null;
+                properties.Embed = new EmbedBuilder().WithTitle("This dialog has been closed!").Build();
+            });
+
+            return;
+        }
+
         await (Task) method.Invoke(this, new object[] {component, dialog});
     }
 
     protected override async Task HandleButtonAsync(SocketMessageComponent component, MethodInfo method)
     {
-        var dialog = dialogs[component.User.Id];
+        if (!dialogs.TryGetValue(component.User.Id, out var dialog))
+        {
+            await component.UpdateAsync(properties =>
+            {
+                properties.Components = null;
+                properties.Content = null;
+                properties.Embeds = null;
+                properties.Embed = new EmbedBuilder().WithTitle("This dialog has been closed!").Build();
+            });
+
+            return;
+        }
+
         await (Task) method.Invoke(this, new object[] {component, dialog});
     }
 

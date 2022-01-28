@@ -1,9 +1,10 @@
 ﻿using DiscordRPG.Application.Data;
-using DiscordRPG.Core.DomainServices.Generators;
+using DiscordRPG.Domain.Entities.Dungeon.ValueObjects;
+using DiscordRPG.Domain.Enums;
 
 namespace DiscordRPG.Application.Generators;
 
-public class AspectGenerator : GeneratorBase, IAspectGenerator
+public class AspectGenerator : GeneratorBase
 {
     public Aspect GetRandomAspect(Rarity rarity)
     {

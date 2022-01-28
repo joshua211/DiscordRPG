@@ -8,10 +8,11 @@ using DiscordRPG.Client.Commands.Helpers;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Client.Handlers;
 using DiscordRPG.Common.Extensions;
-using DiscordRPG.Core.Enums;
-using DiscordRPG.Core.ValueObjects;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Entities.Activity.Enums;
+using DiscordRPG.Domain.Entities.Activity.ValueObjects;
+using DiscordRPG.Domain.Entities.Character;
 using Serilog;
-using ActivityType = DiscordRPG.Core.Enums.ActivityType;
 
 namespace DiscordRPG.Client.Commands;
 
@@ -22,8 +23,9 @@ namespace DiscordRPG.Client.Commands;
 public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
 {
     public SearchDungeon(DiscordSocketClient client, ILogger logger, IActivityService activityService,
-        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService) : base(client,
-        logger, activityService, characterService, dungeonService, guildService)
+        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService,
+        IShopService shopService) : base(client,
+        logger, activityService, characterService, dungeonService, guildService, shopService)
     {
     }
 
@@ -72,12 +74,11 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
     [Handler("accept")]
     public async Task HandleSearchDungeon(SocketMessageComponent component, SearchDungeonDialog dialog)
     {
-        var result = await activityService.QueueActivityAsync(dialog.Character.ID, dialog.Duration,
-            ActivityType.SearchDungeon, new ActivityData
-            {
-                PlayerLevel = dialog.Character.Level.CurrentLevel,
-                ServerId = dialog.ServerId
-            });
+        var result = await activityService.QueueActivityAsync(new GuildId(dialog.ServerId.ToString()),
+            new CharacterId(dialog.Character.Id), dialog.Duration,
+            Domain.Entities.Activity.Enums.ActivityType.SearchDungeon,
+            new ActivityData(dialog.Character.Level.CurrentLevel, new GuildId(dialog.ServerId.ToString()), null, null,
+                null), dialog.Context);
 
         if (!result.WasSuccessful)
         {

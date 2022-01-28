@@ -2,9 +2,13 @@
 using Discord;
 using Discord.WebSocket;
 using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Application.Models;
 using DiscordRPG.Client.Commands.Attributes;
+using DiscordRPG.Common;
 using DiscordRPG.Common.Extensions;
-using DiscordRPG.Core.Entities;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Entities.Character;
+using DiscordRPG.Domain.Entities.Dungeon;
 using Serilog;
 
 namespace DiscordRPG.Client.Commands.Base;
@@ -17,9 +21,11 @@ public abstract class CommandBase : IGuildCommand
     protected readonly IDungeonService dungeonService;
     protected readonly IGuildService guildService;
     protected readonly ILogger logger;
+    protected readonly IShopService shopService;
 
     protected CommandBase(DiscordSocketClient client, ILogger logger, IActivityService activityService,
-        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService)
+        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService,
+        IShopService shopService)
     {
         this.client = client;
         this.logger = logger.WithContext(GetType());
@@ -27,6 +33,7 @@ public abstract class CommandBase : IGuildCommand
         this.characterService = characterService;
         this.dungeonService = dungeonService;
         this.guildService = guildService;
+        this.shopService = shopService;
 
         client.SelectMenuExecuted += c => GetHandlerAsync(c, true);
         client.ButtonExecuted += c => GetHandlerAsync(c);
@@ -52,6 +59,8 @@ public abstract class CommandBase : IGuildCommand
                 typeof(RequireActivityAttribute))!;
         var requireDungeon =
             (RequireDungeonAttribute) Attribute.GetCustomAttribute(GetType(), typeof(RequireDungeonAttribute))!;
+        var requireShop =
+            (RequireShopAttribute) Attribute.GetCustomAttribute(GetType(), typeof(RequireShopAttribute))!;
 
         if (requireName is not null)
         {
@@ -63,12 +72,14 @@ public abstract class CommandBase : IGuildCommand
             }
         }
 
-        Guild guild = null;
+        var context = TransactionContext.New();
+
+        GuildReadModel guild = null;
         if (requireGuild is not null)
         {
             var channel = command.Channel as IGuildChannel;
-            var guildResult = await guildService.GetGuildWithDiscordIdAsync(channel.Guild.Id.ToString());
-            if (!guildResult.WasSuccessful)
+            var guildResult = await guildService.GetGuildAsync(new GuildId(channel.Guild.Id.ToString()), context);
+            if (guildResult.Value is null)
             {
                 await command.RespondAsync("No Guild was setup for this server!", ephemeral: true);
                 return;
@@ -77,11 +88,12 @@ public abstract class CommandBase : IGuildCommand
             guild = guildResult.Value;
         }
 
-        Dungeon dungeon = null;
+        DungeonReadModel dungeon = null;
         if (requireDungeon is not null)
         {
-            var dungeonResult = await dungeonService.GetDungeonFromChannelIdAsync(command.Channel.Id.ToString());
-            if (!dungeonResult.WasSuccessful)
+            var dungeonResult =
+                await dungeonService.GetDungeonAsync(new DungeonId(command.Channel.Id.ToString()), context);
+            if (dungeonResult.Value is null)
             {
                 await command.RespondAsync("This command can only be used in a dungeon!", ephemeral: true);
                 return;
@@ -90,12 +102,12 @@ public abstract class CommandBase : IGuildCommand
             dungeon = dungeonResult.Value;
         }
 
-        Character character = null;
+        CharacterReadModel character = null;
         if (requireChar is not null)
         {
             var user = command.User as IGuildUser;
-            var charResult = await characterService.GetUsersCharacterAsync(user.Id.ToString(), guild.ID);
-            if (!charResult.WasSuccessful)
+            var charResult = await characterService.GetCharacterAsync(new CharacterId(user.Id.ToString()), context);
+            if (charResult.Value is null)
             {
                 await command.RespondAsync("Please create a character first!", ephemeral: true);
                 return;
@@ -108,8 +120,8 @@ public abstract class CommandBase : IGuildCommand
         if (requireNoActivity is not null)
         {
             var currentActivityResult =
-                await activityService.GetCharacterActivityAsync(character.ID);
-            if (currentActivityResult.WasSuccessful)
+                await activityService.GetCharacterActivityAsync(new CharacterId(character.Id), context);
+            if (currentActivityResult.Value is not null)
             {
                 var timeLeft = ((currentActivityResult.Value.StartTime +
                                  TimeSpan.FromMinutes((int) currentActivityResult.Value.Duration)) -
@@ -121,12 +133,12 @@ public abstract class CommandBase : IGuildCommand
             }
         }
 
-        Activity activity = null;
+        ActivityReadModel activity = null;
         if (requireActivity is not null)
         {
             var currentActivityResult =
-                await activityService.GetCharacterActivityAsync(character.ID);
-            if (!currentActivityResult.WasSuccessful)
+                await activityService.GetCharacterActivityAsync(new CharacterId(character.Id), context);
+            if (currentActivityResult.Value is null)
             {
                 await command.RespondAsync($"You are currently not doing anything", ephemeral: true);
                 return;
@@ -135,7 +147,20 @@ public abstract class CommandBase : IGuildCommand
             activity = currentActivityResult.Value;
         }
 
-        await HandleAsync(command, new GuildCommandContext(character, activity, dungeon, guild));
+        ShopReadModel shop = null;
+        if (requireShop is not null)
+        {
+            var shopResult = await shopService.GetGuildShopAsync(new GuildId(guild.Id), context);
+            if (shopResult.Value is null)
+            {
+                await command.RespondAsync($"There is no shop for this guild!", ephemeral: true);
+                return;
+            }
+
+            shop = shopResult.Value;
+        }
+
+        await HandleAsync(command, new GuildCommandContext(character, activity, dungeon, guild, context, shop));
     }
 
     private async Task GetHandlerAsync(SocketMessageComponent component, bool isSelection = false)

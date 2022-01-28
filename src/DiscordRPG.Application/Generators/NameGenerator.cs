@@ -1,9 +1,11 @@
 ﻿using DiscordRPG.Application.Data;
-using DiscordRPG.Core.DomainServices.Generators;
+using DiscordRPG.Domain.Entities.Character.Enums;
+using DiscordRPG.Domain.Entities.Dungeon.ValueObjects;
+using DiscordRPG.Domain.Enums;
 
 namespace DiscordRPG.Application.Generators;
 
-public class NameGenerator : GeneratorBase, INameGenerator
+public class NameGenerator : GeneratorBase
 {
     private static readonly Dictionary<Rarity, List<string>> dungeonNouns;
     private static List<string> woundAdjectives;
@@ -97,7 +99,7 @@ public class NameGenerator : GeneratorBase, INameGenerator
     public string GenerateWoundName() =>
         $"{woundAdjectives[random.Next(woundAdjectives.Count)]} {woundNouns[random.Next(woundNouns.Count)]}";
 
-    public (string name, string descr) GenerateRandomItemName(Rarity rarity)
+    public (string name, string descr, CharacterAttribute attribute) GenerateRandomItemName(Rarity rarity)
     {
         var byRarity = Items.ItemNamesByRarity[rarity];
         return byRarity[random.Next(byRarity.Count)];

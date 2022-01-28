@@ -2,63 +2,57 @@
 using DiscordRPG.Application.Data;
 using DiscordRPG.Application.Interfaces;
 using DiscordRPG.Application.Interfaces.Services;
-using DiscordRPG.Common;
-using DiscordRPG.Core.DomainServices.Generators;
-using DiscordRPG.Core.Events;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.DomainServices.Generators;
+using DiscordRPG.Domain.Entities.Character.Events;
+using DiscordRPG.Domain.Entities.Character.ValueObjects;
+using DiscordRPG.Domain.Entities.Shop;
+using DiscordRPG.Domain.Enums;
+using EventFlow.Aggregates;
+using EventFlow.Subscribers;
 
 namespace DiscordRPG.Application.Subscribers;
 
-public class CharacterCreatedSubscriber : EventSubscriber<CharacterCreated>
+public class CharacterCreatedSubscriber : ISubscribeSynchronousTo<GuildAggregate, GuildId, CharacterCreated>
 {
     private readonly IChannelManager channelManager;
-    private readonly IGuildService guildService;
     private readonly IItemGenerator itemGenerator;
     private readonly ILogger logger;
     private readonly IShopService shopService;
 
-    public CharacterCreatedSubscriber(ILogger logger, IChannelManager channelManager, IGuildService guildService,
-        IShopService shopService, IItemGenerator itemGenerator)
+    public CharacterCreatedSubscriber(IChannelManager channelManager, IShopService shopService, ILogger logger,
+        IItemGenerator itemGenerator)
     {
-        this.logger = logger.WithContext(GetType());
         this.channelManager = channelManager;
-        this.guildService = guildService;
         this.shopService = shopService;
         this.itemGenerator = itemGenerator;
+        this.logger = logger.WithContext(GetType());
     }
 
-    public override async Task Handle(CharacterCreated domainEvent, CancellationToken cancellationToken)
+    public async Task HandleAsync(IDomainEvent<GuildAggregate, GuildId, CharacterCreated> domainEvent,
+        CancellationToken cancellationToken)
     {
-        var guildResult =
-            await guildService.GetGuildAsync(domainEvent.Character.GuildId, cancellationToken: cancellationToken);
-        if (!guildResult.WasSuccessful)
+        var context = TransactionContext.With(domainEvent.Metadata["transaction-id"], "CharacterCreatedSubscriber");
+        var character = domainEvent.AggregateEvent.Character;
+        var embed = new EmbedBuilder().WithTitle("New Member!")
+            .WithDescription($"The {character.Race.Name} {character.Class.Name} {character.Name} has joined the guild!")
+            .WithColor(Color.Gold).Build();
+
+        await channelManager.SendToGuildHallAsync(domainEvent.AggregateIdentity, String.Empty, context, embed);
+
+        var shop = await shopService.GetGuildShopAsync(domainEvent.AggregateIdentity, context, cancellationToken);
+        if (!shop.WasSuccessful)
         {
-            logger.Here().Warning("No guild found to complete the event {Name}", domainEvent.GetType().Name);
+            logger.Context(context).Error("Failed to get guild shop, cant create sales inventory");
             return;
         }
 
-        var embed = new EmbedBuilder()
-            .WithTitle("New Member!")
-            .WithColor(Color.Gold)
-            .WithDescription(
-                $"The {domainEvent.Character.CharacterRace.RaceName} {domainEvent.Character.CharacterClass.ClassName} {domainEvent.Character.CharacterName} has joined the guild!")
-            .Build();
-
-        await channelManager.SendToGuildHallAsync(guildResult.Value.ServerId, "", embed);
-
-        var shopResult =
-            await shopService.GetGuildShopAsync(guildResult.Value.ID, cancellationToken: cancellationToken);
-        if (!shopResult.WasSuccessful)
-        {
-            logger.Here().Warning("No shop found for guild {Id}, cant create shop inventory for player");
-            return;
-        }
-
-        var equip = GetStartingShopInventory();
-        await shopService.UpdateWaresAsync(shopResult.Value, domainEvent.Character, equip.ToList(),
-            cancellationToken: cancellationToken);
+        var startingInventory = GetStartingShopInventory();
+        await shopService.UpdateShopInventoryAsync(domainEvent.AggregateIdentity, domainEvent.AggregateEvent.EntityId,
+            new ShopId(shop.Value.Id), startingInventory, context, cancellationToken);
     }
 
-    private IEnumerable<Equipment> GetStartingShopInventory()
+    private IEnumerable<Item> GetStartingShopInventory()
     {
         var aspect = Aspects.OrdinaryAspect;
         for (int i = 0; i < 6; i++)

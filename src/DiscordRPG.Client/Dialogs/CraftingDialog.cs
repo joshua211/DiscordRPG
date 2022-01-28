@@ -1,18 +1,19 @@
-﻿using DiscordRPG.Core.Entities;
-using DiscordRPG.Core.Enums;
-using DiscordRPG.Core.ValueObjects;
+﻿using DiscordRPG.Application.Models;
+using DiscordRPG.Common;
+using DiscordRPG.Domain.Entities.Character.Enums;
 
 namespace DiscordRPG.Client.Dialogs;
 
 public class CraftingDialog : Dialog
 {
-    public CraftingDialog(ulong id) : base(id)
+    public CraftingDialog(ulong userId, TransactionContext context) : base(userId, context)
     {
     }
 
 
-    public Character Character { get; set; }
-    public Recipe SelectedRecipe { get; set; }
+    public CharacterReadModel Character { get; set; }
+
+    /*public Recipe SelectedRecipe { get; set; }*/
     public EquipmentCategory EquipmentCategory { get; set; }
     public int CurrentPage { get; set; }
     public bool IsEquipment { get; set; }

@@ -1,24 +1,19 @@
-﻿using DiscordRPG.Application.Services;
-using DiscordRPG.Common;
+﻿using DiscordRPG.Application.Models;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Entities.Character;
+using DiscordRPG.Domain.Entities.Character.ValueObjects;
+using DiscordRPG.Domain.Entities.Shop;
 
 namespace DiscordRPG.Application.Interfaces.Services;
 
 public interface IShopService
 {
-    Task<Result<Shop>> GetGuildShopAsync(Identity guildId, TransactionContext parentContext = null,
+    Task<Result<ShopReadModel>> GetGuildShopAsync(GuildId guildId, TransactionContext context,
         CancellationToken cancellationToken = default);
 
-    Task<Result> CreateGuildShopAsync(Identity guildId, TransactionContext parentContext = null,
+    Task<Result> CreateGuildShopAsync(GuildId guildId, TransactionContext context,
         CancellationToken cancellationToken = default);
 
-    Task<Result<(Shop, Character)>> BuyEquipAsync(Shop shop, Character character, Equipment equipment,
-        TransactionContext parentContext = null,
-        CancellationToken cancellationToken = default);
-
-    Task<Result<Character>> SellItemAsync(Character character, Item item, TransactionContext parentContext = null,
-        CancellationToken cancellationToken = default);
-
-    Task<Result<Shop>> UpdateWaresAsync(Shop shop, Character character, List<Equipment> newEquipment,
-        TransactionContext parentContext = null,
-        CancellationToken cancellationToken = default);
+    Task<Result> UpdateShopInventoryAsync(GuildId guildId, CharacterId characterId, ShopId shopId,
+        IEnumerable<Item> newInventory, TransactionContext context, CancellationToken cancellationToken = default);
 }

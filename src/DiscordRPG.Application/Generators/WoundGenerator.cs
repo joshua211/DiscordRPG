@@ -1,23 +1,38 @@
-﻿using DiscordRPG.Core.DomainServices;
-using DiscordRPG.Core.DomainServices.Generators;
+﻿using DiscordRPG.Application.Models;
+using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
+using DiscordRPG.Domain.DomainServices.Generators;
+using DiscordRPG.Domain.Entities.Character;
+using DiscordRPG.Domain.Entities.Character.Enums;
+using DiscordRPG.Domain.Entities.Character.ValueObjects;
 
 namespace DiscordRPG.Application.Generators;
 
 public class WoundGenerator : GeneratorBase, IWoundGenerator
 {
     private readonly ILogger logger;
-    private readonly INameGenerator nameGenerator;
+    private readonly NameGenerator nameGenerator;
     private readonly IRandomizer randomizer;
 
-    public WoundGenerator(ILogger logger, INameGenerator nameGenerator, IRandomizer randomizer)
+    public WoundGenerator(ILogger logger, NameGenerator nameGenerator, IRandomizer randomizer)
     {
         this.nameGenerator = nameGenerator;
         this.randomizer = randomizer;
         this.logger = logger.WithContext(GetType());
     }
 
-    public IEnumerable<Wound> GenerateWounds(Character character, Encounter encounter)
+    public IEnumerable<Wound> GenerateWounds(Character characterEntity, Encounter encounter)
     {
+        var character = new CharacterReadModel
+        {
+            Class = characterEntity.Class,
+            Inventory = characterEntity.Inventory,
+            Level = characterEntity.CharacterLevel,
+            Money = characterEntity.Money,
+            Name = characterEntity.Name,
+            Race = characterEntity.Race,
+            Wounds = characterEntity.Wounds
+        };
+
         var wounds = new List<Wound>();
         var totalDmg = 0;
         var encounterHealth = encounter.Health;
@@ -63,8 +78,9 @@ public class WoundGenerator : GeneratorBase, IWoundGenerator
             charHasFirstStrike = !charHasFirstStrike;
         }
 
-        logger.Here().Verbose("Generated wounds {@Wounds} for encounter {@Encounter}", wounds, encounter);
+        wounds.Add(new Wound(nameGenerator.GenerateWoundName(), totalDmg));
+        logger.Verbose("Generated wounds {@Wounds} for encounter {@Encounter}", wounds, encounter);
 
-        return new[] {new Wound(nameGenerator.GenerateWoundName(), totalDmg)};
+        return wounds;
     }
 }

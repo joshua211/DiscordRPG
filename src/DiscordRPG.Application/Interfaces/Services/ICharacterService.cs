@@ -1,40 +1,56 @@
-﻿using DiscordRPG.Application.Services;
-using DiscordRPG.Common;
+﻿using DiscordRPG.Application.Models;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Entities.Activity.Enums;
+using DiscordRPG.Domain.Entities.Character;
+using DiscordRPG.Domain.Entities.Character.Enums;
+using DiscordRPG.Domain.Entities.Character.ValueObjects;
 
 namespace DiscordRPG.Application.Interfaces.Services;
 
 public interface ICharacterService
 {
-    Task<Result<Character>> CreateCharacterAsync(DiscordId userId, Identity guildId, string name, int classId,
-        int raceId, TransactionContext parentContext = null,
+    Task<Result> CreateCharacterAsync(CharacterId characterId, GuildId guildId, string name,
+        CharacterClass characterClass,
+        CharacterRace race, TransactionContext context,
         CancellationToken cancellationToken = default);
 
-    Task<Result<Character>> GetCharacterAsync(Identity identity, TransactionContext parentContext = null,
+    Task<Result<CharacterReadModel>> GetCharacterAsync(CharacterId id, TransactionContext context,
         CancellationToken token = default);
 
-    Task<Result<Character>> GetUsersCharacterAsync(DiscordId userId, Identity guildId,
-        TransactionContext parentContext = null,
+    Task<Result> RestoreWoundsFromRestAsync(GuildId guildId, CharacterId charId, ActivityDuration activityDuration,
+        TransactionContext context,
         CancellationToken token = default);
 
-    Task<Result> RestoreWoundsFromRestAsync(Identity charId, ActivityDuration activityDuration,
-        TransactionContext parentContext = null,
-        CancellationToken token = default);
-
-    Task<Result> UpdateEquipmentAsync(Identity identity, EquipmentInfo equipmentInfo,
-        TransactionContext parentContext = null,
-        CancellationToken token = default);
-
-    Task<Result<IEnumerable<Character>>> GetAllCharactersInGuild(Identity guildId,
-        TransactionContext parentContext = null,
+    Task<Result<IEnumerable<CharacterReadModel>>> GetAllCharactersInGuild(GuildId guildId,
+        TransactionContext context,
         CancellationToken cancellationToken = default);
 
-    Task<Result> CraftItemAsync(Character character, Recipe recipe,
-        TransactionContext parentContext = null,
+    Task<Result> EquipItemAsync(GuildId guildId, CharacterId characterId, ItemId currentItemId,
+        TransactionContext dialogContext, CancellationToken cancellationToken = default);
+
+    Task<Result> UnequipItemAsync(GuildId dialogGuildId, CharacterId characterId, ItemId currentItemId,
+        TransactionContext dialogContext, CancellationToken cancellationToken = default);
+
+    Task<Result> CraftItemAsync(GuildId guildId, CharacterId characterId, RecipeId recipeId, TransactionContext context,
         CancellationToken cancellationToken = default);
 
-    Task<Result> UseItemAsync(Character character, Item item, TransactionContext parentContext = null,
+    Task<Result> ForgeItemAsync(GuildId guildId, CharacterId characterId, EquipmentCategory category, uint level,
+        List<(ItemId id, int amount)> ingredients, TransactionContext context,
         CancellationToken cancellationToken = default);
 
-    Task<Result> DeleteAsync(Identity characterId, TransactionContext parentContext = null,
+    Task<Result> UseItemAsync(GuildId guildId, CharacterId characterId, ItemId itemId, TransactionContext context,
+        CancellationToken cancellationToken = default);
+
+    Task<Result> SellItemAsync(GuildId guildId, CharacterId characterId, ItemId itemId, TransactionContext context,
+        CancellationToken cancellationToken = default);
+
+    Task<Result> BuyItemAsync(GuildId dialogGuildId, CharacterId dialogCharacterId, ItemId selectedItemId,
+        TransactionContext dialogContext, CancellationToken cancellationToken = default);
+
+    Task<Result> EquipTitleAsync(GuildId guildId, CharacterId characterId, TitleId titleId, TransactionContext context,
+        CancellationToken cancellationToken = default);
+
+    Task<Result> UnequipTitleAsync(GuildId guildId, CharacterId characterId, TitleId titleId,
+        TransactionContext context,
         CancellationToken cancellationToken = default);
 }

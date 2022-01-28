@@ -7,10 +7,11 @@ using DiscordRPG.Client.Commands.Helpers;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Client.Handlers;
 using DiscordRPG.Common.Extensions;
-using DiscordRPG.Core.Enums;
-using DiscordRPG.Core.ValueObjects;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Entities.Activity.Enums;
+using DiscordRPG.Domain.Entities.Character;
 using Serilog;
-using ActivityType = DiscordRPG.Core.Enums.ActivityType;
+using ActivityType = DiscordRPG.Domain.Entities.Activity.Enums.ActivityType;
 
 namespace DiscordRPG.Client.Commands;
 
@@ -21,8 +22,9 @@ namespace DiscordRPG.Client.Commands;
 public class Rest : DialogCommandBase<RestDialog>
 {
     public Rest(DiscordSocketClient client, ILogger logger, IActivityService activityService,
-        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService) : base(client,
-        logger, activityService, characterService, dungeonService, guildService)
+        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService,
+        IShopService shopService) : base(client,
+        logger, activityService, characterService, dungeonService, guildService, shopService)
     {
     }
 
@@ -50,8 +52,8 @@ public class Rest : DialogCommandBase<RestDialog>
     protected override async Task HandleDialogAsync(SocketSlashCommand command, GuildCommandContext context,
         RestDialog dialog)
     {
-        dialog.CharId = context.Character.ID;
-        dialog.ServerId = context.Guild.ServerId;
+        dialog.CharId = context.Character.Id;
+        dialog.GuildId = context.Guild.Id;
         var value = (long) command.Data.Options.FirstOrDefault().Value;
         var duration = (ActivityDuration) (int) value;
         dialog.Duration = duration;
@@ -70,12 +72,10 @@ public class Rest : DialogCommandBase<RestDialog>
     [Handler("rest")]
     public async Task HandleRest(SocketMessageComponent component, RestDialog dialog)
     {
-        var result = await activityService.QueueActivityAsync(dialog.CharId, dialog.Duration,
-            ActivityType.Rest, new ActivityData
-            {
-                UserId = dialog.UserId,
-                ServerId = dialog.ServerId
-            });
+        var guildId = new GuildId(dialog.GuildId);
+        var charId = new CharacterId(dialog.CharId);
+        var result = await activityService.QueueActivityAsync(guildId, charId, dialog.Duration, ActivityType.Rest, null,
+            dialog.Context, CancellationToken.None);
 
         await component.UpdateAsync(properties =>
         {

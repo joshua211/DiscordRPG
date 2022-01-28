@@ -1,4 +1,7 @@
-﻿namespace DiscordRPG.Application.Data;
+﻿using DiscordRPG.Domain.Entities.Dungeon.ValueObjects;
+using DiscordRPG.Domain.Enums;
+
+namespace DiscordRPG.Application.Data;
 
 public static class Aspects
 {

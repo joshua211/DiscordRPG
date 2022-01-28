@@ -1,6 +1,6 @@
-﻿using DiscordRPG.Core.DomainServices;
-using DiscordRPG.Core.DomainServices.Generators;
-using DiscordRPG.Core.DomainServices.Progress;
+﻿using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
+using DiscordRPG.Domain.DomainServices.Generators;
+using DiscordRPG.Domain.Services;
 
 namespace DiscordRPG.Application.Generators;
 

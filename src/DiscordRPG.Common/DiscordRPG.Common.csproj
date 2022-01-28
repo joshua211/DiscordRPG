@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="EventFlow" Version="0.83.4713"/>
         <PackageReference Include="MediatR" Version="9.0.0"/>
         <PackageReference Include="MongoDB.Bson" Version="2.14.0-beta1"/>
         <PackageReference Include="Serilog" Version="2.10.0"/>

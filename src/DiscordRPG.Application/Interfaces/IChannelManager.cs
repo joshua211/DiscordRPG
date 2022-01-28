@@ -1,20 +1,24 @@
 ﻿using Discord;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
+using DiscordRPG.Domain.Entities.Character;
 
 namespace DiscordRPG.Application.Interfaces;
 
 public interface IChannelManager
 {
-    Task<DiscordId> CreateDungeonThreadAsync(DiscordId serverId, string dungeonName);
+    Task<ChannelId> CreateDungeonThreadAsync(GuildId guildId, string dungeonName, TransactionContext context);
 
-    Task SendToGuildHallAsync(DiscordId serverId, string text, Embed embed = null);
-    Task SendToInn(DiscordId serverId, string text, Embed embed = null);
+    Task SendToGuildHallAsync(GuildId guildId, string text, TransactionContext context, Embed embed = null);
+    Task SendToInn(GuildId guildId, string text, TransactionContext context, Embed embed = null);
 
-    Task SendToDungeonHallAsync(DiscordId serverId, string text, Embed embed = null);
+    Task SendToDungeonHallAsync(GuildId guildId, string text, TransactionContext context, Embed embed = null);
 
-    Task SendToChannelAsync(DiscordId channelId, string text, Embed embed = null);
+    Task SendToChannelAsync(ChannelId channelId, string text, TransactionContext context,
+        Embed embed = null);
 
-    Task DeleteDungeonThreadAsync(DiscordId threadId);
+    Task DeleteDungeonThreadAsync(ChannelId channelId, TransactionContext context);
 
-    Task UpdateDungeonThreadNameAsync(DiscordId threadId, string name);
-    Task AddUserToThread(DiscordId threadId, DiscordId userId);
+    Task UpdateDungeonThreadNameAsync(ChannelId channelId, string name, TransactionContext context);
+    Task AddUserToThread(ChannelId channelId, CharacterId characterId, TransactionContext context);
 }

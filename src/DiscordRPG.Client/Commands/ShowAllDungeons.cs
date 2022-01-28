@@ -7,6 +7,7 @@ using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Client.Handlers;
 using DiscordRPG.Common.Extensions;
+using DiscordRPG.Domain.Aggregates.Guild;
 using Serilog;
 
 namespace DiscordRPG.Client.Commands;
@@ -16,12 +17,13 @@ namespace DiscordRPG.Client.Commands;
 public class ShowAllDungeons : DialogCommandBase<ShowAllDungeonsDialog>
 {
     public ShowAllDungeons(DiscordSocketClient client, ILogger logger, IActivityService activityService,
-        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService) : base(client,
-        logger, activityService, characterService, dungeonService, guildService)
+        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService,
+        IShopService shopService) : base(client,
+        logger, activityService, characterService, dungeonService, guildService, shopService)
     {
     }
 
-    public override string CommandName => "all-dungeons";
+    public override string CommandName => "dungeonlist";
 
     public override async Task InstallAsync(SocketGuild guild)
     {
@@ -43,8 +45,8 @@ public class ShowAllDungeons : DialogCommandBase<ShowAllDungeonsDialog>
     protected override async Task HandleDialogAsync(SocketSlashCommand command, GuildCommandContext context,
         ShowAllDungeonsDialog dialog)
     {
-        EndDialog(dialog.UserId);
-        var allDungeonsResult = await dungeonService.GetAllDungeonsAsync();
+        dialog.GuildId = new GuildId(context.Guild.Id);
+        var allDungeonsResult = await dungeonService.GetAllDungeonsAsync(dialog.GuildId, dialog.Context);
         if (!allDungeonsResult.WasSuccessful)
         {
             await command.RespondAsync(ephemeral: true, embed: new EmbedBuilder().WithTitle("Something went wrong!")
@@ -52,16 +54,15 @@ public class ShowAllDungeons : DialogCommandBase<ShowAllDungeonsDialog>
             return;
         }
 
-        var guildDungeons = allDungeonsResult.Value.Where(d => d.GuildId.Value == context.Guild.ServerId.Value)
-            .OrderByDescending(d => d.DungeonLevel).ThenByDescending(d => d.Rarity);
-
         var sb = new StringBuilder();
-        foreach (var dungeon in guildDungeons)
+        foreach (var dungeon in allDungeonsResult.Value.OrderByDescending(d => d.Level.Value)
+                     .ThenByDescending(d => d.Rarity))
         {
             sb.AppendLine(
-                $"[{dungeon.Rarity}] Lvl.{dungeon.DungeonLevel} <#{dungeon.DungeonChannelId}> ({dungeon.ExplorationsLeft})");
+                $"[{dungeon.Rarity}] Lvl.{dungeon.Level} <#{dungeon.Id}> ({dungeon.Explorations})");
         }
 
         await command.RespondAsync(sb.ToString(), ephemeral: true);
+        EndDialog(dialog.UserId);
     }
 }

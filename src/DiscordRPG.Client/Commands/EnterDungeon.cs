@@ -7,10 +7,12 @@ using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Commands.Helpers;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Common.Extensions;
-using DiscordRPG.Core.Enums;
-using DiscordRPG.Core.ValueObjects;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Entities.Activity.Enums;
+using DiscordRPG.Domain.Entities.Activity.ValueObjects;
+using DiscordRPG.Domain.Entities.Character;
+using DiscordRPG.Domain.Entities.Dungeon;
 using Serilog;
-using ActivityType = DiscordRPG.Core.Enums.ActivityType;
 
 namespace DiscordRPG.Client.Commands;
 
@@ -21,8 +23,9 @@ namespace DiscordRPG.Client.Commands;
 public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
 {
     public EnterDungeon(DiscordSocketClient client, ILogger logger, IActivityService activityService,
-        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService) : base(client,
-        logger, activityService, characterService, dungeonService, guildService)
+        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService,
+        IShopService shopService) : base(client,
+        logger, activityService, characterService, dungeonService, guildService, shopService)
     {
     }
 
@@ -50,13 +53,14 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
     protected override async Task HandleDialogAsync(SocketSlashCommand command, GuildCommandContext context,
         EnterDungeonDialog dialog)
     {
-        dialog.CharId = context.Character!.ID;
+        dialog.CharId = context.Character!.Id;
         dialog.Dungeon = context.Dungeon!;
+        dialog.GuildId = context.Guild.Id;
         var value = (long) command.Data.Options.FirstOrDefault().Value;
         var duration = (ActivityDuration) (int) value;
         dialog.Duration = duration;
 
-        if (context.Dungeon.ExplorationsLeft <= 0)
+        if (context.Dungeon.Explorations.Value <= 0)
         {
             await command.RespondAsync("This dungeon has already been thoroughly searched!");
             EndDialog(dialog.UserId);
@@ -69,7 +73,7 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
             .Build();
 
         var text =
-            $"Do you want to explore the level {context.Dungeon!.DungeonLevel} Dungeon {context.Dungeon!.Name}? This will take you {(int) duration} minutes";
+            $"Do you want to explore the level {context.Dungeon!.Level.Value} Dungeon {context.Dungeon!.Name}? This will take you {(int) duration} minutes";
 
         await command.RespondAsync(text, component: component, ephemeral: true);
     }
@@ -77,14 +81,12 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
     [Handler("enter")]
     public async Task HandleEnterDungeon(SocketMessageComponent component, EnterDungeonDialog dialog)
     {
-        var result = await activityService.QueueActivityAsync(dialog.CharId, dialog.Duration,
-            ActivityType.Dungeon, new ActivityData
-            {
-                DungeonId = dialog.Dungeon.ID,
-                ThreadId = dialog.Dungeon.DungeonChannelId,
-            });
+        var result = await activityService.QueueActivityAsync(new GuildId(dialog.GuildId),
+            new CharacterId(dialog.CharId), dialog.Duration, Domain.Entities.Activity.Enums.ActivityType.Dungeon,
+            new ActivityData(0, null, null, new DungeonId(dialog.Dungeon.Id), null), dialog.Context);
 
-        await dungeonService.DecreaseExplorationsAsync(dialog.Dungeon);
+        await dungeonService.DecreaseExplorationsAsync(new GuildId(dialog.GuildId), new DungeonId(dialog.Dungeon.Id),
+            dialog.Context);
 
         await component.UpdateAsync(properties =>
         {

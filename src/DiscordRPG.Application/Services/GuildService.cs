@@ -1,131 +1,84 @@
 ﻿using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Application.Models;
 using DiscordRPG.Application.Queries;
-using DiscordRPG.Common;
-using DiscordRPG.Core.Commands.Guilds;
-using MediatR;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Aggregates.Guild.Commands;
+using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
+using EventFlow;
+using EventFlow.Queries;
 
 namespace DiscordRPG.Application.Services;
 
-public class GuildService : ApplicationService, IGuildService
+public class GuildService : IGuildService
 {
-    public GuildService(IMediator mediator, ILogger logger) : base(mediator, logger)
+    private readonly ICommandBus bus;
+    private readonly ILogger logger;
+    private readonly IQueryProcessor processor;
+
+    public GuildService(IQueryProcessor processor, ILogger logger, ICommandBus bus)
     {
+        this.processor = processor;
+        this.bus = bus;
+        this.logger = logger.WithContext(GetType());
     }
 
-    public async Task<Result<Guild>> GetGuildAsync(Identity identity, TransactionContext parentContext = null,
+    public async Task<Result<GuildReadModel>> GetGuildAsync(GuildId identity, TransactionContext context,
         CancellationToken cancellationToken = default)
     {
-        using var ctx = TransactionBegin(parentContext);
-        try
-        {
-            var query = new GetGuildQuery(identity);
-            var result = await ProcessAsync(ctx, query, cancellationToken);
-            if (result is null)
-            {
-                TransactionWarning(ctx, "No guild found for id {Identity}", identity);
-                return Result<Guild>.Failure("No guild found");
-            }
+        logger.Context(context).Information("Querying guild with id {ID}", identity.Value);
+        var query = new GetGuildQuery(identity);
+        var result = await processor.ProcessAsync(query, cancellationToken);
+        logger.Context(context).Information("Found guild: {Guild}", result?.GuildName.Value ?? "null");
 
-            return Result<Guild>.Success(result);
-        }
-        catch (Exception e)
-        {
-            TransactionError(ctx, e);
-            return Result<Guild>.Failure(e.Message);
-        }
+        return Result<GuildReadModel>.Success(result);
     }
 
-    public async Task<Result<Guild>> GetGuildWithDiscordIdAsync(DiscordId serverId,
-        TransactionContext parentContext = null,
+    public async Task<Result> CreateGuildAsync(string serverId, string guildName, string guildHallId,
+        string dungeonHallId, string innChannel,
+        TransactionContext context, CancellationToken token = default)
+    {
+        logger.Context(context).Information("Creating guild with Id {Id}", serverId);
+        var cmd = new CreateGuildCommand(new GuildId(serverId), new GuildName(guildName), new ChannelId(guildHallId),
+            new ChannelId(dungeonHallId), new ChannelId(innChannel), context);
+        var result = await bus.PublishAsync(cmd, token);
+
+        if (!result.IsSuccess)
+        {
+            logger.Context(context).Error("Failed to create guild");
+            return Result.Failure("Failed to create guild");
+        }
+
+        logger.Context(context).Information("Created Guild");
+
+        return Result.Success();
+    }
+
+    public async Task<Result> DeleteGuildAsync(GuildId id, TransactionContext context,
         CancellationToken cancellationToken = default)
     {
-        using var ctx = TransactionBegin(parentContext);
-        try
+        logger.Context(context).Information("Deleting guild with Id {Id}", id.Value);
+        var cmd = new DeleteGuildCommand(id, context);
+        var result = await bus.PublishAsync(cmd, cancellationToken);
+
+        if (!result.IsSuccess)
         {
-            var query = new GetGuildByServerIdQuery(serverId);
-            var result = await ProcessAsync(ctx, query, cancellationToken);
-
-            if (result is null)
-            {
-                TransactionWarning(ctx, "No Guild found with id {ID}", serverId);
-
-                return Result<Guild>.Failure("No Guild found");
-            }
-
-            return Result<Guild>.Success(result);
+            logger.Context(context).Error("Failed to delete guild");
+            return Result.Failure("Failed to delete guild");
         }
-        catch (Exception e)
-        {
-            TransactionError(ctx, e);
-            return Result<Guild>.Failure(e.Message);
-        }
+
+        logger.Context(context).Information("Deleted Guild");
+
+        return Result.Success();
     }
 
-    public async Task<Result<Guild>> CreateGuildAsync(DiscordId serverId, string guildName, DiscordId guildHallId,
-        DiscordId dungeonHallId, DiscordId innChannel, TransactionContext parentContext = null,
-        CancellationToken token = default)
-    {
-        using var ctx = TransactionBegin(parentContext);
-        try
-        {
-            var guild = new Guild(serverId, guildName, guildHallId, dungeonHallId, innChannel);
-            var cmd = new CreateGuildCommand(guild);
-
-            var result = await PublishAsync(ctx, cmd, token);
-            if (!result.WasSuccessful)
-            {
-                TransactionError(ctx, "Failed to create guild {@Guild}", guild);
-                return Result<Guild>.Failure("Failed to create Guild");
-            }
-
-            return Result<Guild>.Success(guild);
-        }
-        catch (Exception e)
-        {
-            TransactionError(ctx, e);
-            return Result<Guild>.Failure(e.Message);
-        }
-    }
-
-    public async Task<Result> DeleteGuildAsync(DiscordId serverId, TransactionContext parentContext = null,
+    public async Task<Result<IEnumerable<GuildReadModel>>> GetAllGuildsAsync(TransactionContext context,
         CancellationToken cancellationToken = default)
     {
-        using var ctx = TransactionBegin(parentContext);
-        try
-        {
-            var cmd = new DeleteGuildCommand(serverId);
-            var result = await PublishAsync(ctx, cmd, cancellationToken);
+        logger.Context(context).Information("Querying all guilds");
+        var query = new GetAllGuildsQuery();
+        var result = await processor.ProcessAsync(query, cancellationToken);
+        logger.Context(context).Information("Found {Count} guild", result.Count());
 
-            if (!result.WasSuccessful)
-            {
-                TransactionError(ctx, "Failed to delete guild: {Reason}", result.ErrorMessage);
-                return Result.Failure("Failed to delete guild: " + result.ErrorMessage);
-            }
-
-            return Result.Success();
-        }
-        catch (Exception e)
-        {
-            TransactionError(ctx, e);
-            return Result.Failure(e.Message);
-        }
-    }
-
-    public async Task<Result<IEnumerable<Guild>>> GetAllGuildsAsync(TransactionContext parentContext = null,
-        CancellationToken cancellationToken = default)
-    {
-        using var ctx = TransactionBegin(parentContext);
-        try
-        {
-            var query = new GetAllGuildsQuery();
-            var result = await ProcessAsync(ctx, query, cancellationToken);
-
-            return Result<IEnumerable<Guild>>.Success(result);
-        }
-        catch (Exception e)
-        {
-            TransactionError(ctx, e);
-            return Result<IEnumerable<Guild>>.Failure(e.Message);
-        }
+        return Result<IEnumerable<GuildReadModel>>.Success(result);
     }
 }

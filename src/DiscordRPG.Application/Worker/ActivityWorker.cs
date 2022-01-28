@@ -1,10 +1,13 @@
-﻿using DiscordRPG.Application.Interfaces;
+﻿using Discord;
+using DiscordRPG.Application.Generators;
+using DiscordRPG.Application.Interfaces;
 using DiscordRPG.Application.Interfaces.Services;
-using DiscordRPG.Core.Commands.Activities;
-using DiscordRPG.Core.DomainServices.Generators;
-using MediatR;
-using Discord;
-using ActivityType = DiscordRPG.Core.Enums.ActivityType;
+using DiscordRPG.Application.Models;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Entities.Activity;
+using DiscordRPG.Domain.Entities.Character;
+using DiscordRPG.Domain.Entities.Dungeon;
+using ActivityType = DiscordRPG.Domain.Entities.Activity.Enums.ActivityType;
 
 namespace DiscordRPG.Application.Worker;
 
@@ -15,14 +18,12 @@ public class ActivityWorker
     private readonly ICharacterService characterService;
     private readonly IDungeonService dungeonService;
     private readonly ILogger logger;
-    private readonly IMediator mediator;
-    private readonly IRarityGenerator rarityGenerator;
+    private readonly RarityGenerator rarityGenerator;
 
-    public ActivityWorker(IMediator mediator, IChannelManager channelManager, IDungeonService dungeonService,
+    public ActivityWorker(IChannelManager channelManager, IDungeonService dungeonService,
         ILogger logger, IActivityService activityService, ICharacterService characterService,
-        IRarityGenerator rarityGenerator)
+        RarityGenerator rarityGenerator)
     {
-        this.mediator = mediator;
         this.channelManager = channelManager;
         this.dungeonService = dungeonService;
         this.logger = logger.WithContext(GetType());
@@ -31,15 +32,16 @@ public class ActivityWorker
         this.rarityGenerator = rarityGenerator;
     }
 
-    public async Task ExecuteActivityAsync(string activityId)
+    public async Task ExecuteActivityAsync(ActivityId activityId)
     {
+        var context = TransactionContext.New();
         var wasSuccess = true;
-        logger.Here().Information("Executing activity with id {Id}", activityId);
+        logger.Context(context).Information("Executing activity with id {Id}", activityId);
 
-        var activityResult = await activityService.GetActivityAsync(activityId);
-        if (!activityResult.WasSuccessful)
+        var activityResult = await activityService.GetActivityAsync(activityId, context);
+        if (activityResult.Value is null)
         {
-            logger.Here().Warning("No activity found, aborting execution");
+            logger.Context(context).Warning("No activity found, aborting execution");
             return;
         }
 
@@ -49,81 +51,86 @@ public class ActivityWorker
             switch (activity.Type)
             {
                 case ActivityType.Unknown:
-                    logger.Here().Information("Executed activity!");
+                    logger.Context(context).Information("Executed activity!");
                     break;
                 case ActivityType.SearchDungeon:
-                    await ExecuteSearchDungeon(activity);
+                    await ExecuteSearchDungeon(activity, context);
                     break;
                 case ActivityType.Dungeon:
-                    await ExecuteEnterDungeon(activity);
+                    await ExecuteEnterDungeon(activity, context);
                     break;
                 case ActivityType.Rest:
-                    await ExecuteRest(activity);
+                    await ExecuteRest(activity, context);
                     break;
                 default:
-                    logger.Here().Warning("Activity is not handled, {Name}", activity.Type);
+                    logger.Context(context).Warning("Activity is not handled, {Name}", activity.Type);
                     break;
             }
         }
         catch (Exception e)
         {
             wasSuccess = false;
-            logger.Here().Error(e, "Failed to execute {Name}", activity.GetType().Name);
+            logger.Context(context).Error(e, "Failed to execute {Name}", activity.GetType().Name);
         }
 
-        await mediator.Send(new DeleteActivityCommand(activityId));
+        await activityService.CompleteActivityAsync(new GuildId(activity.GuildId), new ActivityId(activity.Id),
+            context);
 
         var word = wasSuccess ? "Successfully" : "Unsuccessfully";
-        logger.Here().Information("{Word} executed and removed Activity {Name} after {Duration} minutes", word,
+        logger.Context(context).Information("{Word} executed and removed Activity {Name} after {Duration} minutes",
+            word,
             activity.Type,
             (int) activity.Duration);
     }
 
-    private async Task ExecuteRest(Activity activity)
+    private async Task ExecuteRest(ActivityReadModel activity, TransactionContext context)
     {
-        var result = await characterService.RestoreWoundsFromRestAsync(activity.CharId, activity.Duration);
+        var result = await characterService.RestoreWoundsFromRestAsync(new GuildId(activity.GuildId),
+            new CharacterId(activity.CharacterId), activity.Duration, context);
         if (!result.WasSuccessful)
         {
-            logger.Here().Error("Failed resting");
+            logger.Context(context).Error("Failed resting");
             return;
         }
 
         var embed = new EmbedBuilder().WithTitle("Rest complete")
-            .WithDescription($"<@{activity.Data.UserId}> you are done resting!").Build();
+            .WithDescription("You are done resting!").Build();
 
-        await channelManager.SendToInn(new DiscordId(activity.Data.ServerId.ToString()), String.Empty, embed);
+        await channelManager.SendToInn(new GuildId(activity.GuildId), $"<@{activity.CharacterId}>", context, embed);
     }
 
-    private async Task ExecuteEnterDungeon(Activity activity)
+    private async Task ExecuteEnterDungeon(ActivityReadModel activity, TransactionContext context)
     {
         var executionResult =
-            await dungeonService.CalculateDungeonAdventureResultAsync(activity.CharId,
-                activity.Data.ThreadId.ToString(),
-                activity.Duration);
+            await dungeonService.CalculateDungeonAdventureResultAsync(new GuildId(activity.GuildId),
+                new DungeonId(activity.ActivityData.DungeonId.Value), new CharacterId(activity.CharacterId),
+                activity.Duration, context);
     }
 
-    private async Task ExecuteSearchDungeon(Activity activity)
+    private async Task ExecuteSearchDungeon(ActivityReadModel activity, TransactionContext context)
     {
-        var charResult = await characterService.GetCharacterAsync(activity.CharId);
+        var charResult = await characterService.GetCharacterAsync(new CharacterId(activity.CharacterId), context);
         if (!charResult.WasSuccessful)
         {
-            logger.Here().Error("No character with ID {Id} found, cant execute SearchDungeon", activity.CharId.Value);
+            logger.Context(context).Error("No character with ID {Id} found, cant execute SearchDungeon",
+                activity.CharacterId);
             return;
         }
 
         var character = charResult.Value;
 
         var createDungeonResult =
-            await dungeonService.CreateDungeonAsync(activity.Data.ServerId.ToString(), character, activity.Duration);
+            await dungeonService.CreateDungeonAsync(new GuildId(activity.ActivityData.GuildId.Value),
+                new CharacterId(character.Id), character.Level.CurrentLevel, character.Luck, activity.Duration,
+                context);
 
         if (!createDungeonResult.WasSuccessful)
         {
-            logger.Here().Warning("Failed to add dungeon from activity {Id}", activity.ID);
+            logger.Context(context).Warning("Failed to add dungeon from activity {Id}", activity.Id);
 
             return;
         }
 
-        logger.Here().Debug("Created Dungeon {Name} with Thread {Channel}", createDungeonResult.Value.Name,
-            createDungeonResult.Value.DungeonChannelId);
+        logger.Context(context).Debug("Created Dungeon");
     }
 }

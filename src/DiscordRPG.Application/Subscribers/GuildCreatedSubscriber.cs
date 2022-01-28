@@ -1,32 +1,34 @@
 ﻿using DiscordRPG.Application.Interfaces.Services;
-using DiscordRPG.Common;
-using DiscordRPG.Core.DomainServices.Generators;
-using DiscordRPG.Core.Events;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Aggregates.Guild.Events;
+using EventFlow.Aggregates;
+using EventFlow.Subscribers;
 
 namespace DiscordRPG.Application.Subscribers;
 
-public class GuildCreatedSubscriber : EventSubscriber<GuildCreated>
+public class GuildCreatedSubscriber : ISubscribeSynchronousTo<GuildAggregate, GuildId, GuildCreated>
 {
-    private readonly IItemGenerator itemGenerator;
     private readonly ILogger logger;
     private readonly IShopService shopService;
 
-    public GuildCreatedSubscriber(IShopService shopService, ILogger logger, IItemGenerator itemGenerator)
+    public GuildCreatedSubscriber(IShopService shopService, ILogger logger)
     {
         this.shopService = shopService;
-        this.itemGenerator = itemGenerator;
-        this.logger = logger.WithContext(GetType());
+        this.logger = logger;
     }
 
-    public override async Task Handle(GuildCreated domainEvent, CancellationToken cancellationToken)
+    public async Task HandleAsync(IDomainEvent<GuildAggregate, GuildId, GuildCreated> domainEvent,
+        CancellationToken cancellationToken)
     {
-        var createShopResult =
-            await shopService.CreateGuildShopAsync(domainEvent.Guild.ID, cancellationToken: cancellationToken);
-
-        if (!createShopResult.WasSuccessful)
+        var context = TransactionContext.With(domainEvent.Metadata["transaction-id"]);
+        var result = await shopService.CreateGuildShopAsync(domainEvent.AggregateIdentity, context, cancellationToken);
+        if (!result.WasSuccessful)
         {
-            logger.Here().Warning("Failed to create shop after Guild creation");
+            logger.Context(context).Error("Failed to create shop for guild {GuildId}",
+                domainEvent.AggregateIdentity.Value);
             return;
         }
+
+        logger.Context(context).Information("Created shop for guild {Id}", domainEvent.AggregateIdentity.Value);
     }
 }

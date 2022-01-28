@@ -15,8 +15,9 @@ namespace DiscordRPG.Client.Commands;
 public class DungeonInfo : CommandBase
 {
     public DungeonInfo(DiscordSocketClient client, ILogger logger, IActivityService activityService,
-        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService) : base(client,
-        logger, activityService, characterService, dungeonService, guildService)
+        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService,
+        IShopService shopService) : base(client,
+        logger, activityService, characterService, dungeonService, guildService, shopService)
     {
     }
 
@@ -40,7 +41,6 @@ public class DungeonInfo : CommandBase
     protected override async Task HandleAsync(SocketSlashCommand command, GuildCommandContext context)
     {
         var embed = EmbedHelper.DungeonAsEmbed(context.Dungeon);
-
         await command.RespondAsync(embed: embed, ephemeral: true);
     }
 }

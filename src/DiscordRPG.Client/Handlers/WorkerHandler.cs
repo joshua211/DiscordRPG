@@ -18,10 +18,10 @@ public class WorkerHandler : IHandler
     {
         logger.Here().Information("Installing WorkerHandler");
         RecurringJob.AddOrUpdate<CleaningWorker>("DungeonCleaner", x => x.RemoveExhaustedAndUnusedDungeons(),
-            "0 * * * *");
-        RecurringJob.AddOrUpdate<DiagnosticsWorker>("Diagnostics", subscriber => subscriber.FlushAsync(),
-            "* * * * *");
+            "1 * * * *");
         RecurringJob.AddOrUpdate<ShopWorker>("ShopUpdate", x => x.UpdateShopsAsync(), "0 */3 * * *");
+        /*RecurringJob.AddOrUpdate<DiagnosticsWorker>("Diagnostics", subscriber => subscriber.FlushAsync(),
+            "* * * * *");*/
 
         return Task.CompletedTask;
     }

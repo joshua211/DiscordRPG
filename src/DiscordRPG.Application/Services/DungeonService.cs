@@ -1,216 +1,127 @@
-﻿using Discord;
+﻿using DiscordRPG.Application.Generators;
 using DiscordRPG.Application.Interfaces;
 using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Application.Models;
 using DiscordRPG.Application.Queries;
-using DiscordRPG.Common;
-using DiscordRPG.Core.Commands.Dungeons;
-using DiscordRPG.Core.DomainServices.Generators;
-using MediatR;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Aggregates.Guild.Commands;
+using DiscordRPG.Domain.Entities.Activity.Enums;
+using DiscordRPG.Domain.Entities.Character;
+using DiscordRPG.Domain.Entities.Dungeon;
+using DiscordRPG.Domain.Entities.Dungeon.Commands;
+using EventFlow;
+using EventFlow.Queries;
 
 namespace DiscordRPG.Application.Services;
 
-public class DungeonService : ApplicationService, IDungeonService
+public class DungeonService : IDungeonService
 {
+    private readonly ICommandBus bus;
     private readonly IChannelManager channelManager;
-    private readonly ICharacterService characterService;
-    private readonly IDungeonGenerator dungeonGenerator;
-    private readonly IGuildService guildService;
+    private readonly DungeonGenerator dungeonGenerator;
+    private readonly ILogger logger;
+    private readonly IQueryProcessor processor;
 
-    public DungeonService(IMediator mediator, ILogger logger, IGuildService guildService,
-        ICharacterService characterService, IDungeonGenerator dungeonGenerator, IChannelManager channelManager) : base(
-        mediator, logger)
+    public DungeonService(IQueryProcessor processor, ICommandBus bus, ILogger logger, DungeonGenerator dungeonGenerator,
+        IChannelManager channelManager)
     {
-        this.guildService = guildService;
-        this.characterService = characterService;
+        this.processor = processor;
+        this.bus = bus;
+        this.logger = logger;
         this.dungeonGenerator = dungeonGenerator;
         this.channelManager = channelManager;
     }
 
-    public async Task<Result<Dungeon>> CreateDungeonAsync(DiscordId serverId, Character character,
+    public async Task<Result> CreateDungeonAsync(GuildId guildId, CharacterId character, uint charLevel, int charLuck,
         ActivityDuration duration,
-        TransactionContext parentContext = null,
-        CancellationToken token = default)
+        TransactionContext context, CancellationToken token = default)
     {
-        using var ctx = TransactionBegin(parentContext);
-        try
+        logger.Context(context).Information("Creating dungeon");
+        var id = await channelManager.CreateDungeonThreadAsync(guildId, "Dungeon", context);
+        var dungeon = dungeonGenerator.GenerateRandomDungeon(new DungeonId(id.Value), charLevel, charLuck, duration);
+        var cmd = new AddDungeonCommand(guildId, dungeon, character, context);
+        var result = await bus.PublishAsync(cmd, token);
+
+        if (!result.IsSuccess)
         {
-            var guildResult = await guildService.GetGuildWithDiscordIdAsync(serverId, ctx, token);
-            if (!guildResult.WasSuccessful)
-            {
-                TransactionWarning(ctx, "No guild found to add the dungeon");
-
-                return Result<Dungeon>.Failure("No guild found");
-            }
-
-            var threadId = await channelManager.CreateDungeonThreadAsync(guildResult.Value.ServerId, "Dungeon");
-
-            var dungeon =
-                dungeonGenerator.GenerateRandomDungeon(serverId, threadId, character.Level.CurrentLevel, character.Luck,
-                    duration);
-            var cmd = new CreateDungeonCommand(dungeon, character, duration);
-
-            var result = await PublishAsync(ctx, cmd, token);
-            if (!result.WasSuccessful)
-            {
-                TransactionError(ctx,
-                    "Failed to create Dungeon with channelId: {ChannelId}, for guild: {GuildId} because: {Reason}",
-                    threadId, serverId, result.ErrorMessage);
-
-                return Result<Dungeon>.Failure("Failed to create dungeon");
-            }
-
-            await channelManager.UpdateDungeonThreadNameAsync(threadId, dungeon.Name);
-            await channelManager.AddUserToThread(threadId, character.UserId);
-            var dungeonEmbed = new EmbedBuilder()
-                .WithTitle(dungeon.Name)
-                .WithDescription($"{character.CharacterName} found this new dungeon!")
-                .WithColor(Color.Purple)
-                .AddField("Rarity", dungeon.Rarity.ToString())
-                .AddField("Level", dungeon.DungeonLevel)
-                .AddField("Explorations", $"{dungeon.ExplorationsLeft}")
-                .WithFooter(
-                    "This dungeon will be deleted if no explorations are left or if it has not been used for 24 hours")
-                .Build();
-            var newFoundEmbed = new EmbedBuilder().WithTitle("New Dungeon!").WithDescription(
-                    $"{character.CharacterName} found a new **{dungeon.Rarity.ToString()}** dungeon (Lvl. {dungeon.DungeonLevel})! <#{threadId}>")
-                .Build();
-
-            await channelManager.SendToChannelAsync(threadId, string.Empty, dungeonEmbed);
-            await channelManager.SendToDungeonHallAsync(serverId, string.Empty, newFoundEmbed);
-
-            return Result<Dungeon>.Success(dungeon);
+            logger.Context(context).Error("Failed to add dungeon");
+            return Result.Failure("Failed to add dungeon");
         }
-        catch (Exception e)
-        {
-            TransactionError(ctx, e);
-            return Result<Dungeon>.Failure(e.Message);
-        }
+
+        await channelManager.UpdateDungeonThreadNameAsync(id, dungeon.Name.Value, context);
+
+        return Result.Success();
     }
 
-    public async Task<Result<Dungeon>> GetDungeonFromChannelIdAsync(DiscordId channelId,
-        TransactionContext parentContext = null,
+    public async Task<Result<DungeonReadModel>> GetDungeonAsync(DungeonId dungeonId, TransactionContext context,
         CancellationToken token = default)
     {
-        using var ctx = TransactionBegin(parentContext);
-        try
-        {
-            var query = new GetDungeonByChannelIdQuery(channelId);
-            var result = await ProcessAsync(ctx, query, token);
-            if (result is null)
-            {
-                TransactionWarning(ctx, "No dungeon with channelId {Id} found", channelId);
-                return Result<Dungeon>.Failure("No dungeon found");
-            }
+        logger.Context(context).Information("Querying dungeon with Id {Id}", dungeonId.Value);
+        var query = new GetDungeonQuery(dungeonId);
+        var result = await processor.ProcessAsync(query, token);
 
-            return Result<Dungeon>.Success(result);
-        }
-        catch (Exception e)
-        {
-            TransactionError(ctx, e);
-            return Result<Dungeon>.Failure(e.Message);
-        }
+        return Result<DungeonReadModel>.Success(result);
     }
 
-    public async Task<Result> CalculateDungeonAdventureResultAsync(Identity charId, DiscordId threadId,
-        ActivityDuration activityDuration,
-        TransactionContext parentContext = null,
-        CancellationToken token = default)
+    public async Task<Result> CalculateDungeonAdventureResultAsync(GuildId guildId, DungeonId dungeonId,
+        CharacterId characterId,
+        ActivityDuration activityDuration, TransactionContext context, CancellationToken token = default)
     {
-        using var ctx = TransactionBegin(parentContext);
-        try
+        logger.Context(context).Information("Calculating adventure Result for Character {CharId} with Dungeon {DungId}",
+            characterId.Value, dungeonId.Value);
+        var cmd = new CalculateAdventureResultCommand(guildId, dungeonId, characterId, activityDuration, context);
+        var result = await bus.PublishAsync(cmd, token);
+
+        if (!result.IsSuccess)
         {
-            var charResult = await characterService.GetCharacterAsync(charId, ctx, token: token);
-            if (!charResult.WasSuccessful)
-            {
-                TransactionWarning(ctx, "No character with ID {Id} found to execute dungeon search", charId);
-                return Result.Failure(charResult.ErrorMessage);
-            }
-
-            var dungeonResult = await GetDungeonFromChannelIdAsync(threadId, ctx, token: token);
-            if (!dungeonResult.WasSuccessful)
-            {
-                TransactionWarning(ctx, "No dungeon with channelID {Id} found to execute dungeon search", threadId);
-                return Result.Failure(charResult.ErrorMessage);
-            }
-
-            var command = new CalculateAdventureResultCommand(charResult.Value, dungeonResult.Value, activityDuration);
-            var result = await PublishAsync(ctx, command, token);
-            if (!result.WasSuccessful)
-            {
-                TransactionError(ctx, "Failed to calculate dungeon result: {Reason}", result.ErrorMessage);
-                return Result.Failure("Failed to calculate result");
-            }
-
-            return Result.Success();
+            logger.Context(context).Error("Failed to calculate adventure result");
+            return Result.Failure("Failed to calculate");
         }
-        catch (Exception e)
-        {
-            TransactionError(ctx, e);
-            return Result.Failure(e.Message);
-        }
+
+        return Result.Success();
     }
 
-    public async Task<Result> DecreaseExplorationsAsync(Dungeon dungeon, TransactionContext parentContext = null,
+    public async Task<Result> DecreaseExplorationsAsync(GuildId guildId, DungeonId dungeonId,
+        TransactionContext context,
         CancellationToken token = default)
     {
-        using var ctx = TransactionBegin(parentContext);
-        try
-        {
-            var command = new DecreaseExplorationCommand(dungeon);
-            var result = await PublishAsync(ctx, command, token);
-            if (!result.WasSuccessful)
-            {
-                TransactionError(ctx, "Failed to decrease dungeon explorations: {Reason}", result.ErrorMessage);
-                return Result.Failure("Failed to decrease explorations");
-            }
+        logger.Context(context).Information("Reducing explorations for Dungeon with Id {Id} from Guild {Guild}",
+            dungeonId.Value, guildId.Value);
+        var cmd = new DecreaseDungeonExplorationsCommand(guildId, dungeonId, context);
+        var result = await bus.PublishAsync(cmd, token);
 
-            return Result.Success();
-        }
-        catch (Exception e)
+        if (!result.IsSuccess)
         {
-            TransactionError(ctx, e);
-            return Result.Failure(e.Message);
+            logger.Context(context).Error("Failed to decrease explorations for Dungeon with id {Id}", dungeonId.Value);
+            return Result.Failure("Failed to decrease explorations");
         }
+
+        return Result.Success();
     }
 
-    public async Task<Result<IEnumerable<Dungeon>>> GetAllDungeonsAsync(TransactionContext parentContext = null,
-        CancellationToken token = default)
+    public async Task<Result<IEnumerable<DungeonReadModel>>> GetAllDungeonsAsync(GuildId guildId,
+        TransactionContext context, CancellationToken token = default)
     {
-        using var ctx = TransactionBegin(parentContext);
-        try
-        {
-            var query = new GetAllDungeonsQuery();
-            var result = await ProcessAsync(ctx, query, token);
+        var query = new GetAllDungeonsQuery(guildId);
+        var result = await processor.ProcessAsync(query, token);
 
-            return Result<IEnumerable<Dungeon>>.Success(result);
-        }
-        catch (Exception e)
-        {
-            TransactionError(ctx, e);
-            return Result<IEnumerable<Dungeon>>.Failure(e.Message);
-        }
+        return Result<IEnumerable<DungeonReadModel>>.Success(result);
     }
 
-    public async Task<Result> DeleteDungeonAsync(Dungeon dungeon, TransactionContext parentContext = null,
+    public async Task<Result> DeleteDungeonAsync(GuildId guildId, DungeonId dungeonId, TransactionContext context,
         CancellationToken token = default)
     {
-        using var ctx = TransactionBegin(parentContext);
-        try
-        {
-            var command = new DeleteDungeonCommand(dungeon.ID);
-            var result = await PublishAsync(ctx, command, token);
-            if (!result.WasSuccessful)
-            {
-                TransactionError(ctx, "Failed to delete dungeon: {Reason}", result.ErrorMessage);
-                return Result.Failure("Failed to Delete Dungeon");
-            }
+        logger.Context(context).Information("Deleting Dungeon with Id {Id} from Guild {Guild}", dungeonId.Value,
+            guildId.Value);
+        var cmd = new RemoveDungeonCommand(guildId, dungeonId, context);
+        var result = await bus.PublishAsync(cmd, token);
 
-            return Result.Success();
-        }
-        catch (Exception e)
+        if (!result.IsSuccess)
         {
-            TransactionError(ctx, e);
-            return Result.Failure(e.Message);
+            logger.Context(context).Error("Failed to delete dungeon with id {Id}", dungeonId.Value);
+            return Result.Failure("Failed to delete dungeon");
         }
+
+        return Result.Success();
     }
 }

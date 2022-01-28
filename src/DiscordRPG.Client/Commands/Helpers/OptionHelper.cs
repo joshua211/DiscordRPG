@@ -1,5 +1,5 @@
 ﻿using Discord;
-using DiscordRPG.Core.Enums;
+using DiscordRPG.Domain.Entities.Activity.Enums;
 
 namespace DiscordRPG.Client.Commands.Helpers;
 

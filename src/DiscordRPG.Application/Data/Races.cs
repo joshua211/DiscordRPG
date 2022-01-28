@@ -1,76 +1,40 @@
-﻿using DiscordRPG.Core.DomainServices;
+﻿using DiscordRPG.Domain.Entities.Character.ValueObjects;
 
 namespace DiscordRPG.Application.Data;
 
-public class Races : IRaceService
+public static class Races
 {
-    private readonly ILogger logger;
-
-    private readonly Dictionary<int, Race> races;
-
-    public Races(ILogger logger)
+    private static readonly Dictionary<string, CharacterRace> races = new Dictionary<string, CharacterRace>()
     {
-        this.logger = logger.WithContext(GetType());
-        ;
-        races = new Dictionary<int, Race>() {{1, Human}, {2, Elf}, {3, Dwarf}, {4, Mias}};
+        {Human.Name, Human},
+        {Dwarf.Name, Dwarf},
+        {Elf.Name, Elf},
+        {Mias.Name, Mias}
+    };
+
+    public static CharacterRace Human => new CharacterRace("Human",
+        "The most mundane of all races, only luck brought them this far",
+        0.5f, 0.5f, 0.5f, 0.5f, 0.5f);
+
+    public static CharacterRace Dwarf => new CharacterRace("Dwarf",
+        "Another classic one",
+        1f, 1, 0.2f, 0.3f, 0.5f);
+
+    public static CharacterRace Elf => new CharacterRace("Elf",
+        "The most ancient and generic fantasy race",
+        0.5f, 0.5f, 0.7f, 0.8f, 0.5f);
+
+    public static CharacterRace Mias => new CharacterRace("Mi'As",
+        "Legends say the founder of this race did something legendary once, who knows",
+        0.3f, 1f, 0.4f, 0.5f, 1f);
+
+    public static CharacterRace GetRace(string name)
+    {
+        races.TryGetValue(name, out var c);
+        return c;
     }
 
-    public static Race Human => new Race("Human")
-    {
-        Description = "The most mundane of all races, only luck brought them this far",
-        AgilityModifier = 0.5f,
-        IntelligenceModifier = 0.5f,
-        LuckModifier = 1f,
-        StrengthModifier = 0.5f,
-        VitalityModifier = 0.5f
-    };
-
-    public static Race Dwarf => new Race("Dwarf")
-    {
-        Description = "Another classic one",
-        AgilityModifier = 0.2f,
-        IntelligenceModifier = 0.3f,
-        LuckModifier = 0.5f,
-        StrengthModifier = 1f,
-        VitalityModifier = 1f
-    };
-
-    public static Race Elf => new Race("Elf")
-    {
-        Description = "The most ancient and generic fantasy race",
-        AgilityModifier = 0.7f,
-        IntelligenceModifier = 0.8f,
-        LuckModifier = 0.5f,
-        StrengthModifier = 0.5f,
-        VitalityModifier = 0.5f
-    };
-
-    public static Race Mias => new Race("Mi'as")
-    {
-        Description = "Legends say the founder of this race did something legendary once, who knows",
-        AgilityModifier = 0.4f,
-        IntelligenceModifier = 0.5f,
-        LuckModifier = 1f,
-        StrengthModifier = 0.3f,
-        VitalityModifier = 1f
-    };
-
-    public Race GetRace(int id)
-    {
-        if (!races.TryGetValue(id, out var obj))
-        {
-            logger.Here().Error("No class with id {Id} found", id);
-        }
-
-        return obj;
-    }
-
-    public IEnumerable<(int id, Race race)> GetAllRaces()
-    {
-        return races.ToList().Select(kv => (kv.Key, kv.Value));
-    }
-
-    public IEnumerable<string> GetStrengths(Race race)
+    public static IEnumerable<string> GetStrengths(CharacterRace race)
     {
         var list = new List<string>();
         if (race.AgilityModifier > 0.5f)
@@ -90,7 +54,7 @@ public class Races : IRaceService
         return list;
     }
 
-    public IEnumerable<string> GetWeaknesses(Race race)
+    public static IEnumerable<string> GetWeaknesses(CharacterRace race)
     {
         var list = new List<string>();
         if (race.AgilityModifier < 0.5f)
@@ -109,4 +73,6 @@ public class Races : IRaceService
 
         return list;
     }
+
+    public static IEnumerable<CharacterRace> GetAllRaces() => races.Values.ToList();
 }

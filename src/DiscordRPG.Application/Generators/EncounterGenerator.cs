@@ -1,5 +1,8 @@
-﻿using DiscordRPG.Core.DomainServices;
-using DiscordRPG.Core.DomainServices.Generators;
+﻿using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
+using DiscordRPG.Domain.DomainServices.Generators;
+using DiscordRPG.Domain.Entities.Character.Enums;
+using DiscordRPG.Domain.Entities.Character.ValueObjects;
+using DiscordRPG.Domain.Entities.Dungeon;
 
 namespace DiscordRPG.Application.Generators;
 
@@ -16,7 +19,7 @@ public class EncounterGenerator : GeneratorBase, IEncounterGenerator
 
     public Encounter CreateDungeonEncounter(Dungeon dungeon)
     {
-        var worth = worthCalculator.CalculateWorth(dungeon.Rarity, dungeon.DungeonLevel);
+        var worth = worthCalculator.CalculateWorth(dungeon.Rarity, dungeon.Level.Value);
 
         var health = (int) (worth * (1 + random.Next(-1, 2) * 0.1f));
         health = health < 50 ? 50 : health;
@@ -24,12 +27,17 @@ public class EncounterGenerator : GeneratorBase, IEncounterGenerator
         var armor = worth / 2;
         var dmgType = GetRandomDamageType();
         var agi = worth / 5;
+        var str = worth / 5;
+        var intel = worth / 5;
+        var luck = worth / 5;
+        var vit = worth / 5;
 
         Encounter encounter =
-            new Encounter(new Damage(dmgType, dmg), health, armor / 2, armor / 2, dungeon.DungeonLevel, agi);
+            new Encounter(new Damage(dmgType, dmg), health, armor / 2, armor / 2, dungeon.Level.Value, agi, str, vit,
+                intel, luck);
 
-        logger.Here().Verbose("Generated encounter {@Encounter} for dungeon Level {DungeonLevel}", encounter,
-            dungeon.DungeonLevel);
+        logger.Verbose("Generated encounter {@Encounter} for dungeon Level {DungeonLevel}", encounter,
+            dungeon.Level.Value);
 
         return encounter;
     }

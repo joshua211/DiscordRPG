@@ -1,4 +1,6 @@
-﻿namespace DiscordRPG.Application.Generators;
+﻿using DiscordRPG.Domain.Enums;
+
+namespace DiscordRPG.Application.Generators;
 
 public class WorthCalculator : IWorthCalculator
 {

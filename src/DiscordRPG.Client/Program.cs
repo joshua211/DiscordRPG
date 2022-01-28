@@ -6,17 +6,22 @@ using DiscordRPG.Application;
 using DiscordRPG.Application.Settings;
 using DiscordRPG.Client.Handlers;
 using DiscordRPG.Common.Extensions;
-using DiscordRPG.Core;
+using DiscordRPG.Domain;
+using EventFlow.AspNetCore.Extensions;
+using EventFlow.DependencyInjection.Extensions;
+using EventFlow.Extensions;
+using EventFlow.MongoDB.Extensions;
 using Hangfire;
 using Hangfire.Mongo;
 using Hangfire.Mongo.Migration.Strategies;
 using Hangfire.Mongo.Migration.Strategies.Backup;
-using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Bson.Serialization.Options;
 using MongoDB.Driver;
 using Serilog;
 using Serilog.Events;
@@ -29,7 +34,7 @@ public class Program
     public static string Version;
 
     private static string template =
-        "[{Timestamp:dd.MM HH:mm:ss} {Level}][{SourceContext:l}.{Method}] {Message}{NewLine}{Exception}";
+        "[{Timestamp:dd.MM HH:mm:ss} {Level}][{SourceContext:l}.{Method}] {TransactionId} {Message}{NewLine}{Exception}";
 
     public static IConfigurationRoot Config { get; private set; }
 
@@ -37,8 +42,8 @@ public class Program
         .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
         .MinimumLevel.Override("Hangfire", LogEventLevel.Warning)
         .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Warning)
-        .MinimumLevel.Debug()
-        .CoreLogging()
+        .MinimumLevel.Override("EventFlow", LogEventLevel.Warning)
+        .MinimumLevel.Verbose()
         .Enrich.FromLogContext()
         .WriteTo.Console(outputTemplate: template);
 
@@ -92,6 +97,11 @@ public class Program
 
     private IServiceProvider ConfigureServices(IServiceCollection services)
     {
+        ConventionRegistry.Register(
+            "DictionaryRepresentationConvention",
+            new ConventionPack {new DictionaryRepresentationConvention(DictionaryRepresentation.ArrayOfArrays)},
+            _ => true);
+
         Config = new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", true)
             .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")}.json", optional: true)
@@ -104,12 +114,13 @@ public class Program
 
         //Common
         var loggerConfig = GetLoggerConfiguration();
+        IDatabaseSettings settings = services.BuildServiceProvider().GetService<IDatabaseSettings>();
+        ;
         if (HostEnvironment.IsProduction())
         {
-            var dbSettings = services.BuildServiceProvider().GetService<IDatabaseSettings>();
-            var mongoClient = new MongoClient(dbSettings.ConnectionString);
-            var collection = mongoClient.GetDatabase(dbSettings.DiagnosticDatabaseName);
-            loggerConfig.WriteTo.MongoDB(collection, LogEventLevel.Debug, dbSettings.DiagnosticLogCollectionName);
+            var mongoClient = new MongoClient(settings.ConnectionString);
+            var collection = mongoClient.GetDatabase(settings.DiagnosticDatabaseName);
+            loggerConfig.WriteTo.MongoDB(collection, LogEventLevel.Debug, settings.DiagnosticLogCollectionName);
         }
 
         Log.Logger = loggerConfig.CreateLogger();
@@ -125,7 +136,6 @@ public class Program
             LogLevel = LogSeverity.Info,
         });
         services.AddSingleton<DiscordSocketClient>(client);
-        services.AddMediatR(typeof(Core.Core).Assembly, typeof(Application.Application).Assembly);
         services.AddSingleton<ApplicationCommandHandler>();
         services.AddSingleton<ServerHandler>();
         services.AddSingleton<IHandler>(x => x.GetRequiredService<ApplicationCommandHandler>());
@@ -133,8 +143,16 @@ public class Program
         services.AddSingleton<IHandler, WorkerHandler>();
         services.AddSingleton<IHandler, MessageCommandHandler>();
         services.AddSingleton(new CommandService());
-        services.AddCore();
+        services.AddDomain();
         services.AddApplication();
+        services.AddEventFlow(options =>
+            options
+                .ConfigureMongoDb(settings.ConnectionString, settings.DatabaseName)
+                .UseMongoDbEventStore()
+                .UseLibLog(LibLogProviders.Serilog)
+                .ConfigureApplication()
+                .ConfigureDomain()
+                .AddAspNetCore());
         ApplicationCommandHandler.AddCommands(services);
 
         //Hangfire

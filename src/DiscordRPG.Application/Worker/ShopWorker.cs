@@ -1,21 +1,27 @@
-﻿using DiscordRPG.Application.Interfaces.Services;
-using DiscordRPG.Core.DomainServices.Generators;
+﻿using DiscordRPG.Application.Generators;
+using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Application.Models;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.DomainServices.Generators;
+using DiscordRPG.Domain.Entities.Character;
+using DiscordRPG.Domain.Entities.Character.ValueObjects;
+using DiscordRPG.Domain.Entities.Shop;
 using Weighted_Randomizer;
 
 namespace DiscordRPG.Application.Worker;
 
 public class ShopWorker
 {
-    private readonly IAspectGenerator aspectGenerator;
+    private readonly AspectGenerator aspectGenerator;
     private readonly ICharacterService characterService;
     private readonly IGuildService guildService;
     private readonly IItemGenerator itemGenerator;
     private readonly ILogger logger;
-    private readonly IRarityGenerator rarityGenerator;
+    private readonly RarityGenerator rarityGenerator;
     private readonly IShopService shopService;
 
     public ShopWorker(IShopService shopService, IItemGenerator itemGenerator, ICharacterService characterService,
-        IGuildService guildService, IRarityGenerator rarityGenerator, IAspectGenerator aspectGenerator, ILogger logger)
+        IGuildService guildService, RarityGenerator rarityGenerator, AspectGenerator aspectGenerator, ILogger logger)
     {
         this.shopService = shopService;
         this.itemGenerator = itemGenerator;
@@ -28,36 +34,45 @@ public class ShopWorker
 
     public async Task UpdateShopsAsync()
     {
-        var guilds = await guildService.GetAllGuildsAsync();
+        var context = TransactionContext.New();
+        var guilds = await guildService.GetAllGuildsAsync(context);
         foreach (var guild in guilds.Value)
         {
-            logger.Information("Updating shop for Guild {Id}", guild.ID);
-            await UpdateGuildShopAsync(guild);
+            logger.Context(context).Information("Updating shop for Guild {Id}", guild.Id);
+            try
+            {
+                await UpdateGuildShopAsync(guild, context);
+            }
+            catch (Exception e)
+            {
+                logger.Context(context).Error(e, "Failed to update shop");
+            }
         }
     }
 
-    public async Task UpdateGuildShopAsync(Guild guild)
+    public async Task UpdateGuildShopAsync(GuildReadModel guild, TransactionContext context)
     {
-        var characters = await characterService.GetAllCharactersInGuild(guild.ID);
+        var characters = await characterService.GetAllCharactersInGuild(new GuildId(guild.Id), context);
         var shop =
-            await shopService.GetGuildShopAsync(guild.ID);
+            await shopService.GetGuildShopAsync(new GuildId(guild.Id), context);
+
         var tasks = new List<Task>();
         foreach (var character in characters.Value)
         {
-            logger.Here().Debug("Updating character shop for character {Id}", character.ID);
+            logger.Context(context).Verbose("Updating character shop for character {Id}", character.Id);
             var equip = GetNewEquip(character);
             logger.Here().Verbose("New Equip: {@Equip}", equip);
-            tasks.Add(shopService.UpdateWaresAsync(shop.Value, character, equip.ToList()));
+            tasks.Add(shopService.UpdateShopInventoryAsync(new GuildId(guild.Id), new CharacterId(character.Id),
+                new ShopId(shop.Value.Id), equip, context));
         }
 
         await Task.WhenAll(tasks);
     }
 
-    private IEnumerable<Equipment> GetNewEquip(Character character)
+    private IEnumerable<Item> GetNewEquip(CharacterReadModel character)
     {
         var random = new Random();
         var level = character.Level.CurrentLevel;
-        var rarity = rarityGenerator.GenerateShopRarity();
 
         var selector = new DynamicWeightedRandomizer<int>();
         selector.Add(5, 6);
@@ -70,6 +85,7 @@ public class ShopWorker
 
         for (int i = 0; i < numOfItems; i++)
         {
+            var rarity = rarityGenerator.GenerateShopRarity();
             var aspect = aspectGenerator.GetRandomAspect(rarity);
             if (random.Next(3) == 0)
                 yield return itemGenerator.GenerateRandomWeapon(rarity, level, aspect);

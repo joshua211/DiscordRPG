@@ -1,8 +1,13 @@
-﻿namespace DiscordRPG.Client.Dialogs;
+﻿using DiscordRPG.Common;
+using DiscordRPG.Domain.Aggregates.Guild;
+
+namespace DiscordRPG.Client.Dialogs;
 
 public class ShowAllDungeonsDialog : Dialog
 {
-    public ShowAllDungeonsDialog(ulong userId) : base(userId)
+    public ShowAllDungeonsDialog(ulong userId, TransactionContext context) : base(userId, context)
     {
     }
+
+    public GuildId GuildId { get; set; }
 }

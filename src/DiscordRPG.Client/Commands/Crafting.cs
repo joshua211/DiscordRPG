@@ -1,16 +1,6 @@
-﻿using Discord;
-using Discord.WebSocket;
-using DiscordRPG.Application.Generators;
-using DiscordRPG.Application.Interfaces.Services;
-using DiscordRPG.Client.Commands.Attributes;
-using DiscordRPG.Client.Commands.Base;
-using DiscordRPG.Client.Dialogs;
-using DiscordRPG.Common.Extensions;
-using DiscordRPG.Core.Enums;
-using Serilog;
+﻿namespace DiscordRPG.Client.Commands;
 
-namespace DiscordRPG.Client.Commands;
-
+/*
 [RequireGuild]
 [RequireCharacter]
 public class Crafting : DialogCommandBase<CraftingDialog>
@@ -244,4 +234,4 @@ public class Crafting : DialogCommandBase<CraftingDialog>
             });
         }
     }
-}
+}*/

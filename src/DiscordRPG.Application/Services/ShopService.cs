@@ -1,168 +1,72 @@
 ﻿using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Application.Models;
 using DiscordRPG.Application.Queries;
-using DiscordRPG.Common;
-using DiscordRPG.Core.Commands.Characters;
-using DiscordRPG.Core.Commands.Shops;
-using MediatR;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Entities.Character;
+using DiscordRPG.Domain.Entities.Character.ValueObjects;
+using DiscordRPG.Domain.Entities.Shop;
+using DiscordRPG.Domain.Entities.Shop.Commands;
+using DiscordRPG.Domain.Entities.Shop.ValueObjects;
+using EventFlow;
+using EventFlow.Queries;
 
 namespace DiscordRPG.Application.Services;
 
-public class ShopService : ApplicationService, IShopService
+public class ShopService : IShopService
 {
-    public ShopService(IMediator mediator, ILogger logger) : base(mediator, logger)
+    private readonly ICommandBus bus;
+    private readonly ILogger logger;
+    private readonly IQueryProcessor queryProcessor;
+
+    public ShopService(ILogger logger, ICommandBus bus, IQueryProcessor queryProcessor)
     {
+        this.logger = logger.WithContext(GetType());
+        this.bus = bus;
+        this.queryProcessor = queryProcessor;
     }
 
-    public async Task<Result<Shop>> GetGuildShopAsync(Identity guildId, TransactionContext parentContext = null,
+    public async Task<Result<ShopReadModel>> GetGuildShopAsync(GuildId guildId, TransactionContext context,
         CancellationToken cancellationToken = default)
     {
-        using var ctx = TransactionBegin(parentContext);
-        try
-        {
-            var query = new GetShopByGuildIdQuery(guildId);
-            var result = await ProcessAsync(ctx, query, cancellationToken);
+        logger.Context(context).Information("Querying shop for Guild {GuildId}", guildId.Value);
+        var query = new GetGuildShopQuery(guildId);
+        var result = await queryProcessor.ProcessAsync(query, cancellationToken);
 
-            return Result<Shop>.Success(result);
-        }
-        catch (Exception e)
-        {
-            TransactionError(ctx, e);
-            return Result<Shop>.Failure(e.Message);
-        }
+        return Result<ShopReadModel>.Success(result);
     }
 
-    public async Task<Result> CreateGuildShopAsync(Identity guildId, TransactionContext parentContext = null,
+    public async Task<Result> CreateGuildShopAsync(GuildId guildId, TransactionContext context,
         CancellationToken cancellationToken = default)
     {
-        using var ctx = TransactionBegin(parentContext);
-        try
-        {
-            var cmd = new CreateShopCommand(guildId);
-            var result = await PublishAsync(ctx, cmd, cancellationToken);
-            if (!result.WasSuccessful)
-            {
-                TransactionError(ctx, result.ErrorMessage);
+        logger.Context(context).Information("Creating shop for Guild {GuildId}", guildId.Value);
+        var shop = new Shop(ShopId.New, new List<SalesInventory>());
+        var cmd = new AddShopCommand(guildId, shop, context);
 
-                return Result<Shop>.Failure(result.ErrorMessage);
-            }
-
-            return Result.Success();
-        }
-        catch (Exception e)
+        var result = await bus.PublishAsync(cmd, cancellationToken);
+        if (!result.IsSuccess)
         {
-            TransactionError(ctx, e);
-            return Result<Shop>.Failure(e.Message);
+            logger.Context(context).Error("Failed to create shop for guild {GuildId}", guildId.Value);
         }
+
+        return Result.Success();
     }
 
-    public async Task<Result<(Shop, Character)>> BuyEquipAsync(Shop shop, Character character, Equipment equipment,
-        TransactionContext parentContext = null,
-        CancellationToken cancellationToken = default)
+    public async Task<Result> UpdateShopInventoryAsync(GuildId guildId, CharacterId characterId, ShopId shopId,
+        IEnumerable<Item> newInventory,
+        TransactionContext context, CancellationToken cancellationToken = default)
     {
-        using var ctx = TransactionBegin(parentContext);
-        try
+        logger.Context(context).Information("Updating inventory  for Shop {ShopId} and Character {CharacterId}", shopId,
+            characterId);
+        var cmd = new UpdateShopInventoryCommand(guildId, shopId, newInventory.ToList(), characterId, context);
+        var result = await bus.PublishAsync(cmd, cancellationToken);
+
+        if (!result.IsSuccess)
         {
-            var characterId = character.ID;
-            var itemsForSale = shop[characterId];
-            if (itemsForSale is null)
-            {
-                TransactionError(ctx, "No shop for user with Id {Id}", characterId);
-                return Result<(Shop, Character)>.Failure("No shop found");
-            }
-
-            if (!itemsForSale.Contains(equipment))
-            {
-                TransactionWarning(ctx, "Shop with Id {Id} does not have the required equipment");
-
-                return Result<(Shop, Character)>.Failure("The selected item is not available");
-            }
-
-            if (character.Money < equipment.Worth)
-            {
-                TransactionDebug(ctx, "Character with ID {ID} not enough money to buy equipment ({Has}/{Needs})",
-                    character.ID, character.Money, equipment.Worth);
-
-                return Result<(Shop, Character)>.Failure("You dont have enough money to buy this item!");
-            }
-
-            itemsForSale.Remove(equipment);
-            var cmd = new UpdateShopCommand(itemsForSale, shop, character);
-            var result = await PublishAsync(ctx, cmd, cancellationToken);
-            if (!result.WasSuccessful)
-            {
-                TransactionError(ctx, result.ErrorMessage);
-
-                return Result<(Shop, Character)>.Failure(
-                    "Something went wrong while trying to buy the item, please try again");
-            }
-
-            var buyItemCommand = new BuyItemCommand(equipment, character);
-            var buyItemResult = await PublishAsync(ctx, buyItemCommand, cancellationToken);
-            if (!buyItemResult.WasSuccessful)
-            {
-                TransactionError(ctx, result.ErrorMessage);
-                return Result<(Shop, Character)>.Failure(
-                    "Something went wrong while trying to buy the item, please try again");
-            }
-
-            return Result<(Shop, Character)>.Success(new(shop, character));
+            logger.Context(context)
+                .Error("Failed to update Shop Inventory for Shop {ShopId} and Character {CharacterId}", shopId,
+                    characterId);
         }
-        catch (Exception e)
-        {
-            TransactionError(ctx, e);
-            return Result<(Shop, Character)>.Failure(e.Message);
-        }
-    }
 
-    public async Task<Result<Character>> SellItemAsync(Character character, Item item,
-        TransactionContext parentContext = null,
-        CancellationToken cancellationToken = default)
-    {
-        using var ctx = TransactionBegin(parentContext);
-        try
-        {
-            var cmd = new SellItemCommand(character, item);
-            var result = await PublishAsync(ctx, cmd, cancellationToken);
-            if (!result.WasSuccessful)
-            {
-                TransactionError(ctx, result.ErrorMessage);
-                return Result<Character>.Failure(
-                    "Something went wrong while trying to buy the item, please try again");
-            }
-
-            return Result<Character>.Success(character);
-        }
-        catch (Exception e)
-        {
-            TransactionError(ctx, e);
-            return Result<Character>.Failure(e.Message);
-        }
-    }
-
-    public async Task<Result<Shop>> UpdateWaresAsync(Shop shop, Character character, List<Equipment> newEquipment,
-        TransactionContext parentContext = null,
-        CancellationToken cancellationToken = default)
-    {
-        using var ctx = TransactionBegin(parentContext);
-        try
-        {
-            var cmd = new UpdateShopCommand(newEquipment, shop, character);
-            var result = await PublishAsync(ctx, cmd, cancellationToken);
-            if (!result.WasSuccessful)
-            {
-                TransactionError(ctx, result.ErrorMessage);
-
-                return Result<Shop>.Failure("Something went wrong while trying to update the shop inventory");
-            }
-
-            shop.UpdateEquipment(character.ID, newEquipment);
-
-            return Result<Shop>.Success(shop);
-        }
-        catch (Exception e)
-        {
-            TransactionError(ctx, e);
-            return Result<Shop>.Failure(e.Message);
-        }
+        return Result.Success();
     }
 }

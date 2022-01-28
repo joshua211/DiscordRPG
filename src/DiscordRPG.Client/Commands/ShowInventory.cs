@@ -6,8 +6,7 @@ using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Common.Extensions;
-using DiscordRPG.Core.Enums;
-using DiscordRPG.Core.ValueObjects;
+using DiscordRPG.Domain.Entities.Character.Enums;
 using Serilog;
 
 namespace DiscordRPG.Client.Commands;
@@ -17,8 +16,9 @@ namespace DiscordRPG.Client.Commands;
 public class ShowInventory : DialogCommandBase<InventoryDialog>
 {
     public ShowInventory(DiscordSocketClient client, ILogger logger, IActivityService activityService,
-        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService) : base(client,
-        logger, activityService, characterService, dungeonService, guildService)
+        ICharacterService characterService, IDungeonService dungeonService, IGuildService guildService,
+        IShopService shopService) : base(client,
+        logger, activityService, characterService, dungeonService, guildService, shopService)
     {
     }
 
@@ -59,6 +59,7 @@ public class ShowInventory : DialogCommandBase<InventoryDialog>
             .WithPlaceholder("Filter Category")
             .WithCustomId(GetCommandId("select-category"))
             .AddOption("Items", "items")
+            .AddOption("Consumables", "consumables")
             .AddOption("Weapons", "weapons")
             .AddOption("Helmets", "helmets")
             .AddOption("Armor", "armor")
@@ -79,18 +80,26 @@ public class ShowInventory : DialogCommandBase<InventoryDialog>
     {
         var items = dialog.CurrentCategory switch
         {
-            "weapons" => dialog.Character.Inventory.Where(i => i is Weapon).OrderByDescending(i => i.Level),
-            "helmets" => dialog.Character.Inventory.Where(i => i is Equipment {Position: EquipmentPosition.Helmet})
+            "weapons" => dialog.Character.Inventory.Where(i => i.ItemType == ItemType.Weapon)
                 .OrderByDescending(i => i.Level),
-            "armor" => dialog.Character.Inventory.Where(i => i is Equipment {Position: EquipmentPosition.Armor})
+            "helmets" => dialog.Character.Inventory.Where(i =>
+                    i.ItemType == ItemType.Equipment && i.Position == EquipmentPosition.Helmet)
                 .OrderByDescending(i => i.Level),
-            "pants" => dialog.Character.Inventory.Where(i => i is Equipment {Position: EquipmentPosition.Pants})
+            "armor" => dialog.Character.Inventory.Where(i =>
+                    i.ItemType == ItemType.Equipment && i.Position == EquipmentPosition.Helmet)
                 .OrderByDescending(i => i.Level),
-            "rings" => dialog.Character.Inventory.Where(i => i is Equipment {Position: EquipmentPosition.Ring})
+            "pants" => dialog.Character.Inventory.Where(i =>
+                    i.ItemType == ItemType.Equipment && i.Position == EquipmentPosition.Helmet)
                 .OrderByDescending(i => i.Level),
-            "amulets" => dialog.Character.Inventory.Where(i => i is Equipment {Position: EquipmentPosition.Amulet})
+            "rings" => dialog.Character.Inventory.Where(i =>
+                    i.ItemType == ItemType.Equipment && i.Position == EquipmentPosition.Helmet)
                 .OrderByDescending(i => i.Level),
-            _ => dialog.Character.Inventory.Where(i => i is not Equipment).OrderByDescending(i => i.Level)
+            "amulets" => dialog.Character.Inventory.Where(i =>
+                    i.ItemType == ItemType.Equipment && i.Position == EquipmentPosition.Helmet)
+                .OrderByDescending(i => i.Level),
+            "consumables" => dialog.Character.Inventory.Where(i => i.ItemType == ItemType.Consumable)
+                .OrderByDescending(i => i.Level),
+            _ => dialog.Character.Inventory.Where(i => i.ItemType == ItemType.Item).OrderByDescending(i => i.Level)
         };
 
         dialog.MaxPagesOfCurrentCategory = items.Count() / 10;
@@ -100,35 +109,35 @@ public class ShowInventory : DialogCommandBase<InventoryDialog>
         var sb = new StringBuilder();
         foreach (var item in items.Skip((dialog.CurrentPage - 1) * 10).Take(10))
         {
-            if (item is Equipment e and not Weapon)
+            if (item.ItemType == ItemType.Equipment)
             {
                 sb.Append(
-                    $"[{item.Rarity.ToString()}] {item.Name} (Lvl: {item.Level} | {item.Worth}$) Armor: {e.Armor} MArmor: {e.MagicArmor} ");
+                    $"[{item.Rarity.ToString()}] {item.Name} (Lvl: {item.Level} | {item.Worth}$) Armor: {item.Armor} MArmor: {item.MagicArmor} ");
                 sb.Append('(');
-                if (e.Strength > 0)
-                    sb.Append($"STR: {e.Strength} ");
-                if (e.Vitality > 0)
-                    sb.Append($"VIT: {e.Vitality} ");
-                if (e.Agility > 0)
-                    sb.Append($"AGI: {e.Agility} ");
-                if (e.Intelligence > 0)
-                    sb.Append($"INT: {e.Intelligence} ");
+                if (item.Strength > 0)
+                    sb.Append($"STR: {item.Strength} ");
+                if (item.Vitality > 0)
+                    sb.Append($"VIT: {item.Vitality} ");
+                if (item.Agility > 0)
+                    sb.Append($"AGI: {item.Agility} ");
+                if (item.Intelligence > 0)
+                    sb.Append($"INT: {item.Intelligence} ");
                 sb.Append(')');
                 sb.Append('\n');
             }
-            else if (item is Weapon w)
+            else if (item.ItemType == ItemType.Equipment)
             {
                 sb.Append(
-                    $"[{item.Rarity.ToString()}] {item.Name} (Lvl: {item.Level} | {item.Worth}$) Dmg: {w.DamageValue} {w.DamageType} ");
+                    $"[{item.Rarity.ToString()}] {item.Name} (Lvl: {item.Level} | {item.Worth}$) Dmg: {item.DamageValue} {item.DamageType} ");
                 sb.Append('(');
-                if (w.Strength > 0)
-                    sb.Append($"STR: {w.Strength} ");
-                if (w.Vitality > 0)
-                    sb.Append($"VIT: {w.Vitality} ");
-                if (w.Agility > 0)
-                    sb.Append($"AGI: {w.Agility} ");
-                if (w.Intelligence > 0)
-                    sb.Append($"INT: {w.Intelligence} ");
+                if (item.Strength > 0)
+                    sb.Append($"STR: {item.Strength} ");
+                if (item.Vitality > 0)
+                    sb.Append($"VIT: {item.Vitality} ");
+                if (item.Agility > 0)
+                    sb.Append($"AGI: {item.Agility} ");
+                if (item.Intelligence > 0)
+                    sb.Append($"INT: {item.Intelligence} ");
                 sb.Append(')');
                 sb.Append('\n');
             }
