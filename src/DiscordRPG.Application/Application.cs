@@ -3,6 +3,7 @@ using DiscordRPG.Application.Interfaces;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Models;
 using DiscordRPG.Application.Services;
+using DiscordRPG.Application.Worker;
 using DiscordRPG.Domain.DomainServices.Generators;
 using EventFlow;
 using EventFlow.Extensions;
@@ -22,6 +23,7 @@ public static class Application
             .AddTransient<IGuildService, GuildService>()
             .AddTransient<IShopService, ShopService>()
             .AddTransient<IChannelManager, ChannelManager>()
+            .AddTransient<ShopWorker>()
             .AddTransient<AspectGenerator>()
             .AddTransient<DungeonGenerator>()
             .AddTransient<IEncounterGenerator, EncounterGenerator>()

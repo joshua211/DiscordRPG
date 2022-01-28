@@ -1,16 +1,28 @@
-﻿namespace DiscordRPG.Client.Modules;
+﻿using Discord;
+using Discord.Commands;
+using DiscordRPG.Application.Generators;
+using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Application.Worker;
+using DiscordRPG.Common;
+using DiscordRPG.Common.Extensions;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Entities.Activity.Enums;
+using DiscordRPG.Domain.Enums;
+using Serilog;
 
-/*public class DebugModule
+namespace DiscordRPG.Client.Modules;
+
+public class DebugModule
 {
     [RequireOwner]
-    [Group("rpg test")]
+    [Group("rpg debug")]
     public class Test : ModuleBase<SocketCommandContext>
     {
         private readonly IGuildService guildService;
         private readonly ILogger logger;
         private readonly RarityGenerator rarityGenerator;
-        /*private readonly IShopService shopService;
-        private readonly ShopWorker shopWorker;#1#
+        private readonly IShopService shopService;
+        private readonly ShopWorker shopWorker;
 
         public Test(RarityGenerator rarityGenerator, ILogger logger, ShopWorker shopWorker, IGuildService guildService,
             IShopService shopService)
@@ -22,7 +34,7 @@
             this.logger = logger.WithContext<DebugModule>();
         }
 
-        /*[Command("force-shopCreation")]
+        [Command("force-shopCreation")]
         public async Task ForceShopCreation()
         {
             var context = TransactionContext.New();
@@ -31,7 +43,7 @@
                 logger.Here().Warning("No guild found");
 
             var createShopResult =
-                await shopService.CreateGuildShopAsync(guild.Value.ID);
+                await shopService.CreateGuildShopAsync(new GuildId(guild.Value.Id), context);
             if (!createShopResult.WasSuccessful)
             {
                 logger.Here().Error(createShopResult.ErrorMessage);
@@ -45,25 +57,26 @@
         [Command("force-shopUpdate")]
         public async Task ForceShopUpdateAsync()
         {
+            var context = TransactionContext.New();
             try
             {
-                logger.Here().Debug("Forcing shop update for guild with DiscordID {Id}", Context.Guild.Id);
+                logger.Context(context).Debug("Forcing shop update for guild with DiscordID {Id}", Context.Guild.Id);
 
                 var guildResult =
-                    await guildService.GetGuildWithDiscordIdAsync(new DiscordId(Context.Guild.Id.ToString()));
+                    await guildService.GetGuildAsync(new GuildId(Context.Guild.Id.ToString()), context);
                 if (!guildResult.WasSuccessful)
                 {
                     logger.Here().Warning("No guild found to force shop update");
                     return;
                 }
 
-                await shopWorker.UpdateGuildShopAsync(guildResult.Value);
+                await shopWorker.UpdateGuildShopAsync(guildResult.Value, context);
             }
             catch (Exception e)
             {
-                logger.Here().Error(e, "Failed force shop update ");
+                logger.Context(context).Error(e, "Failed force shop update ");
             }
-        }#1#
+        }
 
 
         [Command("activity-rarityDistribution")]
@@ -121,4 +134,4 @@
             }
         }
     }
-}*/
+}
