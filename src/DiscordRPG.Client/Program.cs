@@ -42,7 +42,7 @@ public class Program
         .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
         .MinimumLevel.Override("Hangfire", LogEventLevel.Warning)
         .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Warning)
-        .MinimumLevel.Override("EventFlow", LogEventLevel.Warning)
+        .MinimumLevel.Override("EventFlow", LogEventLevel.Verbose)
         .MinimumLevel.Verbose()
         .Enrich.FromLogContext()
         .WriteTo.Console(outputTemplate: template);
@@ -81,14 +81,14 @@ public class Program
         client.Log += LogClientMessage;
 
         var token = Config.GetSection("Bot")["Token"];
-        await client.LoginAsync(TokenType.Bot, token);
-        await client.StartAsync();
 
         foreach (var handler in serviceProvider.GetServices<IHandler>())
         {
             await handler.InstallAsync();
         }
 
+        await client.LoginAsync(TokenType.Bot, token);
+        await client.StartAsync();
         Log.Information("Running Application in {Env} environment on version {Version}",
             HostEnvironment.EnvironmentName, Version);
 
@@ -120,7 +120,7 @@ public class Program
         {
             var mongoClient = new MongoClient(settings.ConnectionString);
             var collection = mongoClient.GetDatabase(settings.DiagnosticDatabaseName);
-            loggerConfig.WriteTo.MongoDB(collection, LogEventLevel.Debug, settings.DiagnosticLogCollectionName);
+            loggerConfig.WriteTo.MongoDB(collection, LogEventLevel.Verbose, settings.DiagnosticLogCollectionName);
         }
 
         Log.Logger = loggerConfig.CreateLogger();
@@ -149,6 +149,7 @@ public class Program
             options
                 .ConfigureMongoDb(settings.ConnectionString, settings.DatabaseName)
                 .UseMongoDbEventStore()
+                .ConfigureOptimisticConcurrentcyRetry(10, TimeSpan.FromMilliseconds(100))
                 .UseLibLog(LibLogProviders.Serilog)
                 .ConfigureApplication()
                 .ConfigureDomain()

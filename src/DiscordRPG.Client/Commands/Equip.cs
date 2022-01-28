@@ -154,7 +154,9 @@ public class Equip : DialogCommandBase<EquipDialog>
             return new[] {embed};
         }
 
-        var itemEmbed = EmbedHelper.GetItemAsEmbed(dialog.CurrentItem);
+        var comparisonItem = dialog.Character.Inventory.Where(i => i.IsEquipped)
+            .FirstOrDefault(i => i.Position == dialog.CurrentItem.Position);
+        var itemEmbed = EmbedHelper.GetItemAsEmbed(dialog.CurrentItem, comparison: comparisonItem);
         dialog.ShareableEmbed = itemEmbed;
 
         return new[] {itemEmbed};
