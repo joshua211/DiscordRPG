@@ -23,6 +23,9 @@ public class RecipeGenerator : GeneratorBase
 
     public IEnumerable<Recipe> GenerateRecipesForLevel(uint level)
     {
+        if (level % 10 != 0)
+            yield break;
+
         foreach (var rarity in Enum.GetValues<Rarity>())
         {
             if (rarity == Rarity.Divine)
