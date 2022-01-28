@@ -87,8 +87,8 @@ public class Alchemy : DialogCommandBase<AlchemyDialog>
             var catSelectionBuilder = new SelectMenuBuilder();
             catSelectionBuilder.WithCustomId(GetCommandId("select-category"));
             catSelectionBuilder.WithPlaceholder("Choose a category");
-            catSelectionBuilder.AddOption(RecipeCategory.HealthPotion.ToString(),
-                RecipeCategory.HealthPotion.Humanize());
+            catSelectionBuilder.AddOption(RecipeCategory.HealthPotion.Humanize(),
+                RecipeCategory.HealthPotion.ToString());
 
             componentBuilder.WithSelectMenu(catSelectionBuilder);
             componentBuilder.WithButton("Close", GetCommandId("cancel"), ButtonStyle.Secondary);
