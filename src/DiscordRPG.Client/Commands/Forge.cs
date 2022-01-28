@@ -59,7 +59,7 @@ public class Forge : DialogCommandBase<ForgeDialog>
         var embeds = GetDisplayEmbeds(dialog);
         var menu = GetMenu(dialog);
 
-        await command.RespondAsync(embeds: embeds, component: menu);
+        await command.RespondAsync(embeds: embeds, component: menu, ephemeral: true);
     }
 
     [Handler("select-category")]
@@ -218,7 +218,7 @@ public class Forge : DialogCommandBase<ForgeDialog>
             currentRecipeBuilder.AddField(ingredient.item.Name, ingredient.amount);
         }
 
-        currentRecipeBuilder.WithFooter($"You need at least 5 resources to forge a new {dialog.Category}");
+        currentRecipeBuilder.WithFooter($"You need at least 10 resources to forge a new {dialog.Category}");
 
         var (str, vit, agi, intel) = forgeCalculator.GetStatsFromIngredients(dialog.Ingredients,
             dialog.Category is EquipmentCategory.Amulet or EquipmentCategory.Ring
@@ -267,7 +267,7 @@ public class Forge : DialogCommandBase<ForgeDialog>
         if (selectionBuilder.Options.Any())
             builder.WithSelectMenu(selectionBuilder);
         builder.WithButton("Forge", GetCommandId("forge"), ButtonStyle.Primary,
-            disabled: dialog.Ingredients.Sum(i => i.amount) < 5);
+            disabled: dialog.Ingredients.Sum(i => i.amount) < 10);
         builder.WithButton("+", GetCommandId("increase"));
         builder.WithButton("-", GetCommandId("decrease"));
         builder.WithButton("Back", GetCommandId("back"), ButtonStyle.Secondary);
