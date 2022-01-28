@@ -18,6 +18,7 @@ public class DungeonReadModel : IMongoDbReadModel, IAmReadModelFor<GuildAggregat
     public DungeonLevel Level { get; set; }
     public Rarity Rarity { get; set; }
     public Aspect Aspect { get; set; }
+    public DateTime LastInteraction { get; private set; }
 
     public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, DungeonAdded> domainEvent)
     {
@@ -29,6 +30,7 @@ public class DungeonReadModel : IMongoDbReadModel, IAmReadModelFor<GuildAggregat
         Level = dungeon.Level;
         Rarity = dungeon.Rarity;
         Aspect = dungeon.Aspect;
+        LastInteraction = DateTime.UtcNow;
     }
 
     public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, DungeonDeleted> domainEvent)
@@ -40,6 +42,7 @@ public class DungeonReadModel : IMongoDbReadModel, IAmReadModelFor<GuildAggregat
         IDomainEvent<GuildAggregate, GuildId, ExplorationsDecreased> domainEvent)
     {
         Explorations = Explorations.Decrease();
+        LastInteraction = DateTime.UtcNow;
     }
 
     public string Id { get; private set; }

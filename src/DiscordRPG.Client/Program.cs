@@ -42,8 +42,8 @@ public class Program
         .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
         .MinimumLevel.Override("Hangfire", LogEventLevel.Warning)
         .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Warning)
-        .MinimumLevel.Override("EventFlow", LogEventLevel.Verbose)
-        .MinimumLevel.Verbose()
+        .MinimumLevel.Override("EventFlow", LogEventLevel.Warning)
+        .MinimumLevel.Debug()
         .Enrich.FromLogContext()
         .WriteTo.Console(outputTemplate: template);
 

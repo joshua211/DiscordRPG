@@ -1,5 +1,8 @@
 ﻿using DiscordRPG.Application.Interfaces;
 using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
+using DiscordRPG.Domain.Entities.Dungeon;
 
 namespace DiscordRPG.Application.Worker;
 
@@ -8,54 +11,69 @@ public class CleaningWorker
     private readonly IActivityService activityService;
     private readonly IChannelManager channelManager;
     private readonly IDungeonService dungeonService;
+    private readonly IGuildService guildService;
     private readonly ILogger logger;
 
     public CleaningWorker(IDungeonService dungeonService, ILogger logger, IChannelManager channelManager,
-        IActivityService activityService)
+        IActivityService activityService, IGuildService guildService)
     {
         this.dungeonService = dungeonService;
         this.channelManager = channelManager;
         this.activityService = activityService;
+        this.guildService = guildService;
         this.logger = logger.WithContext(GetType());
     }
 
     public async Task RemoveExhaustedAndUnusedDungeons()
     {
-        /*logger.Here().Information("Removing all exhausted Dungeons");
-        var allDungeonResult = await dungeonService.GetAllDungeonsAsync();
-        if (!allDungeonResult.WasSuccessful)
+        var context = TransactionContext.New();
+        logger.Context(context).Information("Removing all exhausted Dungeons");
+
+        var guilds = await guildService.GetAllGuildsAsync(context);
+        if (!guilds.WasSuccessful)
         {
-            logger.Here().Error("Failed to get all dungeons, stopped cleaning");
+            logger.Context(context).Warning("Failed to get all guilds, cant clean");
             return;
         }
 
-        var allActivities = await activityService.GetAllActivitiesAsync();
+        var allActivities = await activityService.GetAllActivitiesAsync(context);
         if (!allActivities.WasSuccessful)
         {
-            logger.Here().Error("Failed to get all activities, stopped cleaning");
+            logger.Context(context).Warning("Failed to get all activities, cant clean");
             return;
         }
 
-        var deletedCount = 0;
-        foreach (var dungeon in allDungeonResult.Value)
+        foreach (var guild in guilds.Value)
         {
-            if ((dungeon.ExplorationsLeft > 0 && !((DateTime.UtcNow - dungeon.LastModified).TotalHours >= 24)) ||
-                allActivities.Value.Any(a => a.Data.ThreadId == dungeon.DungeonChannelId))
-                continue;
+            var guildDungeons = await dungeonService.GetAllDungeonsAsync(new GuildId(guild.Id), context);
+            if (!guildDungeons.WasSuccessful)
+            {
+                logger.Context(context).Warning("Failed to get dungeons for Guild {Id}, cant clean", guild.Id);
+                return;
+            }
 
-            logger.Here()
-                .Verbose(
-                    "Removing dungeon {Id} because no more explorations are left or it was not used in 24 hours",
-                    dungeon.ID);
-            var deleteResult = await dungeonService.DeleteDungeonAsync(dungeon);
-            if (!deleteResult.WasSuccessful)
-                logger.Here().Error("Failed to delete dungeon with ID {Id}", dungeon.ID);
+            var deletedCount = 0;
+            foreach (var dungeon in guildDungeons.Value)
+            {
+                if (dungeon.Explorations.Value > 0 && !((DateTime.UtcNow - dungeon.LastInteraction).TotalHours >= 24) ||
+                    allActivities.Value.Any(a => a.ActivityData.DungeonId == new DungeonId(dungeon.Id)))
+                    continue;
 
-            logger.Here().Verbose("Deleting dungeon thread with ID {Id}", dungeon.DungeonChannelId);
-            await channelManager.DeleteDungeonThreadAsync(dungeon.DungeonChannelId);
-            deletedCount++;
+                logger.Context(context)
+                    .Verbose(
+                        "Removing dungeon {Id} because no more explorations are left or it was not used in 24 hours",
+                        dungeon.Id);
+                var deleteResult =
+                    await dungeonService.DeleteDungeonAsync(new GuildId(guild.Id), new DungeonId(dungeon.Id), context);
+                if (!deleteResult.WasSuccessful)
+                    logger.Context(context).Error("Failed to delete dungeon with ID {Id}", dungeon.Id);
+
+                logger.Context(context).Verbose("Deleting dungeon thread with ID {Id}", dungeon.Id);
+                await channelManager.DeleteDungeonThreadAsync(new ChannelId(dungeon.Id), context);
+                deletedCount++;
+            }
+
+            logger.Context(context).Information("Finished cleaning and deleted {Count} dungeons", deletedCount);
         }
-
-        logger.Here().Information("Finished cleaning and deleted {Count} dungeons", deletedCount);*/
     }
 }

@@ -18,7 +18,7 @@ public class WorkerHandler : IHandler
     {
         logger.Here().Information("Installing WorkerHandler");
         RecurringJob.AddOrUpdate<CleaningWorker>("DungeonCleaner", x => x.RemoveExhaustedAndUnusedDungeons(),
-            "0 * * * *");
+            "1 * * * *");
         /*RecurringJob.AddOrUpdate<DiagnosticsWorker>("Diagnostics", subscriber => subscriber.FlushAsync(),
             "* * * * *");
         RecurringJob.AddOrUpdate<ShopWorker>("ShopUpdate", x => x.UpdateShopsAsync(), "0 #1#3 * * *");*/
