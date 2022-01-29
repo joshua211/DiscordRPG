@@ -6,11 +6,10 @@ namespace DiscordRPG.Domain.Entities.Character.Events;
 
 public class CharacterDied : AggregateEvent<GuildAggregate, GuildId>, IEntityEvent<CharacterId>
 {
-    public CharacterDied(CharacterId characterId)
+    public CharacterDied(CharacterId entityId)
     {
-        EntityId = characterId;
+        EntityId = entityId;
     }
-
 
     public CharacterId EntityId { get; }
 }

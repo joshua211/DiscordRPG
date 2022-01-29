@@ -78,7 +78,6 @@ public class DebugModule
             }
         }
 
-
         [Command("activity-rarityDistribution")]
         public async Task TestRarityDistribution(int luck)
         {
