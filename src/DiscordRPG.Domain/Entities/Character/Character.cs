@@ -42,13 +42,16 @@ public class Character : Entity<CharacterId>
 
     public void EquipTitle(TitleId id)
     {
-        var title = Titles.FirstOrDefault(t => t.Id == id);
+        var title = Titles.First(t => t.Id == id);
+        var currentTitle = Titles.FirstOrDefault(t => t.IsEquipped);
+        if (currentTitle is not null)
+            currentTitle.Unequip();
         title.Equip();
     }
 
     public void Unequip(TitleId id)
     {
-        var title = Titles.FirstOrDefault(t => t.Id == id);
+        var title = Titles.First(t => t.Id == id);
         title.Unequip();
     }
 
