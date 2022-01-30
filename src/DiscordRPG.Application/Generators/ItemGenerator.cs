@@ -55,8 +55,8 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
 
         var selector = new DynamicWeightedRandomizer<int>();
         selector.Add(0, 5);
-        selector.Add(1, 1);
         selector.Add(2, 1);
+        selector.Add(3, 1);
 
         for (int i = 0; i < totalNum; i++)
         {
@@ -74,10 +74,10 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
                     else
                         existing.IncreaseAmount(genItem.Amount);
                     break;
-                case 1:
+                case 2:
                     items.Add(GenerateRandomEquipment(rarity, level, dungeon.Aspect));
                     break;
-                case 2:
+                case 3:
                     items.Add(GenerateRandomWeapon(rarity, level, dungeon.Aspect));
                     break;
             }
@@ -149,7 +149,7 @@ public class ItemGenerator : GeneratorBase, IItemGenerator
         return new Item(ItemId.New, name,
             descr, amount, rarity,
             EquipmentCategory.Amulet, EquipmentPosition.Amulet, ItemType.Item, attribute,
-            DamageType.Physical, null, worth, level, 0, 0, 0, 0, 0, 0, 0, 0, false, UsageEffect.None);
+            DamageType.Physical, null, worth, roundedLevel, 0, 0, 0, 0, 0, 0, 0, 0, false, UsageEffect.None);
     }
 
     public Item GenerateEquipment(Rarity rarity, uint level, Aspect aspect, EquipmentCategory category)
