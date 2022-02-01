@@ -30,7 +30,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\DiscordRPG.Application\DiscordRPG.Application.csproj"/>
-        <ProjectReference Include="..\DiscordRPG.Core\DiscordRPG.Core.csproj"/>
     </ItemGroup>
 
 </Project>
