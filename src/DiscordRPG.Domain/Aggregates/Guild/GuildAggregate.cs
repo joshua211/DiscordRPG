@@ -24,6 +24,7 @@ public class GuildAggregate : AggregateRoot<GuildAggregate, GuildId>
         Register(state);
     }
 
+    public string GuildName => state.GuildName.Value;
     public IEnumerable<Character> Characters => state.Characters;
     public IEnumerable<Dungeon> Dungeons => state.Dungeons;
     public Shop Shop => state.Shops.First();

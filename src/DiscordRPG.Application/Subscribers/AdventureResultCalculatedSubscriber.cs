@@ -7,6 +7,7 @@ using DiscordRPG.Domain.Aggregates.Guild.Events;
 using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
 using DiscordRPG.Domain.Entities.Character.Commands;
 using DiscordRPG.Domain.Entities.Character.Enums;
+using DiscordRPG.Domain.Entities.Character.ValueObjects;
 using DiscordRPG.Domain.Services;
 using EventFlow;
 using EventFlow.Aggregates;
@@ -79,6 +80,9 @@ public class
                     .Build();
                 while (newWounds.Sum(w => w.DamageValue) >= character.Value.CurrentHealth)
                     newWounds.Remove(newWounds.Last());
+                
+                newWounds.Add(new Wound("Serious injury",
+                    character.Value.CurrentHealth - (newWounds.Sum(w => w.DamageValue) - 1)));
                 var survivedWoundsCommand =
                     new ChangeWoundsCommand(domainEvent.AggregateIdentity, ev.CharacterId, newWounds, context);
                 await bus.PublishAsync(survivedWoundsCommand, cancellationToken);
@@ -101,10 +105,7 @@ public class
             else
                 newItems.Add(item);
         }
-
-        var invCmd = new ChangeInventoryCommand(domainEvent.AggregateIdentity, ev.CharacterId, newItems, context);
-        await bus.PublishAsync(invCmd, cancellationToken);
-
+        
         var modifier = character.Value.GetTotalStatusModifier(StatusEffectType.ExpBoost);
         var totalExp = (ulong) (ev.AdventureResult.Experience + ev.AdventureResult.Experience * modifier);
         logger.Context(context).Verbose("Increased exp from {Base} to {Total} with a {Mod} modifier",
@@ -114,6 +115,9 @@ public class
         var expCommand = new GainLevelCommand(domainEvent.AggregateIdentity, ev.CharacterId, newLevel,
             character.Value.Level, context);
         await bus.PublishAsync(expCommand, cancellationToken);
+
+        var invCmd = new ChangeInventoryCommand(domainEvent.AggregateIdentity, ev.CharacterId, newItems, context);
+        await bus.PublishAsync(invCmd, cancellationToken);
 
         var sb = new StringBuilder();
         sb.AppendLine(
