@@ -3,6 +3,7 @@ using DiscordRPG.Application.Generators;
 using DiscordRPG.Application.Interfaces;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Domain.Aggregates.Guild;
+using DiscordRPG.Domain.Entities.Activity.Enums;
 using DiscordRPG.Domain.Entities.Character.Commands;
 using DiscordRPG.Domain.Entities.Character.Events;
 using EventFlow;
@@ -39,6 +40,9 @@ public class LevelGainedSubscriber : ISubscribeSynchronousTo<GuildAggregate, Gui
         var cmd = new LearnRecipesCommand(domainEvent.AggregateIdentity, ev.EntityId, recipes,
             context);
         await bus.PublishAsync(cmd, cancellationToken);
+
+        await characterService.RestoreWoundsFromRestAsync(domainEvent.AggregateIdentity, ev.EntityId,
+            ActivityDuration.Medium, context, cancellationToken);
 
         var character = await characterService.GetCharacterAsync(ev.EntityId, context, cancellationToken);
 
