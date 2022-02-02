@@ -9,6 +9,7 @@ using DiscordRPG.Domain.Entities.Dungeon.Events;
 using DiscordRPG.Domain.Entities.Shop;
 using DiscordRPG.Domain.Entities.Shop.Events;
 using EventFlow.Aggregates;
+using Serilog;
 
 namespace DiscordRPG.Domain.Aggregates.Guild;
 
@@ -43,8 +44,11 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
     IApply<ItemForged>
 
 {
-    public GuildState()
+    private readonly ILogger logger;
+
+    public GuildState(ILogger logger)
     {
+        this.logger = logger;
         Characters = new List<Character>();
         Dungeons = new List<Dungeon>();
         Activities = new List<Activity>();
@@ -64,35 +68,44 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
     public void Apply(ActivityAdded aggregateEvent)
     {
         Activities.Add(aggregateEvent.Activity);
+        logger.Verbose("Added activity {Type} {Id} for {EntityId}", aggregateEvent.Activity.Type,
+            aggregateEvent.Activity.Id, aggregateEvent.EntityId);
     }
 
     public void Apply(ActivityCancelled aggregateEvent)
     {
         Activities.RemoveAll(a => a.Id.Value == aggregateEvent.EntityId.Value);
+        logger.Verbose("Cancelled activity {Id}", aggregateEvent.EntityId);
     }
 
     public void Apply(ActivityCompleted aggregateEvent)
     {
         Activities.RemoveAll(a => a.Id.Value == aggregateEvent.EntityId.Value);
+        logger.Verbose("Completed activity {Id}", aggregateEvent.EntityId);
     }
 
     public void Apply(AdventureResultCalculated aggregateEvent)
     {
+        logger.Verbose("Calculated adventure result from dungeon {DId} for character {CId}: {@Result}",
+            aggregateEvent.DungeonId, aggregateEvent.CharacterId, aggregateEvent.AdventureResult);
     }
 
     public void Apply(CharacterCreated aggregateEvent)
     {
         Characters.Add(aggregateEvent.Character);
+        logger.Verbose("Created character {Name} for Guild {GName}", aggregateEvent.Character.Name, GuildName);
     }
 
     public void Apply(CharacterDied aggregateEvent)
     {
         Characters.RemoveAll(c => c.Id.Value == aggregateEvent.EntityId.Value);
+        logger.Verbose("{Id} died", aggregateEvent.EntityId);
     }
 
     public void Apply(DungeonAdded aggregateEvent)
     {
         Dungeons.Add(aggregateEvent.Dungeon);
+        logger.Verbose("Added Dungeon {@Dungeon} to {Name}", aggregateEvent.Dungeon, GuildName);
     }
 
     public void Apply(DungeonDeleted aggregateEvent)
@@ -180,6 +193,7 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
     {
         var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
         character.SetLevel(aggregateEvent.NewLevel);
+        logger.Verbose("{Name} gained Level {@Level}", aggregateEvent.EntityId, aggregateEvent.NewLevel);
     }
 
     public void Apply(RecipesLearned aggregateEvent)
@@ -213,6 +227,7 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
     {
         var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
         character.Titles.Add(aggregateEvent.Title);
+        logger.Verbose("{Name} gained title {Title}", character.Name, aggregateEvent.Title);
     }
 
     public void Apply(TitleEquipped aggregateEvent)
@@ -238,5 +253,6 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
     {
         var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
         character.ChangeWounds(aggregateEvent.NewWounds);
+        logger.Verbose("{Name} changed wound dmg to {NewHp}", character.Name, character.Wounds.Sum(w => w.DamageValue));
     }
 }

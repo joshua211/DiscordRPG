@@ -46,7 +46,18 @@ public class
         var ev = domainEvent.AggregateEvent;
 
         var character = await characterService.GetCharacterAsync(ev.CharacterId, context, cancellationToken);
+        if (!character.WasSuccessful || character.Value is null)
+        {
+            logger.Context(context).Warning("Failed to load character, cant handle adventure result");
+            return;
+        }
+
         var dungeon = await dungeonService.GetDungeonAsync(ev.DungeonId, context, cancellationToken);
+        if (!dungeon.WasSuccessful || character.Value is null)
+        {
+            logger.Context(context).Warning("Failed to load dungeon, cant handle adventure result");
+            return;
+        }
 
         var newWounds = character.Value.Wounds.ToList();
         newWounds.AddRange(ev.AdventureResult.Wounds);
@@ -80,7 +91,7 @@ public class
                     .Build();
                 while (newWounds.Sum(w => w.DamageValue) >= character.Value.CurrentHealth)
                     newWounds.Remove(newWounds.Last());
-                
+
                 newWounds.Add(new Wound("Serious injury",
                     character.Value.CurrentHealth - (newWounds.Sum(w => w.DamageValue) - 1)));
                 var survivedWoundsCommand =
@@ -105,7 +116,7 @@ public class
             else
                 newItems.Add(item);
         }
-        
+
         var modifier = character.Value.GetTotalStatusModifier(StatusEffectType.ExpBoost);
         var totalExp = (ulong) (ev.AdventureResult.Experience + ev.AdventureResult.Experience * modifier);
         logger.Context(context).Verbose("Increased exp from {Base} to {Total} with a {Mod} modifier",

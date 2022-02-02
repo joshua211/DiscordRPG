@@ -1,4 +1,5 @@
 ﻿using DiscordRPG.Common;
+using DiscordRPG.Common.Extensions;
 using DiscordRPG.Domain.Aggregates.Guild.Events;
 using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
 using DiscordRPG.Domain.Entities.Activity;
@@ -11,16 +12,19 @@ using DiscordRPG.Domain.Entities.Dungeon.Events;
 using DiscordRPG.Domain.Entities.Shop;
 using DiscordRPG.Domain.Entities.Shop.Events;
 using EventFlow.Aggregates;
+using Serilog;
 
 namespace DiscordRPG.Domain.Aggregates.Guild;
 
 public class GuildAggregate : AggregateRoot<GuildAggregate, GuildId>
 {
+    private readonly ILogger logger;
     private readonly GuildState state;
 
-    public GuildAggregate(GuildId id) : base(id)
+    public GuildAggregate(GuildId id, ILogger logger) : base(id)
     {
-        state = new GuildState();
+        this.logger = logger.WithContext(GetType());
+        state = new GuildState(logger);
         Register(state);
     }
 

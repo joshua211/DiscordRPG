@@ -9,10 +9,10 @@ public class CharacterId : SingleValueObject<string>, IIdentity
     {
     }
 
-    /*public override string ToString()
+    public override string ToString()
     {
         return Value;
-    }*/
+    }
 
     public override bool Equals(object? obj)
     {
