@@ -49,6 +49,7 @@ namespace DiscordRPG.DiagnosticConsole
                     .AddTransient<IExperienceGenerator, ExperienceGenerator>()
                     .AddTransient<IEncounterGenerator, EncounterGenerator>()
                     .AddTransient<RarityGenerator>()
+                    .AddTransient<AggregateImporter>((provider) => null)
                     .AddTransient<IAdventureResultService, AdventureResultService>()
                     .AddTransient<IExperienceCurve, ExperienceCurve>()
                     .AddSingleton<ConsoleState>()
