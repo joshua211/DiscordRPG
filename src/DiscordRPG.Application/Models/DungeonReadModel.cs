@@ -1,6 +1,6 @@
-﻿using DiscordRPG.Domain.Aggregates.Guild;
-using DiscordRPG.Domain.Entities.Dungeon.Events;
-using DiscordRPG.Domain.Entities.Dungeon.ValueObjects;
+﻿using DiscordRPG.Domain.Aggregates.Dungeon.Events;
+using DiscordRPG.Domain.Aggregates.Dungeon.ValueObjects;
+using DiscordRPG.Domain.Aggregates.Guild;
 using DiscordRPG.Domain.Enums;
 using EventFlow.Aggregates;
 using EventFlow.MongoDB.ReadStores;
@@ -8,7 +8,7 @@ using EventFlow.ReadStores;
 
 namespace DiscordRPG.Application.Models;
 
-public class DungeonReadModel : IMongoDbReadModel, IAmReadModelFor<GuildAggregate, GuildId, DungeonAdded>,
+public class DungeonReadModel : IMongoDbReadModel, IAmReadModelFor<GuildAggregate, GuildId, DungeonCreated>,
     IAmReadModelFor<GuildAggregate, GuildId, DungeonDeleted>,
     IAmReadModelFor<GuildAggregate, GuildId, ExplorationsDecreased>
 {
@@ -20,7 +20,7 @@ public class DungeonReadModel : IMongoDbReadModel, IAmReadModelFor<GuildAggregat
     public Aspect Aspect { get; set; }
     public DateTime LastInteraction { get; private set; }
 
-    public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, DungeonAdded> domainEvent)
+    public void Apply(IReadModelContext context, IDomainEvent<GuildAggregate, GuildId, DungeonCreated> domainEvent)
     {
         var dungeon = domainEvent.AggregateEvent.Dungeon;
         Id = dungeon.Id.Value;

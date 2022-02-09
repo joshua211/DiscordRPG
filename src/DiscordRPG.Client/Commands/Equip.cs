@@ -6,9 +6,8 @@ using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Commands.Helpers;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Common.Extensions;
+using DiscordRPG.Domain.Aggregates.Character.Enums;
 using DiscordRPG.Domain.Aggregates.Guild;
-using DiscordRPG.Domain.Entities.Character;
-using DiscordRPG.Domain.Entities.Character.Enums;
 using Humanizer;
 using Serilog;
 

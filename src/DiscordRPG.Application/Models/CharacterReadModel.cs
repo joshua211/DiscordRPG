@@ -1,7 +1,7 @@
-﻿using DiscordRPG.Domain.Aggregates.Guild;
-using DiscordRPG.Domain.Entities.Character.Enums;
-using DiscordRPG.Domain.Entities.Character.Events;
-using DiscordRPG.Domain.Entities.Character.ValueObjects;
+﻿using DiscordRPG.Domain.Aggregates.Character.Enums;
+using DiscordRPG.Domain.Aggregates.Character.Events;
+using DiscordRPG.Domain.Aggregates.Character.ValueObjects;
+using DiscordRPG.Domain.Aggregates.Guild;
 using EventFlow.Aggregates;
 using EventFlow.MongoDB.ReadStores;
 using EventFlow.ReadStores;

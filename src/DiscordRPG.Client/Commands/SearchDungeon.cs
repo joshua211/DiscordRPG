@@ -8,11 +8,11 @@ using DiscordRPG.Client.Commands.Helpers;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Client.Handlers;
 using DiscordRPG.Common.Extensions;
+using DiscordRPG.Domain.Aggregates.Activity.Enums;
+using DiscordRPG.Domain.Aggregates.Activity.ValueObjects;
 using DiscordRPG.Domain.Aggregates.Guild;
-using DiscordRPG.Domain.Entities.Activity.Enums;
-using DiscordRPG.Domain.Entities.Activity.ValueObjects;
-using DiscordRPG.Domain.Entities.Character;
 using Serilog;
+using ActivityType = DiscordRPG.Domain.Aggregates.Activity.Enums.ActivityType;
 
 namespace DiscordRPG.Client.Commands;
 
@@ -76,7 +76,7 @@ public class SearchDungeon : DialogCommandBase<SearchDungeonDialog>
     {
         var result = await activityService.QueueActivityAsync(new GuildId(dialog.ServerId.ToString()),
             new CharacterId(dialog.Character.Id), dialog.Duration,
-            Domain.Entities.Activity.Enums.ActivityType.SearchDungeon,
+            ActivityType.SearchDungeon,
             new ActivityData(dialog.Character.Level.CurrentLevel, new GuildId(dialog.ServerId.ToString()), null, null,
                 null), dialog.Context);
 

@@ -7,9 +7,8 @@ using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Commands.Helpers;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Common.Extensions;
+using DiscordRPG.Domain.Aggregates.Character.ValueObjects;
 using DiscordRPG.Domain.Aggregates.Guild;
-using DiscordRPG.Domain.Entities.Character;
-using DiscordRPG.Domain.Entities.Character.ValueObjects;
 using Serilog;
 
 namespace DiscordRPG.Client.Commands;

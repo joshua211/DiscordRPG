@@ -3,11 +3,9 @@ using DiscordRPG.Application.Generators;
 using DiscordRPG.Application.Interfaces;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Models;
+using DiscordRPG.Domain.Aggregates.Dungeon;
 using DiscordRPG.Domain.Aggregates.Guild;
-using DiscordRPG.Domain.Entities.Activity;
-using DiscordRPG.Domain.Entities.Character;
-using DiscordRPG.Domain.Entities.Dungeon;
-using ActivityType = DiscordRPG.Domain.Entities.Activity.Enums.ActivityType;
+using ActivityType = DiscordRPG.Domain.Aggregates.Activity.Enums.ActivityType;
 
 namespace DiscordRPG.Application.Worker;
 

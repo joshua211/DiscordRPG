@@ -1,8 +1,8 @@
 ﻿using DiscordRPG.Application.Interfaces;
 using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Domain.Aggregates.Dungeon;
 using DiscordRPG.Domain.Aggregates.Guild;
 using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
-using DiscordRPG.Domain.Entities.Dungeon;
 
 namespace DiscordRPG.Application.Worker;
 

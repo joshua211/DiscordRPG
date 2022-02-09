@@ -1,8 +1,7 @@
 ﻿using DiscordRPG.Application.Models;
+using DiscordRPG.Domain.Aggregates.Activity.Enums;
+using DiscordRPG.Domain.Aggregates.Dungeon;
 using DiscordRPG.Domain.Aggregates.Guild;
-using DiscordRPG.Domain.Entities.Activity.Enums;
-using DiscordRPG.Domain.Entities.Character;
-using DiscordRPG.Domain.Entities.Dungeon;
 
 namespace DiscordRPG.Application.Interfaces.Services;
 

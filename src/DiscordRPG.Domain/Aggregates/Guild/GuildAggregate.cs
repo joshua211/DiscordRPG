@@ -1,16 +1,12 @@
 ﻿using DiscordRPG.Common;
 using DiscordRPG.Common.Extensions;
+using DiscordRPG.Domain.Aggregates.Activity.Events;
+using DiscordRPG.Domain.Aggregates.Character.Events;
+using DiscordRPG.Domain.Aggregates.Character.ValueObjects;
+using DiscordRPG.Domain.Aggregates.Dungeon;
+using DiscordRPG.Domain.Aggregates.Dungeon.Events;
 using DiscordRPG.Domain.Aggregates.Guild.Events;
 using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
-using DiscordRPG.Domain.Entities.Activity;
-using DiscordRPG.Domain.Entities.Activity.Events;
-using DiscordRPG.Domain.Entities.Character;
-using DiscordRPG.Domain.Entities.Character.Events;
-using DiscordRPG.Domain.Entities.Character.ValueObjects;
-using DiscordRPG.Domain.Entities.Dungeon;
-using DiscordRPG.Domain.Entities.Dungeon.Events;
-using DiscordRPG.Domain.Entities.Shop;
-using DiscordRPG.Domain.Entities.Shop.Events;
 using EventFlow.Aggregates;
 using Serilog;
 
@@ -29,9 +25,6 @@ public class GuildAggregate : AggregateRoot<GuildAggregate, GuildId>
     }
 
     public string GuildName => state.GuildName.Value;
-    public IEnumerable<Character> Characters => state.Characters;
-    public IEnumerable<Dungeon> Dungeons => state.Dungeons;
-    public Shop Shop => state.Shops.First();
 
     public void Create(GuildId id, GuildName name, ChannelId guildHallId, ChannelId dungeonHallId, ChannelId innId,
         TransactionContext context)
@@ -102,7 +95,7 @@ public class GuildAggregate : AggregateRoot<GuildAggregate, GuildId>
 
     public void AddDungeon(Dungeon dungeon, CharacterId characterId, TransactionContext context)
     {
-        Emit(new DungeonAdded(dungeon, characterId), new Metadata(context.AsMetadata()));
+        Emit(new DungeonCreated(dungeon, characterId), new Metadata(context.AsMetadata()));
     }
 
     public void RemoveDungeon(DungeonId commandDungeonId, TransactionContext context)

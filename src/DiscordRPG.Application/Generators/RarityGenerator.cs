@@ -1,4 +1,4 @@
-﻿using DiscordRPG.Domain.Entities.Activity.Enums;
+﻿using DiscordRPG.Domain.Aggregates.Activity.Enums;
 using DiscordRPG.Domain.Enums;
 using Weighted_Randomizer;
 

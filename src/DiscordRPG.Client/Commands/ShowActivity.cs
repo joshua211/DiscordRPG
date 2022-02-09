@@ -7,9 +7,8 @@ using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Common.Extensions;
 using DiscordRPG.Domain.Aggregates.Guild;
-using DiscordRPG.Domain.Entities.Activity;
 using Serilog;
-using ActivityType = DiscordRPG.Domain.Entities.Activity.Enums.ActivityType;
+using ActivityType = DiscordRPG.Domain.Aggregates.Activity.Enums.ActivityType;
 
 namespace DiscordRPG.Client.Commands;
 

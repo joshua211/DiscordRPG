@@ -2,12 +2,10 @@
 using DiscordRPG.Application.Models;
 using DiscordRPG.Application.Queries;
 using DiscordRPG.Application.Worker;
+using DiscordRPG.Domain.Aggregates.Activity.Commands;
+using DiscordRPG.Domain.Aggregates.Activity.Enums;
+using DiscordRPG.Domain.Aggregates.Activity.ValueObjects;
 using DiscordRPG.Domain.Aggregates.Guild;
-using DiscordRPG.Domain.Entities.Activity;
-using DiscordRPG.Domain.Entities.Activity.Commands;
-using DiscordRPG.Domain.Entities.Activity.Enums;
-using DiscordRPG.Domain.Entities.Activity.ValueObjects;
-using DiscordRPG.Domain.Entities.Character;
 using EventFlow;
 using EventFlow.Queries;
 using Hangfire;
@@ -44,7 +42,7 @@ public class ActivityService : IActivityService
 
         var activity = new Activity(id, duration, type, new JobId(jobId), data, characterId,
             new ActivityStartTime(DateTime.UtcNow));
-        var cmd = new AddActivityCommand(guildId, activity, context);
+        var cmd = new CreateActivityCommand(guildId, activity, context);
         var result = await bus.PublishAsync(cmd, cancellationToken);
 
         if (!result.IsSuccess)

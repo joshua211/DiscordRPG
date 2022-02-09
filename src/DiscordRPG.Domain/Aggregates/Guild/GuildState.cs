@@ -1,13 +1,8 @@
-﻿using DiscordRPG.Domain.Aggregates.Guild.Events;
+﻿using DiscordRPG.Domain.Aggregates.Activity.Events;
+using DiscordRPG.Domain.Aggregates.Character.Events;
+using DiscordRPG.Domain.Aggregates.Dungeon.Events;
+using DiscordRPG.Domain.Aggregates.Guild.Events;
 using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
-using DiscordRPG.Domain.Entities.Activity;
-using DiscordRPG.Domain.Entities.Activity.Events;
-using DiscordRPG.Domain.Entities.Character;
-using DiscordRPG.Domain.Entities.Character.Events;
-using DiscordRPG.Domain.Entities.Dungeon;
-using DiscordRPG.Domain.Entities.Dungeon.Events;
-using DiscordRPG.Domain.Entities.Shop;
-using DiscordRPG.Domain.Entities.Shop.Events;
 using EventFlow.Aggregates;
 using Serilog;
 
@@ -30,13 +25,12 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
     IApply<RestComplete>,
     IApply<WoundsChanged>,
     IApply<RecipesLearned>,
-    IApply<DungeonAdded>,
+    IApply<DungeonCreated>,
     IApply<DungeonDeleted>,
     IApply<ExplorationsDecreased>,
     IApply<ShopAdded>,
     IApply<ShopInventoryUpdated>,
     IApply<ShopInventoryRemoved>,
-    IApply<AdventureResultCalculated>,
     IApply<ItemRemoved>,
     IApply<TitleAcquired>,
     IApply<TitleEquipped>,
@@ -46,14 +40,11 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
 {
     public GuildState(ILogger logger)
     {
-        Characters = new List<Character>();
-        Dungeons = new List<Dungeon>();
         Activities = new List<Activity>();
         Shops = new List<Shop>();
     }
 
-    public List<Character> Characters { get; private set; }
-    public List<Dungeon> Dungeons { get; private set; }
+
     public List<Activity> Activities { get; private set; }
     public List<Shop> Shops { get; private set; }
     public GuildName GuildName { get; private set; }
@@ -77,10 +68,6 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
         Activities.RemoveAll(a => a.Id.Value == aggregateEvent.EntityId.Value);
     }
 
-    public void Apply(AdventureResultCalculated aggregateEvent)
-    {
-    }
-
     public void Apply(CharacterCreated aggregateEvent)
     {
         Characters.Add(aggregateEvent.Character);
@@ -91,7 +78,7 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
         Characters.RemoveAll(c => c.Id.Value == aggregateEvent.EntityId.Value);
     }
 
-    public void Apply(DungeonAdded aggregateEvent)
+    public void Apply(DungeonCreated aggregateEvent)
     {
         Dungeons.Add(aggregateEvent.Dungeon);
     }
@@ -154,14 +141,6 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
         character.Inventory.Add(aggregateEvent.Item);
     }
 
-    public void Apply(ItemRemoved aggregateEvent)
-    {
-        var shop = Shops.First();
-        var playerSellInv = shop.Inventory.First(i => i.CharacterId == aggregateEvent.CharacterId);
-        var item = playerSellInv.ItemsForSale.First(i => i.Id == aggregateEvent.ItemId);
-        playerSellInv.ItemsForSale.Remove(item);
-    }
-
     public void Apply(ItemSold aggregateEvent)
     {
         var character = Characters.First(c => c.Id.Value == aggregateEvent.EntityId.Value);
@@ -191,6 +170,18 @@ public class GuildState : AggregateState<GuildAggregate, GuildId, GuildState>,
 
     public void Apply(RestComplete aggregateEvent)
     {
+    }
+
+    public void Apply(AdventureResultCalculated aggregateEvent)
+    {
+    }
+
+    public void Apply(ItemRemoved aggregateEvent)
+    {
+        var shop = Shops.First();
+        var playerSellInv = shop.Inventory.First(i => i.CharacterId == aggregateEvent.CharacterId);
+        var item = playerSellInv.ItemsForSale.First(i => i.Id == aggregateEvent.ItemId);
+        playerSellInv.ItemsForSale.Remove(item);
     }
 
     public void Apply(ShopAdded aggregateEvent)

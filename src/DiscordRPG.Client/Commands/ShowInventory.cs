@@ -6,7 +6,7 @@ using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Common.Extensions;
-using DiscordRPG.Domain.Entities.Character.Enums;
+using DiscordRPG.Domain.Aggregates.Character.Enums;
 using Serilog;
 
 namespace DiscordRPG.Client.Commands;

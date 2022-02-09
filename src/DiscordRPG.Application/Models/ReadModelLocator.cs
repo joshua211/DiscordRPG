@@ -1,7 +1,4 @@
-﻿using DiscordRPG.Domain.Entities.Activity;
-using DiscordRPG.Domain.Entities.Character;
-using DiscordRPG.Domain.Entities.Dungeon;
-using DiscordRPG.Domain.Entities.Shop;
+﻿using DiscordRPG.Domain.Aggregates.Dungeon;
 using EventFlow.Aggregates;
 using EventFlow.ReadStores;
 

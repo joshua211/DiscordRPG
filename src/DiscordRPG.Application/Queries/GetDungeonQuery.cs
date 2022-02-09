@@ -1,5 +1,5 @@
 ﻿using DiscordRPG.Application.Models;
-using DiscordRPG.Domain.Entities.Dungeon;
+using DiscordRPG.Domain.Aggregates.Dungeon;
 using EventFlow.MongoDB.ReadStores;
 using EventFlow.Queries;
 

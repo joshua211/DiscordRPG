@@ -1,15 +1,15 @@
 ﻿using Discord;
 using DiscordRPG.Application.Interfaces;
 using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Domain.Aggregates.Dungeon.Events;
 using DiscordRPG.Domain.Aggregates.Guild;
 using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
-using DiscordRPG.Domain.Entities.Dungeon.Events;
 using EventFlow.Aggregates;
 using EventFlow.Subscribers;
 
 namespace DiscordRPG.Application.Subscribers;
 
-public class DungeonFoundSubscriber : ISubscribeSynchronousTo<GuildAggregate, GuildId, DungeonAdded>
+public class DungeonFoundSubscriber : ISubscribeSynchronousTo<GuildAggregate, GuildId, DungeonCreated>
 {
     private readonly IChannelManager channelManager;
     private readonly ICharacterService characterService;
@@ -22,7 +22,7 @@ public class DungeonFoundSubscriber : ISubscribeSynchronousTo<GuildAggregate, Gu
         this.logger = logger.WithContext(GetType());
     }
 
-    public async Task HandleAsync(IDomainEvent<GuildAggregate, GuildId, DungeonAdded> domainEvent,
+    public async Task HandleAsync(IDomainEvent<GuildAggregate, GuildId, DungeonCreated> domainEvent,
         CancellationToken cancellationToken)
     {
         var context = TransactionContext.With(domainEvent.Metadata["transaction-id"]);

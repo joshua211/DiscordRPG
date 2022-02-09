@@ -1,11 +1,10 @@
 ﻿using DiscordRPG.Common;
+using DiscordRPG.Domain.Aggregates.Activity.Enums;
+using DiscordRPG.Domain.Aggregates.Character.ValueObjects;
+using DiscordRPG.Domain.Aggregates.Dungeon;
 using DiscordRPG.Domain.Aggregates.Guild;
 using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
 using DiscordRPG.Domain.DomainServices.Generators;
-using DiscordRPG.Domain.Entities.Activity.Enums;
-using DiscordRPG.Domain.Entities.Character;
-using DiscordRPG.Domain.Entities.Character.ValueObjects;
-using DiscordRPG.Domain.Entities.Dungeon;
 using Weighted_Randomizer;
 
 namespace DiscordRPG.Domain.DomainServices;

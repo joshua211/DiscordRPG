@@ -2,10 +2,10 @@
 using DiscordRPG.Application.Generators;
 using DiscordRPG.Application.Interfaces;
 using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Domain.Aggregates.Activity.Enums;
+using DiscordRPG.Domain.Aggregates.Character.Commands;
+using DiscordRPG.Domain.Aggregates.Character.Events;
 using DiscordRPG.Domain.Aggregates.Guild;
-using DiscordRPG.Domain.Entities.Activity.Enums;
-using DiscordRPG.Domain.Entities.Character.Commands;
-using DiscordRPG.Domain.Entities.Character.Events;
 using EventFlow;
 using EventFlow.Aggregates;
 using EventFlow.Subscribers;

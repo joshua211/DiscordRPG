@@ -1,8 +1,7 @@
-﻿using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
+﻿using DiscordRPG.Domain.Aggregates.Character.Enums;
+using DiscordRPG.Domain.Aggregates.Character.ValueObjects;
+using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
 using DiscordRPG.Domain.DomainServices.Generators;
-using DiscordRPG.Domain.Entities.Character.Enums;
-using DiscordRPG.Domain.Entities.Character.ValueObjects;
-using DiscordRPG.Domain.Entities.Dungeon;
 
 namespace DiscordRPG.Application.Generators;
 

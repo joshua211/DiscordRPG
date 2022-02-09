@@ -1,6 +1,6 @@
 ﻿using DiscordRPG.Application.Data;
-using DiscordRPG.Domain.Entities.Character.Enums;
-using DiscordRPG.Domain.Entities.Dungeon.ValueObjects;
+using DiscordRPG.Domain.Aggregates.Character.Enums;
+using DiscordRPG.Domain.Aggregates.Dungeon.ValueObjects;
 using DiscordRPG.Domain.Enums;
 
 namespace DiscordRPG.Application.Generators;

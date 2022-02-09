@@ -2,11 +2,10 @@
 using DiscordRPG.Application.Data;
 using DiscordRPG.Application.Interfaces;
 using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Domain.Aggregates.Character.Events;
+using DiscordRPG.Domain.Aggregates.Character.ValueObjects;
 using DiscordRPG.Domain.Aggregates.Guild;
 using DiscordRPG.Domain.DomainServices.Generators;
-using DiscordRPG.Domain.Entities.Character.Events;
-using DiscordRPG.Domain.Entities.Character.ValueObjects;
-using DiscordRPG.Domain.Entities.Shop;
 using DiscordRPG.Domain.Enums;
 using EventFlow.Aggregates;
 using EventFlow.Subscribers;

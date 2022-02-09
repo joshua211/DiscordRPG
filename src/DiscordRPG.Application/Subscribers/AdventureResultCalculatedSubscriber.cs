@@ -2,12 +2,11 @@
 using Discord;
 using DiscordRPG.Application.Interfaces;
 using DiscordRPG.Application.Interfaces.Services;
+using DiscordRPG.Domain.Aggregates.Character.Commands;
+using DiscordRPG.Domain.Aggregates.Character.Enums;
+using DiscordRPG.Domain.Aggregates.Character.ValueObjects;
 using DiscordRPG.Domain.Aggregates.Guild;
-using DiscordRPG.Domain.Aggregates.Guild.Events;
 using DiscordRPG.Domain.Aggregates.Guild.ValueObjects;
-using DiscordRPG.Domain.Entities.Character.Commands;
-using DiscordRPG.Domain.Entities.Character.Enums;
-using DiscordRPG.Domain.Entities.Character.ValueObjects;
 using DiscordRPG.Domain.Services;
 using EventFlow;
 using EventFlow.Aggregates;

@@ -1,4 +1,4 @@
-﻿using DiscordRPG.Domain.Entities.Character.Enums;
+﻿using DiscordRPG.Domain.Aggregates.Character.Enums;
 using DiscordRPG.Domain.Enums;
 
 namespace DiscordRPG.Application.Data;

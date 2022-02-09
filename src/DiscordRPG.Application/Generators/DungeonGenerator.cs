@@ -1,6 +1,6 @@
-﻿using DiscordRPG.Domain.Entities.Activity.Enums;
-using DiscordRPG.Domain.Entities.Dungeon;
-using DiscordRPG.Domain.Entities.Dungeon.ValueObjects;
+﻿using DiscordRPG.Domain.Aggregates.Activity.Enums;
+using DiscordRPG.Domain.Aggregates.Dungeon;
+using DiscordRPG.Domain.Aggregates.Dungeon.ValueObjects;
 using DiscordRPG.Domain.Enums;
 using Weighted_Randomizer;
 

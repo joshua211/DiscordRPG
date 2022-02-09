@@ -3,12 +3,10 @@ using DiscordRPG.Application.Interfaces;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Models;
 using DiscordRPG.Application.Queries;
+using DiscordRPG.Domain.Aggregates.Activity.Enums;
+using DiscordRPG.Domain.Aggregates.Dungeon;
+using DiscordRPG.Domain.Aggregates.Dungeon.Commands;
 using DiscordRPG.Domain.Aggregates.Guild;
-using DiscordRPG.Domain.Aggregates.Guild.Commands;
-using DiscordRPG.Domain.Entities.Activity.Enums;
-using DiscordRPG.Domain.Entities.Character;
-using DiscordRPG.Domain.Entities.Dungeon;
-using DiscordRPG.Domain.Entities.Dungeon.Commands;
 using EventFlow;
 using EventFlow.Queries;
 
@@ -39,7 +37,7 @@ public class DungeonService : IDungeonService
         logger.Context(context).Information("Creating dungeon");
         var id = await channelManager.CreateDungeonThreadAsync(guildId, "Dungeon", context);
         var dungeon = dungeonGenerator.GenerateRandomDungeon(new DungeonId(id.Value), charLevel, charLuck, duration);
-        var cmd = new AddDungeonCommand(guildId, dungeon, character, context);
+        var cmd = new CreateDungeonCommand(guildId, dungeon, character, context);
         var result = await bus.PublishAsync(cmd, token);
 
         if (!result.IsSuccess)

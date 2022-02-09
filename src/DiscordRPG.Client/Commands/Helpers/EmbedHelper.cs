@@ -1,7 +1,7 @@
 ﻿using Discord;
 using DiscordRPG.Application.Models;
-using DiscordRPG.Domain.Entities.Character.Enums;
-using DiscordRPG.Domain.Entities.Character.ValueObjects;
+using DiscordRPG.Domain.Aggregates.Character.Enums;
+using DiscordRPG.Domain.Aggregates.Character.ValueObjects;
 
 namespace DiscordRPG.Client.Commands.Helpers;
 

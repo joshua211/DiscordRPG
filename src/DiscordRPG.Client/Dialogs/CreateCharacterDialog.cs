@@ -1,5 +1,5 @@
 ﻿using DiscordRPG.Common;
-using DiscordRPG.Domain.Entities.Character.ValueObjects;
+using DiscordRPG.Domain.Aggregates.Character.ValueObjects;
 
 namespace DiscordRPG.Client.Dialogs;
 

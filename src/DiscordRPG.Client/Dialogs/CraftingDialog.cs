@@ -1,6 +1,6 @@
 ﻿using DiscordRPG.Application.Models;
 using DiscordRPG.Common;
-using DiscordRPG.Domain.Entities.Character.Enums;
+using DiscordRPG.Domain.Aggregates.Character.Enums;
 
 namespace DiscordRPG.Client.Dialogs;
 

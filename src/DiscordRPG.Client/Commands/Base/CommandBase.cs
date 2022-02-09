@@ -6,9 +6,8 @@ using DiscordRPG.Application.Models;
 using DiscordRPG.Client.Commands.Attributes;
 using DiscordRPG.Common;
 using DiscordRPG.Common.Extensions;
+using DiscordRPG.Domain.Aggregates.Dungeon;
 using DiscordRPG.Domain.Aggregates.Guild;
-using DiscordRPG.Domain.Entities.Character;
-using DiscordRPG.Domain.Entities.Dungeon;
 using Serilog;
 
 namespace DiscordRPG.Client.Commands.Base;

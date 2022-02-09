@@ -1,11 +1,9 @@
 ﻿using DiscordRPG.Application.Generators;
 using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Models;
+using DiscordRPG.Domain.Aggregates.Character.ValueObjects;
 using DiscordRPG.Domain.Aggregates.Guild;
 using DiscordRPG.Domain.DomainServices.Generators;
-using DiscordRPG.Domain.Entities.Character;
-using DiscordRPG.Domain.Entities.Character.ValueObjects;
-using DiscordRPG.Domain.Entities.Shop;
 using Weighted_Randomizer;
 
 namespace DiscordRPG.Application.Worker;

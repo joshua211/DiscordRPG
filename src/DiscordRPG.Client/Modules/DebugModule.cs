@@ -5,8 +5,8 @@ using DiscordRPG.Application.Interfaces.Services;
 using DiscordRPG.Application.Worker;
 using DiscordRPG.Common;
 using DiscordRPG.Common.Extensions;
+using DiscordRPG.Domain.Aggregates.Activity.Enums;
 using DiscordRPG.Domain.Aggregates.Guild;
-using DiscordRPG.Domain.Entities.Activity.Enums;
 using DiscordRPG.Domain.Enums;
 using Serilog;
 

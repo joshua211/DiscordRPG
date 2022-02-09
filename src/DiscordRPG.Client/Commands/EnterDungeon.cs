@@ -7,12 +7,12 @@ using DiscordRPG.Client.Commands.Base;
 using DiscordRPG.Client.Commands.Helpers;
 using DiscordRPG.Client.Dialogs;
 using DiscordRPG.Common.Extensions;
+using DiscordRPG.Domain.Aggregates.Activity.Enums;
+using DiscordRPG.Domain.Aggregates.Activity.ValueObjects;
+using DiscordRPG.Domain.Aggregates.Dungeon;
 using DiscordRPG.Domain.Aggregates.Guild;
-using DiscordRPG.Domain.Entities.Activity.Enums;
-using DiscordRPG.Domain.Entities.Activity.ValueObjects;
-using DiscordRPG.Domain.Entities.Character;
-using DiscordRPG.Domain.Entities.Dungeon;
 using Serilog;
+using ActivityType = DiscordRPG.Domain.Aggregates.Activity.Enums.ActivityType;
 
 namespace DiscordRPG.Client.Commands;
 
@@ -82,7 +82,7 @@ public class EnterDungeon : DialogCommandBase<EnterDungeonDialog>
     public async Task HandleEnterDungeon(SocketMessageComponent component, EnterDungeonDialog dialog)
     {
         var result = await activityService.QueueActivityAsync(new GuildId(dialog.GuildId),
-            new CharacterId(dialog.CharId), dialog.Duration, Domain.Entities.Activity.Enums.ActivityType.Dungeon,
+            new CharacterId(dialog.CharId), dialog.Duration, ActivityType.Dungeon,
             new ActivityData(0, null, null, new DungeonId(dialog.Dungeon.Id), null), dialog.Context);
 
         await dungeonService.DecreaseExplorationsAsync(new GuildId(dialog.GuildId), new DungeonId(dialog.Dungeon.Id),
